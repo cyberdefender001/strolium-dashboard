@@ -1,82 +1,79 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { Search, Check, X, Clock, AlertTriangle, Plus } from "lucide-react";
-import { getTasks, approveTask } from "../api/client";
+import { useEffect, useMemo, useState, useCallback, Fragment } from "react";
+import { Search, Check, X, Plus } from "lucide-react";
+import { getTasks, approveTask, rejectTask } from "../api/client";
+import { initials } from "../lib/format";
 import BrickLoader from "../components/BrickLoader.jsx";
 import TaskDetail from "../components/TaskDetail.jsx";
 import NewTask from "../components/NewTask.jsx";
 
-// Desktop tasks screen.
+// Tasks -- same CAPABILITY as the Mini App, laid out for a desktop.
 //
-// The organising idea: a boss opens this to answer ONE question -- "what needs me?"
-// So work awaiting his review is pulled to the top as a queue he can clear without
-// leaving the page, and everything else sits below in a scannable table.
-//
-// Approve/reject happen inline. Making a boss click into a detail page to approve a
-// task is how approvals end up sitting untouched for a week.
+// The Mini App has three clickable stat cards (review / overdue / active), status
+// pills driven by the org's OWN status list from the API (not a hardcoded three),
+// and approve/reject inline on the row with the reject form expanding in place.
+// All of that is here. The presentation is a table rather than stacked cards,
+// because that is what a big screen is for.
 
-const TONE = {
-  submitted: "warn",
-  in_progress: "ok",
-  assigned: "dim",
-  done: "good",
-  approved: "good",
-  rejected: "bad",
+const SPINE = {
+  open: "#4C8DFF", submitted: "#F4A52A", rejected: "#F2555A",
+  on_hold: "#8B95A1", approved: "#2FB67C", cancelled: "#566273",
 };
 
-function StatusChip({ status, label }) {
-  return <span className={"tchip tchip--" + (TONE[status] || "dim")}>{label}</span>;
-}
+const defaultDeadline = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(18, 0, 0, 0);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+};
 
 export default function Tasks({ onChange }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("all");
-  const [open, setOpen] = useState(null);   // task id whose detail is showing
+  const [open, setOpen] = useState(null);
   const [creating, setCreating] = useState(false);
-  const [acting, setActing] = useState(null);
+  const [busy, setBusy] = useState(null);
+
+  const [rejectId, setRejectId] = useState(null);
+  const [fb, setFb] = useState("");
+  const [dl, setDl] = useState("");
 
   const load = useCallback(() => {
     setErr("");
-    getTasks()
-      .then(setData)
-      .catch((e) => setErr(e.message || "Yuklab bo'lmadi."));
+    getTasks().then(setData).catch((e) => setErr(e.message || "Yuklab bo'lmadi."));
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
+
+  const after = () => { load(); if (onChange) onChange(); };
 
   const approve = async (id) => {
-    setActing(id);
-    try {
-      await approveTask(id);
-      load();
-      if (onChange) onChange();
-    } finally {
-      setActing(null);
-    }
+    setBusy(id);
+    try { await approveTask(id); after(); } finally { setBusy(null); }
   };
 
-  const review = useMemo(
-    () => (data ? (data.tasks || []).filter((t) => t.can_review) : []),
-    [data]
-  );
+  const openReject = (id) => { setRejectId(id); setFb(""); setDl(defaultDeadline()); };
+
+  const sendReject = async () => {
+    setBusy(rejectId);
+    try { await rejectTask(rejectId, fb.trim(), dl); setRejectId(null); after(); }
+    finally { setBusy(null); }
+  };
 
   const rows = useMemo(() => {
     if (!data) return [];
     let r = data.tasks || [];
     if (filter === "overdue") r = r.filter((t) => t.overdue);
-    if (filter === "active")
-      r = r.filter((t) => !t.can_review && t.status !== "approved");
+    else if (filter === "active") r = r.filter((t) => t.status !== "approved" && t.status !== "cancelled");
+    else if (filter !== "all") r = r.filter((t) => t.status === filter);
     if (q.trim()) {
       const t = q.trim().toLowerCase();
-      r = r.filter(
-        (x) =>
-          (x.title || "").toLowerCase().includes(t) ||
-          (x.worker || "").toLowerCase().includes(t) ||
-          String(x.number).includes(t)
-      );
+      r = r.filter((x) =>
+        (x.title || "").toLowerCase().includes(t) ||
+        (x.worker || "").toLowerCase().includes(t) ||
+        String(x.number).includes(t));
     }
     return r;
   }, [data, q, filter]);
@@ -84,123 +81,148 @@ export default function Tasks({ onChange }) {
   if (err)
     return (
       <div className="section-empty">
-        {err}{" "}
-        <button className="btn-ghost" onClick={load}>
-          Qayta urinish
-        </button>
+        {err} <button className="btn-ghost" onClick={load}>Qayta urinish</button>
       </div>
     );
   if (!data) return <BrickLoader label="Yuklanmoqda" />;
 
   const s = data.summary || {};
+  const STATS = [
+    ["submitted", s.review, "Ko'rib chiqish", "review"],
+    ["overdue", s.overdue, "Muddati o'tgan", "over"],
+    ["active", s.active, "Faol", "act"],
+  ];
 
   return (
     <>
       <div className="xhead">
         <div>
           <h2 className="xhead__title">Vazifalar</h2>
-          <div className="xhead__sub">
-            {s.total} ta vazifa · {s.active} faol · {s.overdue} muddati o'tgan
-          </div>
+          <div className="xhead__sub">{s.total} ta vazifa</div>
         </div>
         <button className="btn-primary" onClick={() => setCreating(true)}>
           <Plus size={15} /> Yangi vazifa
         </button>
       </div>
 
-      {/* the queue: work waiting on the boss, clearable without leaving the page */}
-      {review.length > 0 && (
-        <div className="treview">
-          <div className="treview__head">
-            <Clock size={14} />
-            Tekshiruv kutmoqda
-            <span className="treview__n">{review.length}</span>
-          </div>
-          {review.map((t) => (
-            <div key={t.id} className="treview__row">
-              <div className="treview__main">
-                <span className="treview__num">#{t.number}</span>
-                <span className="treview__title">{t.title}</span>
-                {t.overdue && (
-                  <span className="treview__late">
-                    <AlertTriangle size={11} /> {t.due_text}
-                  </span>
-                )}
-              </div>
-              <div className="treview__who">{t.worker || "—"}</div>
-              <div className="treview__acts">
-                <button
-                  className="btn-ok"
-                  disabled={acting === t.id}
-                  onClick={() => approve(t.id)}
-                >
-                  <Check size={14} /> Qabul
-                </button>
-                <button className="btn-no" onClick={() => setOpen(t.id)}>
-                  <X size={14} /> Qaytarish
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="tstats">
+        {STATS.map(([key, n, label, cls]) => (
+          <button
+            key={key}
+            className={"tstat tstat--" + cls + (filter === key ? " on" : "")}
+            onClick={() => setFilter(filter === key ? "all" : key)}
+          >
+            <div className="tstat__n">{n || 0}</div>
+            <div className="tstat__l">{label}</div>
+          </button>
+        ))}
+      </div>
 
-      <div className="xfilters">
-        <div className="xsearch">
-          <Search size={14} />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Qidirish…"
-          />
-        </div>
-        <div className="tseg">
-          {[
-            ["all", "Barchasi"],
-            ["active", "Faol"],
-            ["overdue", "Muddati o'tgan"],
-          ].map(([k, l]) => (
+      <div className="tpills">
+        <button className={"tpill" + (filter === "all" ? " on" : "")} onClick={() => setFilter("all")}>
+          Hammasi <span className="c">{s.total}</span>
+        </button>
+        {(data.statuses || [])
+          .filter((st) => st.count > 0 || st.key === "submitted")
+          .map((st) => (
             <button
-              key={k}
-              className={filter === k ? "on" : ""}
-              onClick={() => setFilter(k)}
+              key={st.key}
+              className={"tpill" + (filter === st.key ? " on" : "")}
+              onClick={() => setFilter(st.key)}
             >
-              {l}
+              {st.label} <span className="c">{st.count}</span>
             </button>
           ))}
+        <div className="xsearch tpills__search">
+          <Search size={14} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Qidirish…" />
         </div>
-        <div className="xfilters__tot">{rows.length} ta</div>
       </div>
 
       <div className="card xtable__wrap">
-        <table className="xtable">
+        <table className="xtable ttable">
           <thead>
             <tr>
               <th style={{ width: 62 }}>#</th>
               <th>Vazifa</th>
-              <th>Ishchi</th>
-              <th>Muddat</th>
-              <th>Holat</th>
+              <th style={{ width: 175 }}>Ishchi</th>
+              <th style={{ width: 165 }}>Muddat</th>
+              <th style={{ width: 235 }} />
             </tr>
           </thead>
           <tbody>
             {rows.map((t) => (
-              <tr key={t.id} className="tclick" onClick={() => setOpen(t.id)}>
-                <td className="faint mono">{t.number}</td>
-                <td className="xtable__item">{t.title}</td>
-                <td className="dim">{t.worker || "—"}</td>
-                <td className={t.overdue ? "tlate" : "faint"}>
-                  {t.due_text || "—"}
-                </td>
-                <td>
-                  <StatusChip status={t.status} label={t.status_label} />
-                </td>
-              </tr>
+              <Fragment key={t.id}>
+                <tr className="tclick" onClick={() => setOpen(t.id)}>
+                  <td className="tnum">
+                    <i className="tspine" style={{ background: SPINE[t.status] || "#888" }} />
+                    {String(t.number).padStart(2, "0")}
+                  </td>
+                  <td className="xtable__item">
+                    {t.title}
+                    <span className="tbadge" style={{ color: SPINE[t.status] }}>
+                      <i style={{ background: SPINE[t.status] }} />
+                      {t.status_label}
+                    </span>
+                  </td>
+                  <td className="dim tworker">
+                    <span className="tava">{initials(t.worker || "")}</span>
+                    {t.worker || "—"}
+                  </td>
+                  <td className={"tdl tdl--" + (t.due_tone || "none")}>
+                    {t.due_text || "muddatsiz"}
+                  </td>
+                  <td className="tacts" onClick={(e) => e.stopPropagation()}>
+                    {t.can_review && rejectId !== t.id && (
+                      <>
+                        <button className="btn-ok" disabled={busy === t.id} onClick={() => approve(t.id)}>
+                          <Check size={13} /> Tasdiqlash
+                        </button>
+                        <button className="btn-no" onClick={() => openReject(t.id)}>
+                          <X size={13} /> Rad etish
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+
+                {rejectId === t.id && (
+                  <tr className="trow-form">
+                    <td colSpan={5}>
+                      <div className="tform">
+                        <textarea
+                          autoFocus
+                          value={fb}
+                          onChange={(e) => setFb(e.target.value)}
+                          placeholder="Sabab va talab"
+                        />
+                        <input type="datetime-local" value={dl} onChange={(e) => setDl(e.target.value)} />
+                        <div className="tform__acts">
+                          <button
+                            className="btn-danger"
+                            disabled={busy === t.id || !fb.trim() || !dl}
+                            onClick={sendReject}
+                          >
+                            Rad etib yuborish
+                          </button>
+                          <button className="btn-ghost" onClick={() => setRejectId(null)}>
+                            Bekor
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
             ))}
             {!rows.length && (
               <tr>
                 <td colSpan={5} className="xtable__empty">
-                  Vazifa topilmadi.
+                  {filter === "submitted"
+                    ? "Ko'rib chiqiladigan yo'q — hammasi ko'rib chiqilgan."
+                    : filter === "overdue"
+                    ? "Muddati o'tgan yo'q — hammasi muddatida."
+                    : "Vazifa yo'q."}
                 </td>
               </tr>
             )}
@@ -208,26 +230,9 @@ export default function Tasks({ onChange }) {
         </table>
       </div>
 
-      {open && (
-        <TaskDetail
-          taskId={open}
-          onClose={() => setOpen(null)}
-          onChanged={() => {
-            load();
-            if (onChange) onChange();
-          }}
-        />
-      )}
-
+      {open && <TaskDetail taskId={open} onClose={() => setOpen(null)} onChanged={after} />}
       {creating && (
-        <NewTask
-          onClose={() => setCreating(false)}
-          onSaved={() => {
-            setCreating(false);
-            load();
-            if (onChange) onChange();
-          }}
-        />
+        <NewTask onClose={() => setCreating(false)} onSaved={() => { setCreating(false); after(); }} />
       )}
     </>
   );
