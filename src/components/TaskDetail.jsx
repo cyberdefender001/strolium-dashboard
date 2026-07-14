@@ -27,14 +27,14 @@ import { fmtSom } from "../lib/format";
 // it, and the actions. A boss reviewing work needs to SEE the work -- approving from
 // a row in a table without looking at the photos is just rubber-stamping.
 
-// Say WHO did it. "Yuborildi" alone leaves a boss guessing whether he or the worker
-// moved the task -- which is the one thing a history is for.
+// These are the Mini App's exact words. Same product, same vocabulary -- a boss
+// should not have to learn two names for the same action.
 const TL = {
-  created: "Menejer vazifa berdi",
-  submitted: "Ishchi yubordi",
-  resubmitted: "Ishchi qayta yubordi",
-  approved: "Menejer qabul qildi",
-  rejected: "Menejer qaytardi",
+  created: "Yaratildi",
+  submitted: "Topshirildi",
+  resubmitted: "Qayta topshirildi",
+  approved: "Tasdiqlandi",
+  rejected: "Rad etildi",
 };
 
 function RejectForm({ onCancel, onSubmit, busy }) {
@@ -58,12 +58,12 @@ function RejectForm({ onCancel, onSubmit, busy }) {
   return (
     <div className="trej">
       <label className="fld">
-        <span>Nima noto'g'ri? (ishchi ko'radi)</span>
+        <span>Sabab va talab</span>
         <input
           autoFocus
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
-          placeholder="masalan: rasm aniq emas, qayta suratga oling"
+          placeholder="Sabab va talab"
         />
       </label>
       <label className="fld">
@@ -83,7 +83,7 @@ function RejectForm({ onCancel, onSubmit, busy }) {
           disabled={busy || !feedback.trim() || !deadline}
           onClick={() => onSubmit(feedback.trim(), deadline)}
         >
-          {busy ? "…" : "Qaytarish"}
+          {busy ? "…" : "Rad etib yuborish"}
         </button>
       </div>
     </div>
@@ -247,12 +247,16 @@ export default function TaskDetail({ taskId, onClose, onChanged }) {
                     <div key={i} className={"ttl__row ttl__row--" + ev.type}>
                       <CircleDot size={11} />
                       <span className="ttl__what">{TL[ev.type] || ev.type}</span>
-                      {ev.type === "rejected" && ev.feedback && (
-                        <span className="ttl__note">{ev.feedback}</span>
+                      {ev.type === "rejected" && ev.body && (
+                        <span className="ttl__note">{ev.body}</span>
                       )}
                       {(ev.type === "submitted" || ev.type === "resubmitted") &&
                         ev.on_time === false && (
-                          <span className="ttl__late">kech</span>
+                          <span className="ttl__late">kechikib</span>
+                        )}
+                      {(ev.type === "submitted" || ev.type === "resubmitted") &&
+                        ev.on_time === true && (
+                          <span className="ttl__ontime">muddatida</span>
                         )}
                       <span className="ttl__at">{ev.at}</span>
                     </div>
@@ -295,14 +299,14 @@ export default function TaskDetail({ taskId, onClose, onChanged }) {
                       onClick={() => setRejecting(true)}
                       disabled={busy}
                     >
-                      <X size={14} /> Qaytarish
+                      <X size={14} /> Rad etish
                     </button>
                     <button
                       className="btn-ok"
                       onClick={() => act(() => approveTask(t.id))}
                       disabled={busy}
                     >
-                      <Check size={14} /> Qabul qilish
+                      <Check size={14} /> Tasdiqlash
                     </button>
                   </>
                 )}
