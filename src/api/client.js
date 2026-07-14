@@ -141,7 +141,7 @@ export async function listEstimates() {
 
 export async function getPulse() {
   const d = await call("/api/pulse");
-  return d && d.v;
+  return (d && d.parts) || null;
 }
 
 // ---- Xarajat (expenses) -------------------------------------------------

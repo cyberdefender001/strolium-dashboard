@@ -14,8 +14,14 @@ import { fmtSom } from "../lib/format";
 // It WARNS, it never blocks. A boss sometimes genuinely has to overspend; a tool
 // that stops him becomes his enemy and he stops using it.
 
-const groupNum = (n) =>
-  String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+// Group digits as they are typed: 12000000 -> 12 000 000. A boss entering a big
+// number needs to SEE its size; an undifferentiated wall of digits is exactly how
+// someone enters ten times what they meant.
+const groupDigits = (v) => {
+  const d = String(v).replace(/[^0-9]/g, "");
+  if (!d) return "";
+  return d.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+};
 
 export default function AddExpense({ projects, groups, onClose, onSaved }) {
   const [amount, setAmount] = useState("");
@@ -90,7 +96,7 @@ export default function AddExpense({ projects, groups, onClose, onSaved }) {
               inputMode="numeric"
               className="axp__amt"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => setAmount(groupDigits(e.target.value))}
               placeholder="0"
             />
             <div className="seg">

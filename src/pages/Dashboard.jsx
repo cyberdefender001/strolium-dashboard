@@ -52,6 +52,10 @@ export default function Dashboard({ user, onLogout }) {
   const [stale, setStale] = useState(false);
   const pulseRef = useRef(null);
   const busyRef = useRef(false);
+  const navRef = useRef(nav);
+  useEffect(() => {
+    navRef.current = nav;
+  }, [nav]);
 
   useEffect(() => {
     let alive = true;
@@ -62,13 +66,34 @@ export default function Dashboard({ user, onLogout }) {
       return busyRef.current;
     };
 
+    // Which data does the screen he is LOOKING AT actually show? A change to
+    // anything else is absorbed silently -- when he navigates there it loads fresh
+    // anyway. Telling a boss "new data!" while he is approving a task, about an
+    // expense he cannot even see, is how people learn to ignore the pill.
+    const VIEW_PARTS = {
+      alerts: null,                              // Belgilar: shows everything
+      money: ["expenses", "projects", "docs", "estimates"],
+      tasks: ["tasks"],
+      expenses: ["expenses", "projects"],
+      company: ["projects", "members"],
+    };
+
     const check = async () => {
       try {
-        const v = await getPulse();
-        if (!alive || !v) return;
-        if (pulseRef.current === null) { pulseRef.current = v; return; }
-        if (v === pulseRef.current) return;
-        pulseRef.current = v;
+        const parts = await getPulse();
+        if (!alive || !parts) return;
+        const prev = pulseRef.current;
+        pulseRef.current = parts;
+        if (!prev) return;                       // first read = baseline
+
+        const changed = Object.keys(parts).filter((k) => prev[k] !== parts[k]);
+        if (!changed.length) return;
+
+        const want = VIEW_PARTS[navRef.current];
+        const relevant =
+          want === null || changed.some((k) => want.includes(k));
+        if (!relevant) return;                   // quietly absorbed
+
         if (formOpen()) setStale(true);
         else { setStale(false); load(); }
       } catch { /* offline or expired; the next load() surfaces it */ }
