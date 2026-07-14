@@ -64,7 +64,7 @@ function BudgetRail({ groups }) {
   );
 }
 
-export default function Expenses({ flags = [], onChange }) {
+export default function Expenses({ flags = [], tick, onChange }) {
   const [data, setData] = useState(null);
   const [projects, setProjects] = useState([]);
   const [err, setErr] = useState("");
@@ -82,9 +82,10 @@ export default function Expenses({ flags = [], onChange }) {
       .catch((e) => setErr(e.message || "Yuklab bo'lmadi."));
   }, []);
 
+  // tick = something changed in this org elsewhere (Mini App, another browser).
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, tick]);
 
   // Which expense items has Pul nazorati flagged? Match on vendor, which is what
   // the detectors key on -- so the boss sees the suspicious rows inline.

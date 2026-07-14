@@ -27,12 +27,14 @@ import { fmtSom } from "../lib/format";
 // it, and the actions. A boss reviewing work needs to SEE the work -- approving from
 // a row in a table without looking at the photos is just rubber-stamping.
 
+// Say WHO did it. "Yuborildi" alone leaves a boss guessing whether he or the worker
+// moved the task -- which is the one thing a history is for.
 const TL = {
-  created: "Berildi",
-  submitted: "Yuborildi",
-  resubmitted: "Qayta yuborildi",
-  approved: "Qabul qilindi",
-  rejected: "Qaytarildi",
+  created: "Menejer vazifa berdi",
+  submitted: "Ishchi yubordi",
+  resubmitted: "Ishchi qayta yubordi",
+  approved: "Menejer qabul qildi",
+  rejected: "Menejer qaytardi",
 };
 
 function RejectForm({ onCancel, onSubmit, busy }) {

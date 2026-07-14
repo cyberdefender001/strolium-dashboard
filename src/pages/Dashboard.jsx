@@ -50,6 +50,8 @@ export default function Dashboard({ user, onLogout }) {
   // If a form is open we do NOT reload underneath the user; we show a pill and let
   // them choose. Destroying half-entered work is worse than showing it a bit late.
   const [stale, setStale] = useState(false);
+  const [tick, setTick] = useState(0);          // bumped whenever the org changes
+  const refresh = useCallback(() => { load(); setTick((n) => n + 1); }, [load]);
   const pulseRef = useRef(null);
   const busyRef = useRef(false);
   const navRef = useRef(nav);
@@ -95,7 +97,7 @@ export default function Dashboard({ user, onLogout }) {
         if (!relevant) return;                   // quietly absorbed
 
         if (formOpen()) setStale(true);
-        else { setStale(false); load(); }
+        else { setStale(false); refresh(); }
       } catch { /* offline or expired; the next load() surfaces it */ }
     };
 
@@ -139,7 +141,7 @@ export default function Dashboard({ user, onLogout }) {
     <div className="shell">
       {stale && (
         <button
-          onClick={() => { setStale(false); load(); }}
+          onClick={() => { setStale(false); refresh(); }}
           style={{
             position: "fixed", left: "50%", transform: "translateX(-50%)", top: 12,
             zIndex: 2000, background: "#4C8DFF", color: "#fff", border: "none",
@@ -189,9 +191,9 @@ export default function Dashboard({ user, onLogout }) {
           )}
 
           {nav === "money" && <MoneyControl data={data} onChange={load} />}
-          {nav === "tasks" && <Tasks onChange={load} />}
+          {nav === "tasks" && <Tasks tick={tick} onChange={refresh} />}
           {nav === "expenses" && (
-            <Expenses flags={data.audit.flags} onChange={load} />
+            <Expenses flags={data.audit.flags} tick={tick} onChange={refresh} />
           )}
           {nav === "company" && <Company data={data} />}
         </div>

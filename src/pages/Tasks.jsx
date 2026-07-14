@@ -27,7 +27,7 @@ const defaultDeadline = () => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 };
 
-export default function Tasks({ onChange }) {
+export default function Tasks({ tick, onChange }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [q, setQ] = useState("");
@@ -45,7 +45,8 @@ export default function Tasks({ onChange }) {
     getTasks().then(setData).catch((e) => setErr(e.message || "Yuklab bo'lmadi."));
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  // tick = something changed in this org elsewhere (Mini App, another browser).
+  useEffect(() => { load(); }, [load, tick]);
 
   const after = () => { load(); if (onChange) onChange(); };
 
