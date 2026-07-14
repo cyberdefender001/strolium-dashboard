@@ -3,6 +3,7 @@ import {
   Flag,
   Wallet,
   Receipt,
+  ListChecks,
   Building2,
   LogOut,
 } from "lucide-react";
@@ -11,6 +12,7 @@ import { initials } from "../lib/format";
 const NAV = [
   { key: "alerts", label: "Belgilar", icon: Flag, badgeKey: "openFlags" },
   { key: "money", label: "Pul nazorati", icon: Wallet },
+  { key: "tasks", label: "Vazifalar", icon: ListChecks, badgeKey: "review" },
   { key: "expenses", label: "Xarajatlar", icon: Receipt },
   { key: "company", label: "Kompaniya", icon: Building2 },
 ];

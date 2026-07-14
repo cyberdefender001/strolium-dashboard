@@ -161,3 +161,24 @@ export async function listProjects() {
 export async function addExpense(body) {
   return call("/api/expense", { method: "POST", body: JSON.stringify(body) });
 }
+
+// ---- Vazifalar (tasks) ---------------------------------------------------
+// Same endpoints the Mini App manager view uses.
+
+export async function getTasks() {
+  return call("/api/manager/board");
+}
+
+export async function approveTask(task_id) {
+  return call("/api/manager/approve", {
+    method: "POST",
+    body: JSON.stringify({ task_id }),
+  });
+}
+
+export async function rejectTask(task_id, reason) {
+  return call("/api/manager/reject", {
+    method: "POST",
+    body: JSON.stringify({ task_id, reason: reason || "" }),
+  });
+}
