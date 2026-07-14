@@ -9,6 +9,7 @@ import FlagDetail from "../components/FlagDetail.jsx";
 import DocUpload from "../components/DocUpload.jsx";
 import EstimateUpload from "../components/EstimateUpload.jsx";
 import BrickLoader from "../components/BrickLoader.jsx";
+import Expenses from "./Expenses.jsx";
 
 const TITLES = {
   alerts: "Belgilar",
@@ -162,6 +163,9 @@ export default function Dashboard({ user, onLogout }) {
           )}
 
           {nav === "money" && <MoneyControl data={data} onChange={load} />}
+          {nav === "expenses" && (
+            <Expenses flags={data.audit.flags} onChange={load} />
+          )}
           {nav === "company" && <Company data={data} />}
         </div>
       </main>

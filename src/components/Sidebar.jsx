@@ -2,6 +2,7 @@ import {
   ShieldCheck,
   Flag,
   Wallet,
+  Receipt,
   Building2,
   LogOut,
 } from "lucide-react";
@@ -10,6 +11,7 @@ import { initials } from "../lib/format";
 const NAV = [
   { key: "alerts", label: "Belgilar", icon: Flag, badgeKey: "openFlags" },
   { key: "money", label: "Pul nazorati", icon: Wallet },
+  { key: "expenses", label: "Xarajatlar", icon: Receipt },
   { key: "company", label: "Kompaniya", icon: Building2 },
 ];
 

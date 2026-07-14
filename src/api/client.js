@@ -143,3 +143,21 @@ export async function getPulse() {
   const d = await call("/api/pulse");
   return d && d.v;
 }
+
+// ---- Xarajat (expenses) -------------------------------------------------
+// These hit the SAME endpoints the Telegram Mini App uses. No web-specific fork:
+// get_current_member accepts a web session or Telegram initData and resolves both
+// to the same member, so there is exactly one implementation of the money logic.
+
+export async function getSpend() {
+  return call("/api/spend");
+}
+
+export async function listProjects() {
+  const d = await call("/api/projects");
+  return (d && d.projects) || [];
+}
+
+export async function addExpense(body) {
+  return call("/api/expense", { method: "POST", body: JSON.stringify(body) });
+}
