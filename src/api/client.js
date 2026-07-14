@@ -176,9 +176,47 @@ export async function approveTask(task_id) {
   });
 }
 
-export async function rejectTask(task_id, reason) {
+// Rejecting is not just "no". The API requires feedback AND a new deadline --
+// which is right: a rejection without a fix and a date is just a dead end for the
+// worker. (An earlier version of this sent {reason} and would have 422'd.)
+export async function rejectTask(task_id, feedback, deadline) {
   return call("/api/manager/reject", {
     method: "POST",
-    body: JSON.stringify({ task_id, reason: reason || "" }),
+    body: JSON.stringify({ task_id, feedback, deadline }),
   });
+}
+
+export async function getTask(id) {
+  return call(`/api/manager/task/${id}`);
+}
+
+export async function deleteTask(task_id) {
+  return call("/api/manager/task/delete", {
+    method: "POST",
+    body: JSON.stringify({ task_id }),
+  });
+}
+
+export async function getAssignees() {
+  const d = await call("/api/manager/assignees");
+  return (d && d.assignees) || [];
+}
+
+export async function createTask(tasks) {
+  return call("/api/manager/assign", {
+    method: "POST",
+    body: JSON.stringify({ tasks }),
+  });
+}
+
+// <img> and download links cannot send an Authorization header, so the session
+// rides along as ?tg= -- the backend accepts it there.
+export function fileUrl(id) {
+  return `${API_BASE}/api/file/${id}?tg=${encodeURIComponent(authToken() || "")}`;
+}
+
+export function reportUrl(taskId, fmt) {
+  return `${API_BASE}/api/manager/task/${taskId}/report?fmt=${fmt}&tg=${encodeURIComponent(
+    authToken() || ""
+  )}`;
 }

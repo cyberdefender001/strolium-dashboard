@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Search, Check, X, Clock, AlertTriangle } from "lucide-react";
-import { getTasks, approveTask, rejectTask } from "../api/client";
+import { Search, Check, X, Clock, AlertTriangle, Plus } from "lucide-react";
+import { getTasks, approveTask } from "../api/client";
 import BrickLoader from "../components/BrickLoader.jsx";
+import TaskDetail from "../components/TaskDetail.jsx";
+import NewTask from "../components/NewTask.jsx";
 
 // Desktop tasks screen.
 //
@@ -25,57 +27,13 @@ function StatusChip({ status, label }) {
   return <span className={"tchip tchip--" + (TONE[status] || "dim")}>{label}</span>;
 }
 
-function RejectBox({ task, onDone, onCancel }) {
-  const [reason, setReason] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const go = async () => {
-    setBusy(true);
-    try {
-      await rejectTask(task.id, reason.trim());
-      onDone();
-    } catch {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="modal__wrap" onClick={onCancel}>
-      <div className="axp" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
-        <div className="axp__body" style={{ paddingTop: 22 }}>
-          <h3 className="modal__title">Qaytarish</h3>
-          <div className="trej__task">
-            #{task.number} · {task.title}
-          </div>
-          <label className="fld">
-            <span>Sabab (ishchi ko'radi)</span>
-            <input
-              autoFocus
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="masalan: rasm aniq emas, qayta yuboring"
-            />
-          </label>
-        </div>
-        <div className="axp__foot">
-          <button className="btn-ghost" onClick={onCancel} disabled={busy}>
-            Bekor
-          </button>
-          <button className="btn-danger" onClick={go} disabled={busy}>
-            {busy ? "…" : "Qaytarish"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Tasks({ onChange }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("all");
-  const [rejecting, setRejecting] = useState(null);
+  const [open, setOpen] = useState(null);   // task id whose detail is showing
+  const [creating, setCreating] = useState(false);
   const [acting, setActing] = useState(null);
 
   const load = useCallback(() => {
@@ -145,6 +103,9 @@ export default function Tasks({ onChange }) {
             {s.total} ta vazifa · {s.active} faol · {s.overdue} muddati o'tgan
           </div>
         </div>
+        <button className="btn-primary" onClick={() => setCreating(true)}>
+          <Plus size={15} /> Yangi vazifa
+        </button>
       </div>
 
       {/* the queue: work waiting on the boss, clearable without leaving the page */}
@@ -175,7 +136,7 @@ export default function Tasks({ onChange }) {
                 >
                   <Check size={14} /> Qabul
                 </button>
-                <button className="btn-no" onClick={() => setRejecting(t)}>
+                <button className="btn-no" onClick={() => setOpen(t.id)}>
                   <X size={14} /> Qaytarish
                 </button>
               </div>
@@ -224,7 +185,7 @@ export default function Tasks({ onChange }) {
           </thead>
           <tbody>
             {rows.map((t) => (
-              <tr key={t.id}>
+              <tr key={t.id} className="tclick" onClick={() => setOpen(t.id)}>
                 <td className="faint mono">{t.number}</td>
                 <td className="xtable__item">{t.title}</td>
                 <td className="dim">{t.worker || "—"}</td>
@@ -247,12 +208,22 @@ export default function Tasks({ onChange }) {
         </table>
       </div>
 
-      {rejecting && (
-        <RejectBox
-          task={rejecting}
-          onCancel={() => setRejecting(null)}
-          onDone={() => {
-            setRejecting(null);
+      {open && (
+        <TaskDetail
+          taskId={open}
+          onClose={() => setOpen(null)}
+          onChanged={() => {
+            load();
+            if (onChange) onChange();
+          }}
+        />
+      )}
+
+      {creating && (
+        <NewTask
+          onClose={() => setCreating(false)}
+          onSaved={() => {
+            setCreating(false);
             load();
             if (onChange) onChange();
           }}
