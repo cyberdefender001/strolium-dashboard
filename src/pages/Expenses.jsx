@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Plus, Search, Flag, Receipt } from "lucide-react";
-import { getSpend, listProjects, addExpense } from "../api/client";
+import { getSpend, listProjects } from "../api/client";
+import AddExpense from "../components/AddExpense.jsx";
 import { fmtSom } from "../lib/format";
 import BrickLoader from "../components/BrickLoader.jsx";
 
@@ -59,109 +60,6 @@ function BudgetRail({ groups }) {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function AddExpense({ projects, onClose, onSaved }) {
-  const [amount, setAmount] = useState("");
-  const [item, setItem] = useState("");
-  const [vendor, setVendor] = useState("");
-  const [projectId, setProjectId] = useState("");
-  const [currency, setCurrency] = useState("UZS");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-
-  const save = async () => {
-    setErr("");
-    const amt = parseFloat(String(amount).replace(/[^0-9.]/g, ""));
-    if (!amt || amt <= 0) return setErr("Summani kiriting.");
-    if (!item.trim()) return setErr("Nima olinganini yozing.");
-    setBusy(true);
-    try {
-      await addExpense({
-        amount: amt,
-        currency,
-        item: item.trim(),
-        vendor: vendor.trim(),
-        project_id: projectId || "",
-      });
-      onSaved();
-    } catch (e) {
-      setErr(e.message || "Saqlab bo'lmadi.");
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="modal__wrap" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="modal__title">Xarajat qo'shish</h3>
-
-        <label className="fld">
-          <span>Summa</span>
-          <div className="fld__row">
-            <input
-              autoFocus
-              inputMode="numeric"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="12 000 000"
-            />
-            <div className="seg">
-              {["UZS", "USD", "RUB"].map((c) => (
-                <button
-                  key={c}
-                  className={currency === c ? "on" : ""}
-                  onClick={() => setCurrency(c)}
-                >
-                  {c === "UZS" ? "so'm" : c === "USD" ? "$" : "rub"}
-                </button>
-              ))}
-            </div>
-          </div>
-        </label>
-
-        <label className="fld">
-          <span>Nima olindi</span>
-          <input
-            value={item}
-            onChange={(e) => setItem(e.target.value)}
-            placeholder="masalan: tsement 20 qop"
-          />
-        </label>
-
-        <label className="fld">
-          <span>Sotuvchi (ixtiyoriy)</span>
-          <input value={vendor} onChange={(e) => setVendor(e.target.value)} />
-        </label>
-
-        <label className="fld">
-          <span>Loyiha</span>
-          <select
-            value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
-          >
-            <option value="">Loyihasiz</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {err && <div className="modal__err">{err}</div>}
-
-        <div className="modal__foot">
-          <button className="btn-ghost" onClick={onClose} disabled={busy}>
-            Bekor
-          </button>
-          <button className="btn-primary" onClick={save} disabled={busy}>
-            {busy ? "Saqlanmoqda…" : "Saqlash"}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -329,6 +227,7 @@ export default function Expenses({ flags = [], onChange }) {
       {adding && (
         <AddExpense
           projects={projects}
+          groups={data.projects || []}
           onClose={() => setAdding(false)}
           onSaved={() => {
             setAdding(false);
