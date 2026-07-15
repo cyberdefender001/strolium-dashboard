@@ -714,3 +714,26 @@ a { color: inherit; }
   border-radius:8px; width:100%; }
 .ttl__ontime { background:var(--good-bg); color:var(--good); border-radius:999px;
   padding:1px 7px; font-size:10.5px; font-weight:700; flex:none; }
+
+
+/* task drawer: fill the full height, a touch wider, slide from the right */
+.drawer-bg { position:fixed; inset:0; background:rgba(4,8,13,.55); z-index:900;
+  display:flex; justify-content:flex-end; }
+.tdet { max-height:none; height:100vh; max-width:560px; width:46vw; min-width:440px;
+  border-radius:0; border-right:none; border-top:none; border-bottom:none;
+  border-left:1px solid var(--line); box-shadow:-24px 0 60px rgba(0,0,0,.5);
+  overflow-y:auto; }
+
+/* photo lightbox -- opens in-page, not a new tab */
+.lb { position:fixed; inset:0; z-index:1200; background:rgba(4,8,13,.9);
+  display:flex; align-items:center; justify-content:center; padding:36px; }
+.lb img { max-width:92vw; max-height:92vh; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.6); }
+.lb__x { position:fixed; top:20px; right:24px; background:rgba(255,255,255,.1); border:none;
+  color:#fff; width:40px; height:40px; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; cursor:pointer; }
+.lb__x:hover { background:rgba(255,255,255,.2); }
+.tdet__photo { border:1px solid var(--line-soft); background:var(--ink); cursor:pointer;
+  padding:0; }
+.tdet__photo--gone { display:flex; align-items:center; justify-content:center; height:88px;
+  color:var(--faint); font-size:11px; }
+.tdet__photo--gone::after { content:"Rasm mavjud emas"; }

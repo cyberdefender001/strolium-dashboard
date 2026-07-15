@@ -95,6 +95,7 @@ export default function TaskDetail({ taskId, onClose, onChanged }) {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+  const [lightbox, setLightbox] = useState(null);   // photo opened full-size, in-page
 
   useEffect(() => {
     setT(null);
@@ -204,16 +205,22 @@ export default function TaskDetail({ taskId, onClose, onChanged }) {
                   {t.evidence.map((e, i) => {
                     if (e.kind === "photo")
                       return (
-                        <a
+                        <button
                           key={i}
                           className="tdet__photo"
-                          href={fileUrl(e.id)}
-                          target="_blank"
-                          rel="noreferrer"
+                          onClick={() => setLightbox(fileUrl(e.id))}
                         >
-                          <img src={fileUrl(e.id)} alt="" loading="lazy" />
+                          <img
+                            src={fileUrl(e.id)}
+                            alt=""
+                            loading="lazy"
+                            onError={(ev) => {
+                              ev.currentTarget.style.display = "none";
+                              ev.currentTarget.parentElement.classList.add("tdet__photo--gone");
+                            }}
+                          />
                           {e.caption && <span>{e.caption}</span>}
-                        </a>
+                        </button>
                       );
                     if (e.kind === "doc")
                       return (
@@ -315,6 +322,15 @@ export default function TaskDetail({ taskId, onClose, onChanged }) {
           </>
         )}
       </div>
+
+      {lightbox && (
+        <div className="lb" onClick={() => setLightbox(null)}>
+          <img src={lightbox} alt="" onClick={(e) => e.stopPropagation()} />
+          <button className="lb__x" onClick={() => setLightbox(null)}>
+            <X size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
