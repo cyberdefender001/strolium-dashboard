@@ -737,3 +737,35 @@ a { color: inherit; }
 .tdet__photo--gone { display:flex; align-items:center; justify-content:center; height:88px;
   color:var(--faint); font-size:11px; }
 .tdet__photo--gone::after { content:"Rasm mavjud emas"; }
+
+/* ---- Loyihalar ----------------------------------------------------------
+   The budget is the point: Pul nazorati compares every expense against it. A
+   project without one is a blind spot, and this screen says so out loud. */
+.pj-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+.pj { background:var(--panel); border:1px solid var(--line-soft); border-radius:var(--radius);
+  padding:16px 17px; }
+.pj--warn { border-color:#3A2E19; }
+.pj--bad { border-color:#3E2124; }
+.pj__top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.pj__name { font-family:var(--font-display); font-size:15.5px; font-weight:700; }
+.pj__addr { display:flex; align-items:center; gap:4px; color:var(--faint); font-size:11.5px;
+  margin-top:3px; }
+.pj__edit { background:none; border:1px solid var(--line-soft); border-radius:7px; padding:6px 8px;
+  color:var(--dim); cursor:pointer; }
+.pj__edit:hover { border-color:var(--brand-dim); color:var(--brand); }
+.pj__spent { font-family:var(--font-display); font-size:22px; font-weight:700; margin:12px 0 10px;
+  font-variant-numeric:tabular-nums; }
+.pj__spent span { color:var(--faint); font-size:12px; font-weight:500; }
+.pj__bar { height:6px; border-radius:3px; background:rgba(255,255,255,.07); overflow:hidden; }
+.pj__bar i { display:block; height:100%; background:var(--good); }
+.pj--warn .pj__bar i { background:var(--warn); }
+.pj--bad .pj__bar i { background:var(--danger); }
+.pj__meta { display:flex; justify-content:space-between; color:var(--faint); font-size:11.5px;
+  margin-top:7px; }
+.pj__meta b { font-family:var(--font-mono); }
+.pj--warn .pj__meta b { color:var(--warn); }
+.pj--bad .pj__meta b { color:var(--danger); }
+.pj__nobudget { color:var(--dim); font-size:12px; line-height:1.5; margin-top:4px; }
+.pj__nobudget button { display:block; margin-top:8px; background:rgba(77,141,240,.14);
+  border:1px solid var(--brand-dim); border-radius:8px; padding:7px 12px; color:var(--brand);
+  font:600 12px var(--font-body); cursor:pointer; }

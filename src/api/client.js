@@ -220,3 +220,21 @@ export function reportUrl(taskId, fmt) {
     authToken() || ""
   )}`;
 }
+
+// ---- Loyihalar (projects + budgets) ---------------------------------------
+// Same endpoints the Mini App uses. Budgets are what Pul nazorati compares
+// spending against -- a project without one is a blind spot.
+
+export async function createProject({ name, address, budget, start_date, end_date }) {
+  return call("/api/projects", {
+    method: "POST",
+    body: JSON.stringify({ name, address, budget, start_date, end_date }),
+  });
+}
+
+export async function setProjectBudget(pid, { budget, start_date, end_date }) {
+  return call(`/api/projects/${pid}/budget`, {
+    method: "POST",
+    body: JSON.stringify({ budget, start_date, end_date }),
+  });
+}
