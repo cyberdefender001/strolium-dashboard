@@ -16,6 +16,23 @@ const grp = (v) => {
 };
 const num = (v) => parseFloat(String(v).replace(/[^0-9.]/g, "")) || null;
 
+// Uzbekistan writes dates dd/mm/yyyy. The native date input follows the BROWSER's
+// locale (often mm/dd/yyyy) and forces a picker, so we use a text field: digits in,
+// slashes appear, manual typing welcome. Converted to ISO for the API.
+const dmy = (v) => {
+  const d = String(v).replace(/[^0-9]/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return d.slice(0, 2) + "/" + d.slice(2);
+  return d.slice(0, 2) + "/" + d.slice(2, 4) + "/" + d.slice(4);
+};
+const dmyToIso = (v) => {
+  const m = String(v).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  if (+mm < 1 || +mm > 12 || +dd < 1 || +dd > 31) return null;
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 function ProjectForm({ initial, onClose, onSaved }) {
   const editing = !!initial;
   const [name, setName] = useState(initial ? initial.project : "");
@@ -31,21 +48,23 @@ function ProjectForm({ initial, onClose, onSaved }) {
   const save = async () => {
     setErr("");
     if (!editing && name.trim().length < 2) return setErr("Loyiha nomini yozing.");
+    if ((start && !dmyToIso(start)) || (end && !dmyToIso(end)))
+      return setErr("Sanani kk/oo/yyyy ko'rinishida yozing.");
     setBusy(true);
     try {
       if (editing) {
         await setProjectBudget(initial.project_id, {
           budget: num(budget),
-          start_date: start || null,
-          end_date: end || null,
+          start_date: dmyToIso(start),
+          end_date: dmyToIso(end),
         });
       } else {
         await createProject({
           name: name.trim(),
           address: address.trim() || null,
           budget: num(budget),
-          start_date: start || null,
-          end_date: end || null,
+          start_date: dmyToIso(start),
+          end_date: dmyToIso(end),
         });
       }
       onSaved();
@@ -89,11 +108,13 @@ function ProjectForm({ initial, onClose, onSaved }) {
           <div className="axp__grid">
             <label className="fld">
               <span>Boshlanish</span>
-              <input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+              <input inputMode="numeric" placeholder="kk/oo/yyyy" value={start}
+                onChange={(e) => setStart(dmy(e.target.value))} />
             </label>
             <label className="fld">
               <span>Tugash</span>
-              <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
+              <input inputMode="numeric" placeholder="kk/oo/yyyy" value={end}
+                onChange={(e) => setEnd(dmy(e.target.value))} />
             </label>
           </div>
 
