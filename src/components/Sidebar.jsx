@@ -5,6 +5,7 @@ import {
   Receipt,
   ListChecks,
   FolderKanban,
+  Users,
   Building2,
   LogOut,
 } from "lucide-react";
@@ -16,6 +17,7 @@ const NAV = [
   { key: "tasks", label: "Vazifalar", icon: ListChecks, badgeKey: "review" },
   { key: "expenses", label: "Xarajatlar", icon: Receipt },
   { key: "projects", label: "Loyihalar", icon: FolderKanban },
+  { key: "team", label: "Jamoa", icon: Users },
   { key: "company", label: "Kompaniya", icon: Building2 },
 ];
 

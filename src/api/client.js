@@ -238,3 +238,36 @@ export async function setProjectBudget(pid, { budget, start_date, end_date }) {
     body: JSON.stringify({ budget, start_date, end_date }),
   });
 }
+
+// ---- Jamoa (team) ---------------------------------------------------------
+// Same endpoints and permission model as the Mini App: rename via manager,
+// remove via owner-only, invites are role + optional uses cap -> link + code.
+
+export async function getTeam() {
+  return call("/api/manager/team");
+}
+
+export async function createInvite(level, max_uses) {
+  return call("/api/manager/invite", {
+    method: "POST",
+    body: JSON.stringify({ level, max_uses: max_uses || null }),
+  });
+}
+
+export async function renameMember(member_id, name) {
+  return call("/api/manager/member/rename", {
+    method: "POST",
+    body: JSON.stringify({ member_id, name }),
+  });
+}
+
+export async function deleteMember(member_id) {
+  return call("/api/owner/member/delete", {
+    method: "POST",
+    body: JSON.stringify({ member_id }),
+  });
+}
+
+export async function getMe() {
+  return call("/api/me");
+}

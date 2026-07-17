@@ -12,6 +12,7 @@ import BrickLoader from "../components/BrickLoader.jsx";
 import Expenses from "./Expenses.jsx";
 import Tasks from "./Tasks.jsx";
 import ProjectsPage from "./Projects.jsx";
+import Team from "./Team.jsx";
 
 const TITLES = {
   alerts: "Belgilar",
@@ -79,6 +80,7 @@ export default function Dashboard({ user, onLogout }) {
       tasks: ["tasks"],
       expenses: ["expenses", "projects"],
       projects: ["expenses", "projects"],
+      team: ["members"],
       company: ["projects", "members"],
     };
 
@@ -195,6 +197,7 @@ export default function Dashboard({ user, onLogout }) {
           {nav === "money" && <MoneyControl data={data} onChange={load} />}
           {nav === "tasks" && <Tasks tick={tick} onChange={refresh} />}
           {nav === "projects" && <ProjectsPage tick={tick} onChange={refresh} />}
+          {nav === "team" && <Team tick={tick} onChange={refresh} />}
           {nav === "expenses" && (
             <Expenses flags={data.audit.flags} tick={tick} onChange={refresh} />
           )}
