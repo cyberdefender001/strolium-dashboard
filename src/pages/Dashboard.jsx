@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Calendar, Scale, FileText, Calculator, FolderKanban, Users } from "lucide-react";
-import { getDashboard, listDocs, listEstimates, getPulse, AuthExpired } from "../api/client";
+import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
 import { fmtSom } from "../lib/format";
 import Sidebar from "../components/Sidebar.jsx";
 import { KpiStrip } from "../components/KpiStrip.jsx";
@@ -13,11 +13,19 @@ import Expenses from "./Expenses.jsx";
 import Tasks from "./Tasks.jsx";
 import ProjectsPage from "./Projects.jsx";
 import Team from "./Team.jsx";
+import Admin from "./Admin.jsx";
 
+// Four of these were missing, so the topbar heading was blank on Vazifalar,
+// Xarajatlar, Loyihalar and Jamoa.
 const TITLES = {
   alerts: "Belgilar",
   money: "Pul nazorati",
+  tasks: "Vazifalar",
+  expenses: "Xarajatlar",
+  projects: "Loyihalar",
+  team: "Jamoa",
   company: "Kompaniya",
+  admin: "Boshqaruv",
 };
 
 export default function Dashboard({ user, onLogout }) {
@@ -25,6 +33,12 @@ export default function Dashboard({ user, onLogout }) {
   const [err, setErr] = useState("");
   const [nav, setNav] = useState("alerts");
   const [selected, setSelected] = useState(null);
+
+  // The login payload carries name/company/role but no owner flag -- that lives on
+  // /api/me, which is also where Jamoa gets it. One call, resolved once.
+  const [me, setMe] = useState(null);
+  useEffect(() => { getMe().then(setMe).catch(() => {}); }, []);
+  const isOwner = !!(me && me.owner);
 
   // The API no longer invents demo data when a call fails, so a failure has to be
   // shown honestly. An expired session logs the user out rather than leaving them
@@ -82,6 +96,12 @@ export default function Dashboard({ user, onLogout }) {
       projects: ["expenses", "projects"],
       team: ["members"],
       company: ["projects", "members"],
+      // Boshqaruv reads cross-company data that /api/pulse does not fingerprint,
+      // and a silent reload mid-approval would wipe an open days input. It
+      // refreshes on its own actions instead. An empty list is REQUIRED, not
+      // cosmetic: a nav key missing here makes want.includes() throw on the next
+      // pulse change and kills the poller for the whole session.
+      admin: [],
     };
 
     const check = async () => {
@@ -161,6 +181,7 @@ export default function Dashboard({ user, onLogout }) {
         onNav={setNav}
         user={user}
         openFlags={data.audit.flags.length}
+        isOwner={isOwner}
         onLogout={onLogout}
       />
 
@@ -202,6 +223,7 @@ export default function Dashboard({ user, onLogout }) {
             <Expenses flags={data.audit.flags} tick={tick} onChange={refresh} />
           )}
           {nav === "company" && <Company data={data} />}
+          {nav === "admin" && isOwner && <Admin />}
         </div>
       </main>
 

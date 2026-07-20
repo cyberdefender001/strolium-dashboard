@@ -7,6 +7,7 @@ import {
   FolderKanban,
   Users,
   Building2,
+  SlidersHorizontal,
   LogOut,
 } from "lucide-react";
 import { initials } from "../lib/format";
@@ -21,7 +22,11 @@ const NAV = [
   { key: "company", label: "Kompaniya", icon: Building2 },
 ];
 
-export default function Sidebar({ active, onNav, user, openFlags, onLogout }) {
+// Boshqaruv is owner-only and sits below a divider: it is not part of running a
+// company, it is running the PRODUCT. The check here is convenience -- every
+// /api/owner/* endpoint enforces _require_owner server-side, so hiding the item
+// is not what keeps a manager out.
+export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout }) {
   return (
     <aside className="side">
       <div className="side__brand">
@@ -53,6 +58,16 @@ export default function Sidebar({ active, onNav, user, openFlags, onLogout }) {
             </button>
           );
         })}
+        {isOwner && (
+          <button
+            className={"navitem" + (active === "admin" ? " active" : "")}
+            onClick={() => onNav("admin")}
+            style={{ marginTop: 10 }}
+          >
+            <SlidersHorizontal size={17} />
+            Boshqaruv
+          </button>
+        )}
       </nav>
 
       <div className="side__foot">

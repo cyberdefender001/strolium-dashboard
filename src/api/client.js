@@ -271,3 +271,73 @@ export async function deleteMember(member_id) {
 export async function getMe() {
   return call("/api/me");
 }
+
+// ---- Boshqaruv (owner console) -------------------------------------------
+// Cross-company administration. Every one of these endpoints already accepted a
+// web Bearer session -- get_current_member resolves initData and session tokens to
+// the same member -- so the browser console is the SAME console as the Mini App's,
+// not a parallel one that can drift. _require_owner enforces the owner check
+// server-side; hiding the nav item is convenience, not security.
+
+export async function ownerOverview() {
+  return call("/api/owner/overview");
+}
+
+export async function ownerCompany(orgId) {
+  return call(`/api/owner/company/${orgId}`);
+}
+
+// days = the paid period being granted. Server floors it at 30 if absent.
+export async function activateOrg(org_id, days) {
+  return call("/api/owner/org/activate", {
+    method: "POST",
+    body: JSON.stringify({ org_id, days }),
+  });
+}
+
+export async function ownerRequests() {
+  return call("/api/owner/requests");
+}
+
+// trial_days is a per-company override. Omitting it makes the server fall back to
+// app_settings['trial'] -- which is exactly what default_trial_days reports, so the
+// input can be pre-filled with the truth instead of a hardcoded guess.
+export async function approveRequest(id, trial_days) {
+  return call("/api/owner/request/approve", {
+    method: "POST",
+    body: JSON.stringify({ id, trial_days: trial_days || null }),
+  });
+}
+
+export async function rejectRequest(id) {
+  return call("/api/owner/request/reject", {
+    method: "POST",
+    body: JSON.stringify({ id }),
+  });
+}
+
+export async function getPricing() {
+  const d = await call("/api/owner/pricing");
+  return (d && d.pricing) || null;
+}
+
+export async function savePricing(pricing) {
+  return call("/api/owner/pricing", {
+    method: "POST",
+    body: JSON.stringify(pricing),
+  });
+}
+
+export async function ownerRenameMember(member_id, name) {
+  return call("/api/owner/member/rename", {
+    method: "POST",
+    body: JSON.stringify({ member_id, name }),
+  });
+}
+
+export async function setMemberStatus(member_id, status) {
+  return call("/api/owner/member/status", {
+    method: "POST",
+    body: JSON.stringify({ member_id, status }),
+  });
+}

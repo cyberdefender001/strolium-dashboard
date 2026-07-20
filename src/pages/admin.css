@@ -1,0 +1,248 @@
+/* Boshqaruv -- scoped to .adm so it cannot collide with the global sheet.
+   Colours are the product's existing status palette (the same hexes the task
+   spine and the Mini App plan cards use); everything structural inherits the
+   surrounding theme via transparent backgrounds and neutral rgba borders, so
+   this file does not need to know whether the shell is dark or light. */
+
+.adm__tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 18px;
+  flex-wrap: wrap;
+}
+.adm__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 149, 161, 0.28);
+  background: transparent;
+  color: inherit;
+  font: 600 12.5px/1 inherit;
+  cursor: pointer;
+  opacity: 0.72;
+}
+.adm__tab:hover { opacity: 1; }
+.adm__tab.on {
+  opacity: 1;
+  border-color: rgba(76, 141, 255, 0.65);
+  background: rgba(76, 141, 255, 0.12);
+}
+.adm__tab .n {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(139, 149, 161, 0.22);
+}
+.adm__tab .n.hot { background: #f2555a; color: #fff; }
+
+/* --- totals strip --- */
+.adm__totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.adm__tot {
+  border: 1px solid rgba(139, 149, 161, 0.22);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.adm__tot b { display: block; font-size: 21px; line-height: 1.1; font-weight: 700; }
+.adm__tot span { font-size: 11.5px; opacity: 0.62; }
+
+/* --- pills --- */
+.adm__pill {
+  display: inline-block;
+  font: 600 11px/1 inherit;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.adm__pill--trial { color: #f4a52a; }
+.adm__pill--paid { color: #2fb67c; }
+.adm__pill--dead { color: #e05252; }
+
+/* --- companies table --- */
+.adm__row {
+  display: grid;
+  grid-template-columns: 1fr 132px 150px 128px;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(139, 149, 161, 0.16);
+  cursor: pointer;
+}
+.adm__row:last-child { border-bottom: 0; }
+.adm__row:hover { background: rgba(139, 149, 161, 0.07); }
+.adm__row--head {
+  cursor: default;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.5;
+}
+.adm__row--head:hover { background: transparent; }
+.adm__cname { font-weight: 600; }
+.adm__cmeta { font-size: 11.5px; opacity: 0.6; margin-top: 2px; }
+.adm__num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* --- request card --- */
+.adm__req {
+  border: 1px solid rgba(139, 149, 161, 0.22);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.adm__reqtop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.adm__who { font-weight: 600; }
+.adm__st { font: 600 11px/1 inherit; padding: 4px 10px; border-radius: 999px; border: 1px solid currentColor; }
+.adm__st--new { color: #4c8dff; }
+.adm__st--approved { color: #2fb67c; }
+.adm__st--rejected { color: #e05252; }
+.adm__kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 5px 0;
+  font-size: 12.5px;
+  border-top: 1px dashed rgba(139, 149, 161, 0.18);
+}
+.adm__kv span { opacity: 0.6; }
+.adm__msg {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(139, 149, 161, 0.1);
+  font-size: 12.5px;
+  white-space: pre-wrap;
+}
+.adm__acts { display: flex; gap: 8px; justify-content: flex-end; align-items: center; margin-top: 14px; }
+.adm__days {
+  width: 74px;
+  padding: 8px 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(76, 141, 255, 0.6);
+  background: transparent;
+  color: inherit;
+  font: 600 13px inherit;
+  text-align: center;
+}
+.adm__link {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(47, 182, 124, 0.4);
+  font-size: 12px;
+}
+.adm__link input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(139, 149, 161, 0.28);
+  background: transparent;
+  color: inherit;
+  font: 500 12px monospace;
+}
+
+/* --- company detail --- */
+.adm__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  font: 600 12.5px inherit;
+  padding: 0;
+  margin-bottom: 14px;
+}
+.adm__back:hover { opacity: 1; }
+.adm__plan {
+  border: 1px solid rgba(139, 149, 161, 0.24);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.adm__planstate { font: 600 14px inherit; }
+.adm__planhint { font-size: 11.5px; opacity: 0.6; margin-top: 3px; }
+.adm__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.adm__sec { font: 600 11px inherit; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.5; margin: 20px 0 9px; }
+.adm__priv {
+  border: 1px dashed rgba(139, 149, 161, 0.32);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 12.5px;
+  opacity: 0.75;
+}
+.adm__m {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(139, 149, 161, 0.14);
+}
+.adm__m:last-child { border-bottom: 0; }
+.adm__m.off { opacity: 0.45; }
+.adm__mname { font-weight: 600; font-size: 13px; }
+.adm__mrole { font-size: 11.5px; opacity: 0.6; }
+.adm__macts { margin-left: auto; display: flex; gap: 6px; }
+.adm__rename { display: flex; gap: 6px; align-items: center; flex: 1; }
+.adm__rename input {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(139, 149, 161, 0.32);
+  background: transparent;
+  color: inherit;
+  font: 500 13px inherit;
+}
+
+/* --- pricing editor --- */
+.adm__tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.adm__tier {
+  border: 1px solid rgba(139, 149, 161, 0.24);
+  border-radius: 14px;
+  padding: 16px;
+}
+.adm__tier h4 { margin: 0 0 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.55; }
+.adm__f { display: block; margin-bottom: 10px; }
+.adm__f span { display: block; font-size: 11.5px; opacity: 0.6; margin-bottom: 5px; }
+.adm__f input {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(139, 149, 161, 0.3);
+  background: transparent;
+  color: inherit;
+  font: 500 13px inherit;
+}
+.adm__save { display: flex; gap: 10px; align-items: center; margin-top: 18px; }
+.adm__err { color: #e05252; font-size: 12.5px; }
+.adm__ok { color: #2fb67c; font-size: 12.5px; }
