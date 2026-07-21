@@ -187,7 +187,7 @@ export default function Login({ onLogin }) {
           </div>
 
           <div className="login__demo">
-            Jamoa a'zosimisiz? Rahbaringiz yuborgan taklif havolasi orqali
+            Jamoa a'zosimisiz? Sizga yuborilgan taklif havolasi orqali
             qo'shiling — keyin shu yerdan kirasiz.
           </div>
         </div>
