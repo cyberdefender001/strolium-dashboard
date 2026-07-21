@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ShieldCheck } from "lucide-react";
-import { loginWithTelegram } from "../auth";
+import { ShieldCheck, Smartphone } from "lucide-react";
+import { loginWithTelegram, requestLoginCode, pollLoginCode } from "../auth";
 import { TG_BOT } from "../config";
 
 // Telegram Login Widget.
@@ -17,6 +17,56 @@ export default function Login({ onLogin }) {
   const holder = useRef(null);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Phone login -- for shared computers, where the widget's telegram.org
+  // cookie keeps the FIRST person logged in forever. phase: idle -> waiting.
+  const [phone, setPhone] = useState({ phase: "idle", link: "" });
+  const pollRef = useRef(null);
+
+  const stopPoll = () => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = null;
+  };
+  useEffect(() => stopPoll, []);
+
+  const startPhoneLogin = async () => {
+    setErr("");
+    stopPoll();
+    try {
+      const code = await requestLoginCode();
+      const link = `https://t.me/${TG_BOT}?start=weblogin_${code}`;
+      setPhone({ phase: "waiting", link });
+      window.open(link, "_blank", "noopener");
+      const started = Date.now();
+      pollRef.current = setInterval(async () => {
+        if (Date.now() - started > 5 * 60 * 1000) {
+          stopPoll();
+          setPhone({ phase: "idle", link: "" });
+          setErr("Vaqt tugadi — qaytadan urinib ko'ring.");
+          return;
+        }
+        try {
+          const r = await pollLoginCode(code);
+          if (r.status === "ok") {
+            stopPoll();
+            onLogin(r.user);
+          } else if (r.status === "expired") {
+            stopPoll();
+            setPhone({ phase: "idle", link: "" });
+            setErr("Havola eskirdi — qaytadan urinib ko'ring.");
+          } else if (r.status === "error") {
+            stopPoll();
+            setPhone({ phase: "idle", link: "" });
+            setErr(r.detail || "Kirishda xatolik.");
+          }
+        } catch {
+          /* transient network hiccup -- keep polling until the deadline */
+        }
+      }, 2000);
+    } catch (e) {
+      setErr(e.message || "Kirishda xatolik.");
+    }
+  };
 
   useEffect(() => {
     window.onTelegramAuth = async (tgUser) => {
@@ -89,6 +139,28 @@ export default function Login({ onLogin }) {
           <p className="hint">Telegram akkauntingiz bilan kiring</p>
 
           <div ref={holder} style={{ margin: "22px 0 6px" }} />
+
+          <div className="login__or">yoki</div>
+
+          {phone.phase === "idle" ? (
+            <button className="login__phone" onClick={startPhoneLogin}>
+              <Smartphone size={15} /> Telefondagi Telegram orqali kirish
+            </button>
+          ) : (
+            <div className="login__phonewait">
+              <p className="hint">
+                Telefoningizda Telegram ochildi — botda <b>Start</b> bosing.
+                Tasdiqlangach bu sahifa o'zi ochiladi…
+              </p>
+              <a href={phone.link} target="_blank" rel="noreferrer">
+                Havola ochilmadimi? Shu yerni bosing
+              </a>
+            </div>
+          )}
+          <p className="hint login__sharednote">
+            Umumiy kompyuterdami? Telefon orqali kiring — har kim o'z
+            akkauntidan kiradi.
+          </p>
 
           {busy && <p className="hint">Tekshirilmoqda…</p>}
           <p className="login__err">{err}</p>

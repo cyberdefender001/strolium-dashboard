@@ -122,6 +122,26 @@ a { color: inherit; }
 }
 .login__demo code { font-family: var(--font-mono); color: var(--brand); }
 
+/* phone login (shared computers) */
+.login__or {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--faint); font-size: 12px; margin: 14px 0 12px;
+}
+.login__or::before, .login__or::after {
+  content: ""; flex: 1; height: 1px; background: var(--line);
+}
+.login__phone {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 11px 14px; border-radius: 10px; cursor: pointer;
+  background: transparent; border: 1px solid var(--line); color: var(--text);
+  font: 600 13.5px var(--font-body, inherit);
+}
+.login__phone:hover { border-color: var(--brand); color: var(--brand); }
+.login__phonewait { border: 1px dashed var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.login__phonewait .hint { margin: 0 0 8px; }
+.login__phonewait a { color: var(--brand); font-size: 12.5px; }
+.login__sharednote { margin-top: 12px; }
+
 /* ---------- App shell ---------- */
 .shell { display: grid; grid-template-columns: 232px 1fr; height: 100%; }
 
