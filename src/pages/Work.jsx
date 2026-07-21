@@ -478,7 +478,13 @@ export default function Work({ user, onLogout }) {
               <button
                 key={item.key}
                 className={"navitem" + (nav === item.key ? " active" : "")}
-                onClick={() => setNav(item.key)}
+                onClick={() => {
+                  setNav(item.key);
+                  // Vazifalarim in the sidebar means "show me my tasks" -- ALL of
+                  // them, not the last filter I happened to leave on. Clicking it
+                  // clears any status filter, same as tapping the active stat card.
+                  if (item.key === "tasks") setFilter("all");
+                }}
               >
                 <Icon size={17} />
                 {item.label}
