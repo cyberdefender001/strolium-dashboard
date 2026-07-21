@@ -32,13 +32,28 @@ async function call(path, opts = {}) {
   }
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
-    throw new Error(e.detail || `Xatolik (${r.status})`);
+    const err = new Error(e.detail || `Xatolik (${r.status})`);
+    err.status = r.status;
+    throw err;
   }
   return r.json();
 }
 
 export async function getDashboard() {
-  const real = await call("/api/web/dashboard");
+  // 403 here means this ACCOUNT cannot use the panel at all (field workers --
+  // the backend now enforces manager+ on /api/web/*), not that one request
+  // failed. Keeping the session would trap the user on an error screen with no
+  // way out, so drop it and surface the server's explanation on the login page.
+  let real;
+  try {
+    real = await call("/api/web/dashboard");
+  } catch (e) {
+    if (e && e.status === 403) {
+      logout();
+      throw new AuthExpired(e.message);
+    }
+    throw e;
+  }
   const a = real.audit || {};
   return {
     org: real.org,
@@ -270,6 +285,49 @@ export async function deleteMember(member_id) {
 
 export async function getMe() {
   return call("/api/me");
+}
+
+// ---- Ishchi (worker view) -------------------------------------------------
+// The SAME /api/worker/* endpoints the Mini App's mywork page uses -- every one
+// is scoped server-side to the assigned worker (task.assigned_to must match),
+// so a worker can only ever see and touch their own tasks. No web fork.
+
+export async function getWorkerBoard() {
+  return call("/api/worker/board");
+}
+
+export async function getWorkerTask(id) {
+  return call(`/api/worker/task/${id}`);
+}
+
+// data = base64 (dataURL accepted -- the backend strips the prefix)
+export async function workerAddPhoto(taskId, data, caption) {
+  return call(`/api/worker/task/${taskId}/photo`, {
+    method: "POST",
+    body: JSON.stringify({ data, mime: "image/jpeg", caption: caption || null }),
+  });
+}
+
+export async function workerAddDocument(taskId, data, mime, name) {
+  return call(`/api/worker/task/${taskId}/document`, {
+    method: "POST",
+    body: JSON.stringify({ data, mime: mime || "application/octet-stream", name }),
+  });
+}
+
+export async function workerAddNote(taskId, text) {
+  return call(`/api/worker/task/${taskId}/note`, {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  });
+}
+
+export async function workerDeleteAttachment(id) {
+  return call(`/api/worker/attachment/${id}`, { method: "DELETE" });
+}
+
+export async function workerSubmit(taskId) {
+  return call(`/api/worker/task/${taskId}/submit`, { method: "POST" });
 }
 
 // ---- Boshqaruv (owner console) -------------------------------------------
