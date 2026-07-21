@@ -165,9 +165,30 @@ export default function Login({ onLogin }) {
           {busy && <p className="hint">Tekshirilmoqda…</p>}
           <p className="login__err">{err}</p>
 
+          {/* Prospect CTA -- the deck prints this URL, so a potential BUYER
+              lands here. Without this block the page only spoke to existing
+              members ("your boss must add you"), which reads as "go away" to
+              the person holding the money. Signup lives in the bot; send them
+              there, with the trial promise the deck makes. */}
+          <div className="login__cta">
+            <div className="login__cta-title">Strolium'ni sinab ko'rmoqchimisiz?</div>
+            <div className="login__cta-sub">
+              So'rov qoldiring — <b>14 kun bepul</b>, karta kerak emas,
+              bugun ishga tushadi.
+            </div>
+            <a
+              className="login__cta-btn"
+              href={`https://t.me/${TG_BOT}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              @{TG_BOT} orqali boshlash
+            </a>
+          </div>
+
           <div className="login__demo">
-            Strolium'dan foydalanish uchun kompaniyangiz rahbari sizni tizimga
-            qo'shgan bo'lishi kerak.
+            Jamoa a'zosimisiz? Rahbaringiz yuborgan taklif havolasi orqali
+            qo'shiling — keyin shu yerdan kirasiz.
           </div>
         </div>
       </div>
