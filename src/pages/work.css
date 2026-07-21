@@ -155,3 +155,38 @@
 .wk__tllabel .good { color: #2fb67c; }
 .wk__tllabel .bad { color: #f2555a; }
 .wk__tlat { opacity: 0.55; white-space: nowrap; }
+
+/* --- tabs + Xarajat form --- */
+.wk__tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.wk__tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 15px; border-radius: 999px;
+  border: 1px solid rgba(139, 149, 161, 0.28);
+  background: transparent; color: inherit;
+  font: 600 13px inherit; cursor: pointer; opacity: 0.7;
+}
+.wk__tab:hover { opacity: 1; }
+.wk__tab.on {
+  opacity: 1;
+  border-color: rgba(76, 141, 255, 0.65);
+  background: rgba(76, 141, 255, 0.12);
+}
+
+.wk__f { display: block; margin-bottom: 12px; }
+.wk__f > span { display: block; font-size: 11.5px; opacity: 0.6; margin-bottom: 5px; }
+.wk__f input, .wk__f select, .wk__f textarea {
+  width: 100%; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(139, 149, 161, 0.3);
+  background: transparent; color: inherit; font: 500 13.5px inherit;
+  box-sizing: border-box;
+}
+.wk__f textarea { resize: vertical; }
+.wk__amt { display: flex; gap: 8px; }
+.wk__amt input { flex: 1; }
+.wk__amt select { width: 86px; flex: none; }
+.wk__receipt {
+  display: block; max-width: 240px; max-height: 240px;
+  border-radius: 10px; margin-top: 10px;
+  border: 1px solid rgba(139, 149, 161, 0.2);
+}
+.wk__ok { margin-top: 10px; color: #2fb67c; font-size: 12.5px; }

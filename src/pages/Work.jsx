@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   ShieldCheck, LogOut, ChevronLeft, ImagePlus, Paperclip,
-  Send, X, FileText, Clock,
+  Send, X, FileText, Clock, ListChecks, Wallet, ScanLine,
 } from "lucide-react";
 import {
   getWorkerBoard, getWorkerTask, workerAddPhoto, workerAddDocument,
   workerAddNote, workerDeleteAttachment, workerSubmit, fileUrl,
+  addExpense, listProjects, scanReceipt,
 } from "../api/client";
 import { initials } from "../lib/format";
 import BrickLoader from "../components/BrickLoader.jsx";
@@ -349,10 +350,155 @@ function Detail({ taskId, onBack, onChanged }) {
   );
 }
 
+// Xarajat -- the worker expense form, capability-parity with the Mini App's
+// spend tab: amount + currency, nima olindi (textarea), vendor, project pick,
+// optional receipt photo with OCR prefill (Skanerlash -> /api/expense/scan,
+// which soft-fails to zeros so typing in is always possible). Posts to the SAME
+// /api/expense as the boss form -- deliberately open to field workers, because
+// Pul nazorati's money data comes from the site.
+const grp = (v) => {
+  const d = String(v).replace(/[^0-9]/g, "");
+  return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, " ") : "";
+};
+
+function Spend() {
+  const [projects, setProjects] = useState([]);
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("UZS");
+  const [item, setItem] = useState("");
+  const [vendor, setVendor] = useState("");
+  const [projectId, setProjectId] = useState("");
+  const [receipt, setReceipt] = useState(null); // {dataUrl}
+  const [scanning, setScanning] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [ok, setOk] = useState("");
+
+  useEffect(() => {
+    listProjects().then(setProjects).catch(() => {});
+  }, []);
+
+  const onReceipt = async (e) => {
+    const f = (e.target.files || [])[0];
+    e.target.value = "";
+    if (!f) return;
+    setErr(""); setOk("");
+    try {
+      const dataUrl = await downscale(f);
+      setReceipt({ dataUrl });
+      // OCR prefill -- only fill fields the worker has not already typed.
+      setScanning(true);
+      const r = await scanReceipt(dataUrl);
+      setScanning(false);
+      if (r && r.ok) {
+        if (r.amount > 0 && !amount) setAmount(grp(r.amount));
+        if (r.currency && ["UZS", "USD", "RUB"].includes(r.currency)) setCurrency(r.currency);
+        if (r.item && !item) setItem(r.item);
+        if (r.vendor && !vendor) setVendor(r.vendor);
+      }
+    } catch (ex) {
+      setScanning(false);
+      setErr(ex.message || "Rasmni o'qib bo'lmadi.");
+    }
+  };
+
+  const save = async () => {
+    setErr(""); setOk("");
+    const amt = parseFloat(String(amount).replace(/[^0-9.]/g, ""));
+    if (!(amt > 0)) return setErr("Summani yozing.");
+    if (!item.trim()) return setErr("Nima olindi — yozing.");
+    setBusy(true);
+    try {
+      const pj = projects.find((p) => p.id === projectId);
+      await addExpense({
+        amount: amt,
+        currency,
+        item: item.trim(),
+        vendor: vendor.trim() || null,
+        project_id: projectId || null,
+        project: pj ? pj.name : null,
+        image: receipt ? receipt.dataUrl : null,
+        mime: "image/jpeg",
+      });
+      setOk("Xarajat saqlandi.");
+      setAmount(""); setItem(""); setVendor(""); setProjectId(""); setReceipt(null);
+    } catch (ex) {
+      setErr(ex.message || "Saqlab bo'lmadi.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <h2 className="wk__h">Xarajat</h2>
+
+      <label className="wk__f">
+        <span>Summa</span>
+        <div className="wk__amt">
+          <input
+            inputMode="numeric"
+            value={amount}
+            onChange={(e) => setAmount(grp(e.target.value))}
+            placeholder="masalan: 2 500 000"
+          />
+          <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+            <option>UZS</option><option>USD</option><option>RUB</option>
+          </select>
+        </div>
+      </label>
+
+      <label className="wk__f">
+        <span>Nima olindi</span>
+        <textarea
+          rows={2}
+          value={item}
+          onChange={(e) => setItem(e.target.value)}
+          placeholder="masalan: 50 qop sement"
+        />
+      </label>
+
+      <label className="wk__f">
+        <span>Sotuvchi (ixtiyoriy)</span>
+        <input value={vendor} onChange={(e) => setVendor(e.target.value)} placeholder="masalan: BetonStroy" />
+      </label>
+
+      <label className="wk__f">
+        <span>Loyiha</span>
+        <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+          <option value="">Tanlanmagan</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+      </label>
+
+      <div className="wk__adders">
+        <label className="btn-ghost wk__add" htmlFor="wkreceipt">
+          <ScanLine size={15} /> {receipt ? "Boshqa chek" : "Chek rasmi"}
+        </label>
+        <input id="wkreceipt" type="file" accept="image/*" hidden onChange={onReceipt} />
+        {scanning && <span className="wk__up">O'qilmoqda…</span>}
+      </div>
+      {receipt && <img className="wk__receipt" src={receipt.dataUrl} alt="chek" />}
+
+      {err && <div className="wk__err">{err}</div>}
+      {ok && <div className="wk__ok">{ok}</div>}
+
+      <div className="wk__submitbar">
+        <button className="btn-primary wk__submit" disabled={busy || scanning} onClick={save}>
+          {busy ? "Saqlanmoqda…" : "Saqlash"}
+        </button>
+      </div>
+    </>
+  );
+}
+
 export default function Work({ user, onLogout }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [open, setOpen] = useState(null);
+  const [tab, setTab] = useState("tasks"); // tasks | spend -- same two tabs as the Mini App
 
   const load = useCallback(() => {
     setErr("");
@@ -381,7 +527,24 @@ export default function Work({ user, onLogout }) {
       </header>
 
       <main className="wk__main">
-        {open ? (
+        <nav className="wk__tabs">
+          <button
+            className={"wk__tab" + (tab === "tasks" ? " on" : "")}
+            onClick={() => { setTab("tasks"); setOpen(null); }}
+          >
+            <ListChecks size={15} /> Vazifalarim
+          </button>
+          <button
+            className={"wk__tab" + (tab === "spend" ? " on" : "")}
+            onClick={() => { setTab("spend"); setOpen(null); }}
+          >
+            <Wallet size={15} /> Xarajat
+          </button>
+        </nav>
+
+        {tab === "spend" ? (
+          <Spend />
+        ) : open ? (
           <Detail taskId={open} onBack={() => setOpen(null)} onChanged={load} />
         ) : err ? (
           <div className="section-empty">

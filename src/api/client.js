@@ -330,6 +330,15 @@ export async function workerSubmit(taskId) {
   return call(`/api/worker/task/${taskId}/submit`, { method: "POST" });
 }
 
+// Receipt OCR -- same endpoint the Mini App's Xarajat form uses. Soft-fails on
+// the server (returns zeros) so the worker can always type the numbers in.
+export async function scanReceipt(imageB64, mime = "image/jpeg") {
+  return call("/api/expense/scan", {
+    method: "POST",
+    body: JSON.stringify({ image: imageB64, mime }),
+  });
+}
+
 // ---- Boshqaruv (owner console) -------------------------------------------
 // Cross-company administration. Every one of these endpoints already accepted a
 // web Bearer session -- get_current_member resolves initData and session tokens to
