@@ -1,39 +1,44 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
-  ShieldCheck, LogOut, ChevronLeft, ImagePlus, Paperclip,
-  Send, X, FileText, Clock, ListChecks, Wallet, ScanLine,
+  ShieldCheck, LogOut, ListChecks, Wallet, Calendar, Clock, X,
+  ImagePlus, Paperclip, Send, FileText, MessageSquare, Plus, Check,
 } from "lucide-react";
 import {
   getWorkerBoard, getWorkerTask, workerAddPhoto, workerAddDocument,
-  workerAddNote, workerDeleteAttachment, workerSubmit, fileUrl,
-  addExpense, listProjects, scanReceipt,
+  workerAddNote, workerDeleteAttachment, workerSubmit, listProjects, fileUrl,
 } from "../api/client";
 import { initials } from "../lib/format";
 import BrickLoader from "../components/BrickLoader.jsx";
+import AddExpense from "../components/AddExpense.jsx";
 import "./work.css";
 
-// Ishchi view -- the web twin of the Mini App's mywork page.
+// Ishchi (worker) view -- the SAME design as the boss web, by construction:
+// the shell (.shell/.side/.main/.topbar/.content), the stat cards (.tstats),
+// the task table (.xtable.ttable), the task drawer (.tdet), the lightbox (.lb)
+// and the expense modal are all the boss design's own classes and components.
+// Nothing here is styled from scratch; work.css only adds the few affordances
+// that have no boss equivalent (delete-evidence x, add-evidence row, submit).
 //
-// Same principle as the Mini App: a worker sees ONLY what they can act on --
-// their own tasks, their own evidence, one Yuborish button. No org financials,
-// no other people's work, no dead menu items. The backend guarantees it (every
-// /api/worker/* endpoint checks task.assigned_to server-side); this page just
-// refuses to pretend otherwise.
-//
-// Capability parity with the Mini App: task list with status/deadline tones,
-// task detail with description, voice-task audio, rejection feedback, Tarix
-// timeline, chronological evidence (photos/docs/notes), add photo (multi-select,
-// client-side canvas downscale ~1600px JPEG 0.82 -- bug #3, Railway body limit),
-// add document, add note, delete evidence, submit with confirmation.
+// What a worker sees is ONLY what a worker can act on -- their tasks and the
+// Xarajat form -- mirroring the Mini App's two tabs. Enforced server-side:
+// /api/worker/* checks task.assigned_to; /api/web/* answers managers+ only.
 
 const SPINE = {
   open: "#4C8DFF", submitted: "#F4A52A", rejected: "#F2555A",
   on_hold: "#8B95A1", approved: "#2FB67C", cancelled: "#566273",
 };
 
-// Bug #3 from the Mini App era, replicated deliberately: full-resolution phone
-// photos blow past Railway's request-body limit ("upstream error"), and base64
-// inflates by ~33%. Downscale on the client before upload, always.
+const _MONTHS_UZ = [
+  "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
+  "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr",
+];
+const monthUz = () => {
+  const d = new Date();
+  return `${_MONTHS_UZ[d.getMonth()]} ${d.getFullYear()}`;
+};
+
+// Bug #3, replicated deliberately: full-resolution photos blow past Railway's
+// body limit and base64 inflates ~33%. Downscale client-side, always.
 function downscale(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -70,29 +75,28 @@ function readAsDataURL(file) {
   });
 }
 
-const TL_LABEL = {
-  created: "Yaratildi",
-  submitted: "Yuborildi",
-  resubmitted: "Qayta yuborildi",
-  approved: "Tasdiqlandi",
-  rejected: "Rad etildi",
-};
-const TL_TONE = {
-  created: "muted", submitted: "warn", resubmitted: "warn",
-  approved: "good", rejected: "bad",
+const TL = {
+  created: ["Yaratildi", Plus, ""],
+  submitted: ["Yuborildi", Send, "submitted"],
+  resubmitted: ["Qayta yuborildi", Send, "resubmitted"],
+  approved: ["Tasdiqlandi", Check, "approved"],
+  rejected: ["Rad etildi", X, "rejected"],
 };
 
-function Detail({ taskId, onBack, onChanged }) {
-  const [d, setD] = useState(null);
+/* ---------------- task drawer (same .tdet drawer the boss uses) ------------ */
+
+function WorkerTaskDetail({ taskId, onClose, onChanged }) {
+  const [t, setT] = useState(null);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [uploading, setUploading] = useState(0);
   const [confirming, setConfirming] = useState(false);
-  const [uploading, setUploading] = useState(0); // files in flight
+  const [lightbox, setLightbox] = useState(null);
 
   const load = useCallback(() => {
     setErr("");
-    getWorkerTask(taskId).then(setD).catch((e) => setErr(e.message || "Yuklab bo'lmadi."));
+    getWorkerTask(taskId).then(setT).catch((e) => setErr(e.message || "Yuklab bo'lmadi."));
   }, [taskId]);
 
   useEffect(() => { load(); }, [load]);
@@ -104,8 +108,7 @@ function Detail({ taskId, onBack, onChanged }) {
     setErr("");
     setUploading(files.length);
     try {
-      // Sequential, not parallel: keeps created_at order = the order the worker
-      // picked them, which is the order the evidence list and the Word report use.
+      // Sequential: created_at order = pick order = report order.
       for (const f of files) {
         const dataUrl = await downscale(f);
         await workerAddPhoto(taskId, dataUrl);
@@ -171,9 +174,8 @@ function Detail({ taskId, onBack, onChanged }) {
       await workerSubmit(taskId);
       setConfirming(false);
       onChanged();
-      onBack();
+      onClose();
     } catch (ex) {
-      // 400 "empty" -> nothing collected; 409 "locked" -> status changed meanwhile
       setErr(
         ex.message === "empty"
           ? "Hali hech narsa qo'shilmagan — avval rasm yoki izoh qo'shing."
@@ -185,320 +187,252 @@ function Detail({ taskId, onBack, onChanged }) {
     }
   };
 
-  if (err && !d)
-    return (
-      <div className="section-empty">
-        {err} <button className="btn-ghost" onClick={load}>Qayta urinish</button>
-      </div>
-    );
-  if (!d) return <BrickLoader label="Yuklanmoqda" />;
-
-  const evidence = d.evidence || [];
-
   return (
-    <>
-      <button className="wk__back" onClick={onBack}>
-        <ChevronLeft size={15} /> Vazifalarim
-      </button>
+    <div className="drawer-bg" onClick={onClose}>
+      <div className="tdet" onClick={(e) => e.stopPropagation()}>
+        {!t && !err && <BrickLoader label="Yuklanmoqda" />}
+        {err && !t && <div className="section-empty">{err}</div>}
 
-      <div className="wk__dhead">
-        <div className="wk__dnum" style={{ color: SPINE[d.status] }}>
-          #{String(d.number).padStart(2, "0")}
-        </div>
-        <div className="wk__dtitle">{d.title}</div>
-        <span className="wk__badge" style={{ color: SPINE[d.status] }}>
-          <i style={{ background: SPINE[d.status] }} /> {d.status_label}
-        </span>
-      </div>
-
-      {d.deadline && (
-        <div className="wk__meta">
-          <Clock size={12} /> Muddat: <b>{d.deadline}</b>
-          {d.submitted_at && (
-            <span className={"wk__ontime " + (d.on_time ? "good" : "bad")}>
-              · Yuborildi: {d.submitted_at}
-            </span>
-          )}
-        </div>
-      )}
-
-      {d.description && <div className="wk__desc">{d.description}</div>}
-
-      {d.audio && (
-        <audio className="wk__audio" controls src={fileUrl(d.audio.id)} />
-      )}
-
-      {d.is_rejected && d.feedback && (
-        <div className="wk__reject">
-          <b>Rad etildi — tuzatish talab qilinadi:</b>
-          <div>{d.feedback}</div>
-        </div>
-      )}
-
-      <div className="wk__sec">Dalillar {evidence.length ? `(${evidence.length})` : ""}</div>
-      <div className="wk__evlist">
-        {evidence.map((ev) => (
-          <div key={ev.id} className="wk__ev">
-            {ev.kind === "photo" && (
-              <a href={fileUrl(ev.id)} target="_blank" rel="noreferrer">
-                <img src={fileUrl(ev.id)} alt="" loading="lazy" />
-              </a>
-            )}
-            {ev.kind === "doc" && (
-              <a className="wk__doc" href={fileUrl(ev.id)} target="_blank" rel="noreferrer">
-                <FileText size={15} /> {ev.name}
-              </a>
-            )}
-            {ev.kind === "note" && <div className="wk__note">{ev.text}</div>}
-            {ev.caption && ev.kind !== "note" && (
-              <div className="wk__cap">{ev.caption}</div>
-            )}
-            {d.editable && (
-              <button className="wk__del" title="O'chirish" disabled={busy}
-                onClick={() => del(ev.id)}>
-                <X size={12} />
+        {t && (
+          <>
+            <div className="tdet__head">
+              <div>
+                <div className="tdet__num">#{t.number}</div>
+                <h3 className="tdet__title">{t.title}</h3>
+                <div className="tdet__meta">
+                  {t.deadline && (
+                    <span>
+                      <Clock size={11} /> {t.deadline}
+                    </span>
+                  )}
+                  {t.deadline && <i>·</i>}
+                  <span
+                    className={"tchip tchip--" + (t.status === "rejected" ? "warn" : "dim")}
+                    style={{ color: SPINE[t.status] }}
+                  >
+                    {t.status_label}
+                  </span>
+                  {t.submitted_at && (
+                    <>
+                      <i>·</i>
+                      <span className={t.on_time === false ? "bad" : "good"}>
+                        {t.submitted_at}
+                        {t.on_time != null && (t.on_time ? " · muddatida" : " · kechikdi")}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <button className="drawer__close" onClick={onClose}>
+                <X size={17} />
               </button>
+            </div>
+
+            {t.description && (
+              <div className="tdet__sec">
+                <h4>Vazifa</h4>
+                <p className="tdet__desc">{t.description}</p>
+              </div>
             )}
-          </div>
-        ))}
-        {!evidence.length && (
-          <div className="wk__empty">Hali dalil yo'q. Rasm, fayl yoki izoh qo'shing.</div>
+
+            {t.audio && (
+              <div className="tdet__sec">
+                <h4>Ovozli topshiriq</h4>
+                <audio controls src={fileUrl(t.audio.id)} className="tdet__audio" />
+              </div>
+            )}
+
+            {t.is_rejected && t.feedback && (
+              <div className="tdet__sec">
+                <h4>Rad etish sababi</h4>
+                <p className="tdet__desc bad">{t.feedback}</p>
+              </div>
+            )}
+
+            <div className="tdet__sec">
+              <h4>
+                Dalillar{" "}
+                {t.evidence && t.evidence.length > 0 && (
+                  <span className="count">{t.evidence.length} ta</span>
+                )}
+              </h4>
+              <div className="tdet__ev">
+                {(t.evidence || []).map((e) => {
+                  if (e.kind === "photo")
+                    return (
+                      <button
+                        key={e.id}
+                        className="tdet__photo"
+                        onClick={() => setLightbox(fileUrl(e.id))}
+                      >
+                        <img
+                          src={fileUrl(e.id)}
+                          alt=""
+                          loading="lazy"
+                          onError={(ev) => {
+                            ev.currentTarget.style.display = "none";
+                            ev.currentTarget.parentElement.classList.add("tdet__photo--gone");
+                          }}
+                        />
+                        {e.caption && <span>{e.caption}</span>}
+                        {t.editable && (
+                          <i
+                            className="wkdel"
+                            title="O'chirish"
+                            onClick={(ev) => { ev.stopPropagation(); if (!busy) del(e.id); }}
+                          >
+                            <X size={11} />
+                          </i>
+                        )}
+                      </button>
+                    );
+                  if (e.kind === "doc")
+                    return (
+                      <a
+                        key={e.id}
+                        className="tdet__doc"
+                        href={fileUrl(e.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <FileText size={14} />
+                        <span>{e.name || "Hujjat"}</span>
+                        {t.editable && (
+                          <i
+                            className="wkdel"
+                            title="O'chirish"
+                            onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); if (!busy) del(e.id); }}
+                          >
+                            <X size={11} />
+                          </i>
+                        )}
+                      </a>
+                    );
+                  return (
+                    <div key={e.id} className="tdet__note">
+                      <MessageSquare size={13} />
+                      <span>{e.text}</span>
+                      {t.editable && (
+                        <i
+                          className="wkdel"
+                          title="O'chirish"
+                          onClick={() => { if (!busy) del(e.id); }}
+                        >
+                          <X size={11} />
+                        </i>
+                      )}
+                    </div>
+                  );
+                })}
+                {!(t.evidence || []).length && (
+                  <p className="tdet__desc dim">
+                    Hali dalil yo'q — rasm, fayl yoki izoh qo'shing.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {t.editable && (
+              <div className="tdet__sec">
+                <h4>Dalil qo'shish</h4>
+                <div className="wkadders">
+                  <label className="btn-ghost" htmlFor="wkphotos">
+                    <ImagePlus size={14} /> Rasm
+                  </label>
+                  <input id="wkphotos" type="file" accept="image/*" multiple hidden onChange={onPhotos} />
+                  <label className="btn-ghost" htmlFor="wkdoc">
+                    <Paperclip size={14} /> Fayl
+                  </label>
+                  <input id="wkdoc" type="file" hidden onChange={onDoc} />
+                  {uploading > 0 && <span className="hint">Yuklanmoqda… {uploading}</span>}
+                </div>
+                <div className="wknote">
+                  <textarea
+                    rows={2}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Izoh yozing…"
+                  />
+                  <button className="btn-primary" disabled={busy || !note.trim()} onClick={addNote}>
+                    Saqlash
+                  </button>
+                </div>
+
+                {err && <div className="modal__err" style={{ marginTop: 10 }}>{err}</div>}
+
+                {!confirming ? (
+                  <button
+                    className="btn-primary wksubmit"
+                    disabled={busy || uploading > 0}
+                    onClick={() => setConfirming(true)}
+                  >
+                    <Send size={14} /> Yuborish
+                  </button>
+                ) : (
+                  <div className="wkconfirm">
+                    <span>Nazoratchiga yuborilsinmi?</span>
+                    <button className="btn-primary" disabled={busy} onClick={submit}>
+                      Ha, yuborish
+                    </button>
+                    <button className="btn-ghost" disabled={busy} onClick={() => setConfirming(false)}>
+                      Bekor
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(t.timeline || []).length > 0 && (
+              <div className="tdet__sec">
+                <h4>Tarix</h4>
+                {t.timeline.map((ev, i) => {
+                  const [label, Icon, cls] = TL[ev.type] || [ev.type, Plus, ""];
+                  return (
+                    <div key={i} className={"ttl__row" + (cls ? " ttl__row--" + cls : "")}>
+                      <Icon size={13} />
+                      <span className="ttl__what">{label}</span>
+                      {ev.type === "rejected" && ev.body && (
+                        <span className="ttl__note">{ev.body}</span>
+                      )}
+                      {(ev.type === "submitted" || ev.type === "resubmitted") &&
+                        ev.on_time === false && <span className="ttl__late">kechikdi</span>}
+                      <span className="dim" style={{ marginLeft: "auto" }}>{ev.at}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {d.editable && (
-        <>
-          <div className="wk__adders">
-            <label className="btn-ghost wk__add" htmlFor="wkphotos">
-              <ImagePlus size={15} /> Rasm qo'shish
-            </label>
-            <input id="wkphotos" type="file" accept="image/*" multiple hidden onChange={onPhotos} />
-            <label className="btn-ghost wk__add" htmlFor="wkdoc">
-              <Paperclip size={15} /> Fayl
-            </label>
-            <input id="wkdoc" type="file" hidden onChange={onDoc} />
-            {uploading > 0 && <span className="wk__up">Yuklanmoqda… {uploading}</span>}
-          </div>
-
-          <div className="wk__notebar">
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Izoh yozing…"
-              rows={2}
-            />
-            <button className="btn-primary" disabled={busy || !note.trim()} onClick={addNote}>
-              Saqlash
-            </button>
-          </div>
-
-          {err && <div className="wk__err">{err}</div>}
-
-          <div className="wk__submitbar">
-            {!confirming ? (
-              <button
-                className="btn-primary wk__submit"
-                disabled={busy || uploading > 0}
-                onClick={() => setConfirming(true)}
-              >
-                <Send size={15} /> Yuborish
-              </button>
-            ) : (
-              <div className="wk__confirm">
-                <span>Nazoratchiga yuborilsinmi?</span>
-                <button className="btn-primary" disabled={busy} onClick={submit}>
-                  Ha, yuborish
-                </button>
-                <button className="btn-ghost" disabled={busy} onClick={() => setConfirming(false)}>
-                  Bekor
-                </button>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-      {!d.editable && (
-        <div className="wk__locked">
-          Bu vazifa hozir tahrirlanmaydi — holati: {d.status_label}.
+      {lightbox && (
+        <div className="lb" onClick={(e) => { e.stopPropagation(); setLightbox(null); }}>
+          <img src={lightbox} alt="" onClick={(e) => e.stopPropagation()} />
+          <button className="lb__x" onClick={() => setLightbox(null)}>
+            <X size={20} />
+          </button>
         </div>
       )}
-
-      {(d.timeline || []).length > 0 && (
-        <>
-          <div className="wk__sec">Tarix</div>
-          <div className="wk__tl">
-            {d.timeline.map((ev, i) => (
-              <div key={i} className={"wk__tlrow " + (TL_TONE[ev.type] || "muted")}>
-                <i />
-                <span className="wk__tllabel">
-                  {TL_LABEL[ev.type] || ev.type}
-                  {ev.type === "rejected" && ev.body ? ` — ${ev.body}` : ""}
-                  {(ev.type === "submitted" || ev.type === "resubmitted") &&
-                    ev.on_time != null && (
-                      <b className={ev.on_time ? "good" : "bad"}>
-                        {" "}{ev.on_time ? "· muddatida" : "· kechikdi"}
-                      </b>
-                    )}
-                </span>
-                <span className="wk__tlat">{ev.at}</span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </>
+    </div>
   );
 }
 
-// Xarajat -- the worker expense form, capability-parity with the Mini App's
-// spend tab: amount + currency, nima olindi (textarea), vendor, project pick,
-// optional receipt photo with OCR prefill (Skanerlash -> /api/expense/scan,
-// which soft-fails to zeros so typing in is always possible). Posts to the SAME
-// /api/expense as the boss form -- deliberately open to field workers, because
-// Pul nazorati's money data comes from the site.
-const grp = (v) => {
-  const d = String(v).replace(/[^0-9]/g, "");
-  return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, " ") : "";
-};
+/* ------------------------------ shell ------------------------------------- */
 
-function Spend() {
-  const [projects, setProjects] = useState([]);
-  const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("UZS");
-  const [item, setItem] = useState("");
-  const [vendor, setVendor] = useState("");
-  const [projectId, setProjectId] = useState("");
-  const [receipt, setReceipt] = useState(null); // {dataUrl}
-  const [scanning, setScanning] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const [ok, setOk] = useState("");
-
-  useEffect(() => {
-    listProjects().then(setProjects).catch(() => {});
-  }, []);
-
-  const onReceipt = async (e) => {
-    const f = (e.target.files || [])[0];
-    e.target.value = "";
-    if (!f) return;
-    setErr(""); setOk("");
-    try {
-      const dataUrl = await downscale(f);
-      setReceipt({ dataUrl });
-      // OCR prefill -- only fill fields the worker has not already typed.
-      setScanning(true);
-      const r = await scanReceipt(dataUrl);
-      setScanning(false);
-      if (r && r.ok) {
-        if (r.amount > 0 && !amount) setAmount(grp(r.amount));
-        if (r.currency && ["UZS", "USD", "RUB"].includes(r.currency)) setCurrency(r.currency);
-        if (r.item && !item) setItem(r.item);
-        if (r.vendor && !vendor) setVendor(r.vendor);
-      }
-    } catch (ex) {
-      setScanning(false);
-      setErr(ex.message || "Rasmni o'qib bo'lmadi.");
-    }
-  };
-
-  const save = async () => {
-    setErr(""); setOk("");
-    const amt = parseFloat(String(amount).replace(/[^0-9.]/g, ""));
-    if (!(amt > 0)) return setErr("Summani yozing.");
-    if (!item.trim()) return setErr("Nima olindi — yozing.");
-    setBusy(true);
-    try {
-      const pj = projects.find((p) => p.id === projectId);
-      await addExpense({
-        amount: amt,
-        currency,
-        item: item.trim(),
-        vendor: vendor.trim() || null,
-        project_id: projectId || null,
-        project: pj ? pj.name : null,
-        image: receipt ? receipt.dataUrl : null,
-        mime: "image/jpeg",
-      });
-      setOk("Xarajat saqlandi.");
-      setAmount(""); setItem(""); setVendor(""); setProjectId(""); setReceipt(null);
-    } catch (ex) {
-      setErr(ex.message || "Saqlab bo'lmadi.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <>
-      <h2 className="wk__h">Xarajat</h2>
-
-      <label className="wk__f">
-        <span>Summa</span>
-        <div className="wk__amt">
-          <input
-            inputMode="numeric"
-            value={amount}
-            onChange={(e) => setAmount(grp(e.target.value))}
-            placeholder="masalan: 2 500 000"
-          />
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-            <option>UZS</option><option>USD</option><option>RUB</option>
-          </select>
-        </div>
-      </label>
-
-      <label className="wk__f">
-        <span>Nima olindi</span>
-        <textarea
-          rows={2}
-          value={item}
-          onChange={(e) => setItem(e.target.value)}
-          placeholder="masalan: 50 qop sement"
-        />
-      </label>
-
-      <label className="wk__f">
-        <span>Sotuvchi (ixtiyoriy)</span>
-        <input value={vendor} onChange={(e) => setVendor(e.target.value)} placeholder="masalan: BetonStroy" />
-      </label>
-
-      <label className="wk__f">
-        <span>Loyiha</span>
-        <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-          <option value="">Tanlanmagan</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
-      </label>
-
-      <div className="wk__adders">
-        <label className="btn-ghost wk__add" htmlFor="wkreceipt">
-          <ScanLine size={15} /> {receipt ? "Boshqa chek" : "Chek rasmi"}
-        </label>
-        <input id="wkreceipt" type="file" accept="image/*" hidden onChange={onReceipt} />
-        {scanning && <span className="wk__up">O'qilmoqda…</span>}
-      </div>
-      {receipt && <img className="wk__receipt" src={receipt.dataUrl} alt="chek" />}
-
-      {err && <div className="wk__err">{err}</div>}
-      {ok && <div className="wk__ok">{ok}</div>}
-
-      <div className="wk__submitbar">
-        <button className="btn-primary wk__submit" disabled={busy || scanning} onClick={save}>
-          {busy ? "Saqlanmoqda…" : "Saqlash"}
-        </button>
-      </div>
-    </>
-  );
-}
+const NAV = [
+  { key: "tasks", label: "Vazifalarim", icon: ListChecks },
+  { key: "spend", label: "Xarajat", icon: Wallet },
+];
 
 export default function Work({ user, onLogout }) {
+  const [nav, setNav] = useState("tasks");
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [open, setOpen] = useState(null);
-  const [tab, setTab] = useState("tasks"); // tasks | spend -- same two tabs as the Mini App
+  const [adding, setAdding] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [savedNote, setSavedNote] = useState("");
 
   const load = useCallback(() => {
     setErr("");
@@ -506,93 +440,183 @@ export default function Work({ user, onLogout }) {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    listProjects().then(setProjects).catch(() => {});
+  }, []);
 
   const s = (data && data.stats) || {};
+  const STATS = [
+    ["open", s.open, "Ochiq", "act"],
+    ["rejected", s.rejected, "Rad etilgan", "over"],
+    ["submitted", s.submitted, "Yuborilgan", "review"],
+    ["approved", s.approved, "Tasdiqlangan", "ok"],
+  ];
+  const [filter, setFilter] = useState("all");
+  const rows = ((data && data.tasks) || []).filter(
+    (t) => filter === "all" || t.status === filter
+  );
 
   return (
-    <div className="wk">
-      <header className="wk__top">
-        <div className="wk__brand">
-          <div className="wk__mark"><ShieldCheck size={16} /></div>
-          <span>Strolium</span>
-          {data && <span className="wk__org">· {data.org}</span>}
+    <div className="shell">
+      <aside className="side">
+        <div className="side__brand">
+          <div className="side__mark">
+            <ShieldCheck size={18} />
+          </div>
+          <span className="side__name">Strolium</span>
         </div>
-        <div className="wk__user">
-          <span className="tava">{initials(user.name || "")}</span>
-          <span className="wk__uname">{user.name}</span>
-          <button className="wk__logout" onClick={onLogout} title="Chiqish">
-            <LogOut size={15} />
-          </button>
-        </div>
-      </header>
 
-      <main className="wk__main">
-        <nav className="wk__tabs">
-          <button
-            className={"wk__tab" + (tab === "tasks" ? " on" : "")}
-            onClick={() => { setTab("tasks"); setOpen(null); }}
-          >
-            <ListChecks size={15} /> Vazifalarim
-          </button>
-          <button
-            className={"wk__tab" + (tab === "spend" ? " on" : "")}
-            onClick={() => { setTab("spend"); setOpen(null); }}
-          >
-            <Wallet size={15} /> Xarajat
-          </button>
+        <div className="side__org">
+          <div className="side__org-label">Kompaniya</div>
+          <div className="side__org-name">{(data && data.org) || user.company}</div>
+        </div>
+
+        <nav className="side__nav">
+          {NAV.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.key}
+                className={"navitem" + (nav === item.key ? " active" : "")}
+                onClick={() => setNav(item.key)}
+              >
+                <Icon size={17} />
+                {item.label}
+              </button>
+            );
+          })}
         </nav>
 
-        {tab === "spend" ? (
-          <Spend />
-        ) : open ? (
-          <Detail taskId={open} onBack={() => setOpen(null)} onChanged={load} />
-        ) : err ? (
-          <div className="section-empty">
-            {err} <button className="btn-ghost" onClick={load}>Qayta urinish</button>
-          </div>
-        ) : !data ? (
-          <BrickLoader label="Yuklanmoqda" />
-        ) : (
-          <>
-            <h2 className="wk__h">Vazifalarim</h2>
-            <div className="wk__stats">
-              {[
-                ["open", "Ochiq", s.open],
-                ["rejected", "Rad etilgan", s.rejected],
-                ["submitted", "Yuborilgan", s.submitted],
-                ["approved", "Tasdiqlangan", s.approved],
-              ].map(([k, label, n]) => (
-                <div key={k} className="wk__stat" style={{ borderColor: SPINE[k] }}>
-                  <b style={{ color: SPINE[k] }}>{n || 0}</b> {label}
-                </div>
-              ))}
+        <div className="side__foot">
+          <div className="side__user">
+            <div className="avatar">{initials(user.name || "")}</div>
+            <div>
+              <div className="side__user-name">{user.name}</div>
+              <div className="side__user-mail">{user.role}</div>
             </div>
+          </div>
+          <button className="logout" onClick={onLogout}>
+            <LogOut size={15} /> Chiqish
+          </button>
+        </div>
+      </aside>
 
-            <div className="wk__list">
-              {(data.tasks || []).map((t) => (
-                <button key={t.id} className="wk__task" onClick={() => setOpen(t.id)}>
-                  <i className="wk__spine" style={{ background: SPINE[t.status] }} />
-                  <span className="wk__tnum">#{String(t.number).padStart(2, "0")}</span>
-                  <span className="wk__ttitle">
-                    {t.title}
-                    <span className="wk__badge" style={{ color: SPINE[t.status] }}>
-                      <i style={{ background: SPINE[t.status] }} /> {t.status_label}
-                    </span>
-                  </span>
-                  <span className={"wk__due wk__due--" + (t.due_tone || "none")}>
-                    {t.due_text || ""}
-                  </span>
-                </button>
-              ))}
-              {!(data.tasks || []).length && (
+      <main className="main">
+        <div className="topbar">
+          <div>
+            <h1>{nav === "tasks" ? "Vazifalarim" : "Xarajat"}</h1>
+            <div className="sub">{(data && data.org) || user.company}</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="period">
+              <Calendar size={15} /> {monthUz()}
+            </div>
+          </div>
+        </div>
+
+        <div className="content">
+          {nav === "tasks" && (
+            <>
+              {err && (
                 <div className="section-empty">
-                  Hozircha vazifa yo'q. Nazoratchingiz vazifa berganda shu yerda ko'rinadi.
+                  {err} <button className="btn-ghost" onClick={load}>Qayta urinish</button>
                 </div>
               )}
-            </div>
-          </>
-        )}
+              {!err && !data && <BrickLoader label="Yuklanmoqda" />}
+              {!err && data && (
+                <>
+                  <div className="tstats" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+                    {STATS.map(([key, n, label, cls]) => (
+                      <button
+                        key={key}
+                        className={"tstat tstat--" + cls + (filter === key ? " on" : "")}
+                        onClick={() => setFilter(filter === key ? "all" : key)}
+                      >
+                        <div className="tstat__n" style={{ color: SPINE[key] }}>{n || 0}</div>
+                        <div className="tstat__l">{label}</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="card xtable__wrap">
+                    <table className="xtable ttable">
+                      <thead>
+                        <tr>
+                          <th style={{ width: 62 }}>#</th>
+                          <th>Vazifa</th>
+                          <th style={{ width: 210 }}>Muddat</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((t) => (
+                          <tr key={t.id} className="tclick" onClick={() => setOpen(t.id)}>
+                            <td className="tnum">
+                              <i className="tspine" style={{ background: SPINE[t.status] || "#888" }} />
+                              {String(t.number).padStart(2, "0")}
+                            </td>
+                            <td className="xtable__item">
+                              {t.title}
+                              <span className="tbadge" style={{ color: SPINE[t.status] }}>
+                                <i style={{ background: SPINE[t.status] }} />
+                                {t.status_label}
+                              </span>
+                            </td>
+                            <td className={"tdl tdl--" + (t.due_tone || "none")}>
+                              {t.due_text || "muddatsiz"}
+                            </td>
+                          </tr>
+                        ))}
+                        {!rows.length && (
+                          <tr>
+                            <td colSpan={3} className="xtable__empty">
+                              {filter === "all"
+                                ? "Hozircha vazifa yo'q. Nazoratchingiz vazifa berganda shu yerda ko'rinadi."
+                                : "Bu holatda vazifa yo'q."}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
+          {nav === "spend" && (
+            <>
+              <div className="xhead">
+                <div>
+                  <h2 className="xhead__title">Xarajat</h2>
+                  <div className="xhead__sub">
+                    Obyektdagi xarajatni yozing — u darhol rahbar hisobotiga tushadi.
+                  </div>
+                </div>
+                <button className="btn-primary" onClick={() => { setSavedNote(""); setAdding(true); }}>
+                  <Plus size={15} /> Xarajat qo'shish
+                </button>
+              </div>
+              {savedNote && <div className="proof-note">{savedNote}</div>}
+            </>
+          )}
+        </div>
       </main>
+
+      {open && (
+        <WorkerTaskDetail taskId={open} onClose={() => setOpen(null)} onChanged={load} />
+      )}
+
+      {adding && (
+        <AddExpense
+          projects={projects}
+          groups={[]}
+          onClose={() => setAdding(false)}
+          onSaved={() => {
+            setAdding(false);
+            setSavedNote("Xarajat saqlandi.");
+          }}
+        />
+      )}
     </div>
   );
 }
