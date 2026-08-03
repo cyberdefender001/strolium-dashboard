@@ -1,3 +1,17 @@
+/* Strolium brand tokens, sampled from the supplied logo.
+   The mark is a single flat navy -- #061023 -- so the whole palette is built on
+   its hue (219 deg) rather than importing an unrelated accent. The green that
+   was here before belonged to nothing. */
+:root {
+  --st-navy: #061023;        /* the logo colour, exact */
+  --st-navy-800: #061127;
+  --st-navy-700: #0A1B3C;
+  --st-navy-600: #0E2757;
+  --st-accent: #4979D4;      /* same hue, lifted for CTAs and focus */
+  --st-accent-dim: #3058A6;
+  --st-on-accent: #FFFFFF;
+}
+
 /* Email auth — append to your existing stylesheet.
    Deliberately reuses the .login__* shell (brand side, form side, error text)
    so this sits inside the current page rather than introducing a second look. */
@@ -34,7 +48,7 @@
 .eauth__link:focus-visible,
 .eauth__back:focus-visible,
 .eauth__input:focus-visible {
-  outline: 2px solid #2fb67c;
+  outline: 2px solid var(--st-accent);
   outline-offset: 2px;
 }
 
@@ -75,7 +89,7 @@
 }
 
 .eauth__input:focus {
-  border-color: #2fb67c;
+  border-color: var(--st-accent);
 }
 
 /* The code is six characters and read aloud from a phone -- space it out so a
@@ -97,8 +111,8 @@
   padding: 13px;
   border: 0;
   border-radius: 11px;
-  background: #2fb67c;
-  color: #08130d;
+  background: var(--st-accent);
+  color: var(--st-on-accent);
   font: 700 15px inherit;
   cursor: pointer;
 }
@@ -131,10 +145,10 @@
 .eauth__note {
   margin-top: 14px;
   padding: 10px 12px;
-  border: 1px solid rgba(47, 182, 124, 0.35);
+  border: 1px solid rgba(73, 121, 212, 0.4);
   border-radius: 9px;
-  background: rgba(47, 182, 124, 0.1);
-  color: #2fb67c;
+  background: rgba(73, 121, 212, 0.12);
+  color: var(--st-accent);
   font: 600 13px inherit;
 }
 
@@ -250,8 +264,8 @@
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  background: rgba(47, 182, 124, 0.14);
-  color: #2fb67c;
+  background: rgba(73, 121, 212, 0.16);
+  color: var(--st-accent);
 }
 
 .nocomp__feattitle {
@@ -263,4 +277,112 @@
   margin: 0;
   font: 500 13px / 1.5 inherit;
   opacity: 0.62;
+}
+
+/* ---- profile / cabinet ---- */
+
+.prof {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 26px clamp(16px, 4vw, 32px) 56px;
+}
+
+.prof__title {
+  margin: 0 0 20px;
+  font: 700 clamp(20px, 3vw, 26px) inherit;
+  letter-spacing: -0.01em;
+}
+
+.prof__card {
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.prof__card--quiet {
+  border-style: dashed;
+}
+
+.prof__cardtitle {
+  margin: 0 0 6px;
+  font: 700 15px inherit;
+}
+
+.prof__sub {
+  margin: 0 0 14px;
+  font: 500 13px / 1.5 inherit;
+  opacity: 0.62;
+}
+
+.prof__good {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font: 600 13px inherit;
+  color: var(--st-accent);
+}
+
+.prof__head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 18px;
+}
+
+.prof__avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: rgba(73, 121, 212, 0.16);
+  color: var(--st-accent);
+}
+
+.prof__name {
+  font: 700 16px inherit;
+}
+
+.prof__meta {
+  margin-top: 2px;
+  font: 500 12px inherit;
+  opacity: 0.6;
+}
+
+.prof__row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.prof__row .eauth__input {
+  flex: 1;
+}
+
+.prof__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font: 600 13px inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.prof__btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.prof__btn:focus-visible {
+  outline: 2px solid var(--st-accent);
+  outline-offset: 2px;
 }

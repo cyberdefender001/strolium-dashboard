@@ -117,3 +117,45 @@ export async function accountStatus() {
   if (!r.ok) throw new Error(`status ${r.status}`);
   return r.json();
 }
+
+// ---- profile / cabinet ----------------------------------------------------
+
+export async function getProfile() {
+  const r = await fetch(`${API_BASE}/api/web/account/profile`, { headers: authHeader() });
+  if (!r.ok) throw new Error(`profile ${r.status}`);
+  return r.json();
+}
+
+async function postAuthed(path, body) {
+  const r = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(body),
+  });
+  const text = await r.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    /* non-JSON error page */
+  }
+  if (!r.ok) {
+    const err = new Error(data.detail || `Xatolik (${r.status})`);
+    err.status = r.status;
+    throw err;
+  }
+  return data;
+}
+
+export function setProfileName(full_name) {
+  return postAuthed("/api/web/account/profile/name", { full_name });
+}
+
+// Gives a bot-first member an email + password so the website opens for them.
+export function addEmailLogin(identifier, code, password) {
+  return postAuthed("/api/web/account/profile/add-email", { identifier, code, password });
+}
+
+export function changePassword(old_password, new_password) {
+  return postAuthed("/api/web/account/profile/password", { old_password, new_password });
+}

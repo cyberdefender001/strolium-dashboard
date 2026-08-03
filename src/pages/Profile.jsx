@@ -1,0 +1,308 @@
+import { useEffect, useState } from "react";
+import { User, Mail, KeyRound, Send, Check } from "lucide-react";
+import {
+  getProfile,
+  setProfileName,
+  addEmailLogin,
+  changePassword,
+  requestEmailCode,
+} from "../api/emailauth";
+
+// The cabinet. Every user has one, whichever door they came through.
+//
+// The section that matters most is "Saytga kirish": someone who joined via the
+// bot has no email login, so the website is shut to them. Adding an email here
+// attaches a second door to the SAME member row -- same company, same role, same
+// data. It is the only way the two populations (bot-first, web-first) stop being
+// separate.
+
+const T = {
+  uz: {
+    title: "Profil",
+    you: "Siz",
+    name: "Ism familiya",
+    save: "Saqlash",
+    saved: "Saqlandi",
+    role: "Rol",
+    company: "Kompaniya",
+    noCompany: "Kompaniyaga qo'shilmagan",
+    webTitle: "Saytga kirish",
+    webHave: "Email va parol bilan kira olasiz",
+    webNeed:
+      "Hozir siz faqat Telegram orqali kirasiz. Email qo'shsangiz, kompyuterdan ham kirasiz — bir xil kompaniya, bir xil ma'lumot.",
+    email: "Email",
+    sendCode: "Kod olish",
+    code: "Emailga kelgan kod",
+    password: "Parol",
+    addEmail: "Emailni qo'shish",
+    pwTitle: "Parolni o'zgartirish",
+    oldPw: "Hozirgi parol",
+    newPw: "Yangi parol",
+    change: "O'zgartirish",
+    tgTitle: "Telegram",
+    tgYes: "Telegram ulangan — bot xabar yuborishi mumkin",
+    tgNo: "Telegram ulanmagan. Bot sizga xabar yubora olmaydi — botga /start yozing.",
+    codeSent: "Kod yuborildi",
+    done: "Bajarildi",
+  },
+  ru: {
+    title: "Профиль",
+    you: "Вы",
+    name: "Имя и фамилия",
+    save: "Сохранить",
+    saved: "Сохранено",
+    role: "Роль",
+    company: "Компания",
+    noCompany: "Не в компании",
+    webTitle: "Вход на сайт",
+    webHave: "Вы можете входить по email и паролю",
+    webNeed:
+      "Сейчас вы входите только через Telegram. Добавьте email — сможете входить и с компьютера, та же компания и данные.",
+    email: "Email",
+    sendCode: "Получить код",
+    code: "Код из письма",
+    password: "Пароль",
+    addEmail: "Добавить email",
+    pwTitle: "Смена пароля",
+    oldPw: "Текущий пароль",
+    newPw: "Новый пароль",
+    change: "Изменить",
+    tgTitle: "Telegram",
+    tgYes: "Telegram подключён — бот может присылать сообщения",
+    tgNo: "Telegram не подключён. Бот не сможет писать вам — напишите боту /start.",
+    codeSent: "Код отправлен",
+    done: "Готово",
+  },
+  en: {
+    title: "Profile",
+    you: "You",
+    name: "Full name",
+    save: "Save",
+    saved: "Saved",
+    role: "Role",
+    company: "Company",
+    noCompany: "Not in a company",
+    webTitle: "Website access",
+    webHave: "You can sign in with email and password",
+    webNeed:
+      "Right now you only sign in through Telegram. Add an email and you can sign in from a computer too — same company, same data.",
+    email: "Email",
+    sendCode: "Send code",
+    code: "Code from your email",
+    password: "Password",
+    addEmail: "Add email",
+    pwTitle: "Change password",
+    oldPw: "Current password",
+    newPw: "New password",
+    change: "Change",
+    tgTitle: "Telegram",
+    tgYes: "Telegram connected — the bot can message you",
+    tgNo: "Telegram not connected. The bot cannot message you — send /start to the bot.",
+    codeSent: "Code sent",
+    done: "Done",
+  },
+};
+
+export default function Profile({ lang = "uz" }) {
+  const t = T[lang] || T.uz;
+  const [p, setP] = useState(null);
+  const [err, setErr] = useState("");
+  const [ok, setOk] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [sent, setSent] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [oldPw, setOldPw] = useState("");
+  const [chgPw, setChgPw] = useState("");
+
+  const load = async () => {
+    try {
+      const d = await getProfile();
+      setP(d);
+      setName(d.name || "");
+    } catch (e) {
+      setErr(e.message || "Xatolik");
+    }
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const run = async (fn, okMsg) => {
+    setErr("");
+    setOk("");
+    setBusy(true);
+    try {
+      await fn();
+      if (okMsg) setOk(okMsg);
+    } catch (e) {
+      setErr(e.message || "Xatolik");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!p) return <div className="prof"><p className="hint">…</p></div>;
+
+  return (
+    <div className="prof">
+      <h2 className="prof__title">{t.title}</h2>
+
+      <section className="prof__card">
+        <div className="prof__head">
+          <div className="prof__avatar">
+            <User size={18} />
+          </div>
+          <div>
+            <div className="prof__name">{p.name || t.you}</div>
+            <div className="prof__meta">
+              {p.role || "—"}
+              {p.company ? ` · ${p.company}` : ` · ${t.noCompany}`}
+            </div>
+          </div>
+        </div>
+
+        <label className="eauth__label">{t.name}</label>
+        <div className="prof__row">
+          <input
+            className="eauth__input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <button
+            className="prof__btn"
+            disabled={busy || name.trim().length < 2}
+            onClick={() => run(() => setProfileName(name.trim()), t.saved)}
+            type="button"
+          >
+            {t.save}
+          </button>
+        </div>
+      </section>
+
+      <section className="prof__card">
+        <h3 className="prof__cardtitle">{t.webTitle}</h3>
+        {p.has_email_login ? (
+          <p className="prof__good">
+            <Check size={15} /> {t.webHave}
+            {p.email ? ` — ${p.email}` : ""}
+          </p>
+        ) : (
+          <>
+            <p className="prof__sub">{t.webNeed}</p>
+            <label className="eauth__label">{t.email}</label>
+            <div className="prof__row">
+              <input
+                className="eauth__input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ism@kompaniya.uz"
+              />
+              <button
+                className="prof__btn"
+                disabled={busy || !email.trim()}
+                onClick={() =>
+                  run(async () => {
+                    await requestEmailCode(email.trim(), "signup", lang);
+                    setSent(true);
+                  }, t.codeSent)
+                }
+                type="button"
+              >
+                <Send size={14} /> {t.sendCode}
+              </button>
+            </div>
+
+            {sent && (
+              <>
+                <label className="eauth__label">{t.code}</label>
+                <input
+                  className="eauth__input eauth__input--code"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="••••••"
+                />
+                <label className="eauth__label">{t.password}</label>
+                <input
+                  className="eauth__input"
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                />
+                <button
+                  className="eauth__primary"
+                  disabled={busy || code.length < 6 || !newPw}
+                  onClick={() =>
+                    run(async () => {
+                      await addEmailLogin(email.trim(), code.trim(), newPw);
+                      setSent(false);
+                      setCode("");
+                      setNewPw("");
+                      await load();
+                    }, t.done)
+                  }
+                  type="button"
+                >
+                  <Mail size={15} /> {t.addEmail}
+                </button>
+              </>
+            )}
+          </>
+        )}
+      </section>
+
+      {p.has_email_login && (
+        <section className="prof__card">
+          <h3 className="prof__cardtitle">{t.pwTitle}</h3>
+          <label className="eauth__label">{t.oldPw}</label>
+          <input
+            className="eauth__input"
+            type="password"
+            autoComplete="current-password"
+            value={oldPw}
+            onChange={(e) => setOldPw(e.target.value)}
+          />
+          <label className="eauth__label">{t.newPw}</label>
+          <input
+            className="eauth__input"
+            type="password"
+            autoComplete="new-password"
+            value={chgPw}
+            onChange={(e) => setChgPw(e.target.value)}
+          />
+          <button
+            className="eauth__primary"
+            disabled={busy || !oldPw || !chgPw}
+            onClick={() =>
+              run(async () => {
+                await changePassword(oldPw, chgPw);
+                setOldPw("");
+                setChgPw("");
+              }, t.done)
+            }
+            type="button"
+          >
+            <KeyRound size={15} /> {t.change}
+          </button>
+        </section>
+      )}
+
+      <section className="prof__card prof__card--quiet">
+        <h3 className="prof__cardtitle">{t.tgTitle}</h3>
+        <p className={p.has_telegram ? "prof__good" : "prof__sub"}>
+          {p.has_telegram ? <Check size={15} /> : null} {p.has_telegram ? t.tgYes : t.tgNo}
+        </p>
+      </section>
+
+      {ok && <p className="eauth__note">{ok}</p>}
+      {err && <p className="login__err">{err}</p>}
+    </div>
+  );
+}
