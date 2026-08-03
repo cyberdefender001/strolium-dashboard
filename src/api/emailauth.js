@@ -159,3 +159,9 @@ export function addEmailLogin(identifier, code, password) {
 export function changePassword(old_password, new_password) {
   return postAuthed("/api/web/account/profile/password", { old_password, new_password });
 }
+
+// Web -> bot: mint a one-time deep link the user opens in Telegram, which is
+// what proves they own that Telegram account.
+export function startTelegramLink() {
+  return postAuthed("/api/web/account/profile/telegram-link", {});
+}

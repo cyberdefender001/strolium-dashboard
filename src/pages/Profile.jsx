@@ -6,6 +6,7 @@ import {
   addEmailLogin,
   changePassword,
   requestEmailCode,
+  startTelegramLink,
 } from "../api/emailauth";
 
 // The cabinet. Every user has one, whichever door they came through.
@@ -41,7 +42,9 @@ const T = {
     change: "O'zgartirish",
     tgTitle: "Telegram",
     tgYes: "Telegram ulangan — bot xabar yuborishi mumkin",
-    tgNo: "Telegram ulanmagan. Bot sizga xabar yubora olmaydi — botga /start yozing.",
+    tgNo: "Telegram ulanmagan. Bot sizga vazifa va eslatma yubora olmaydi.",
+    tgLink: "Telegramni ulash",
+    tgOpen: "Telegram ochildi — botda Start bosing, keyin bu sahifani yangilang.",
     codeSent: "Kod yuborildi",
     done: "Bajarildi",
   },
@@ -69,7 +72,9 @@ const T = {
     change: "Изменить",
     tgTitle: "Telegram",
     tgYes: "Telegram подключён — бот может присылать сообщения",
-    tgNo: "Telegram не подключён. Бот не сможет писать вам — напишите боту /start.",
+    tgNo: "Telegram не подключён. Бот не сможет присылать задачи и напоминания.",
+    tgLink: "Подключить Telegram",
+    tgOpen: "Telegram открыт — нажмите Start в боте, затем обновите страницу.",
     codeSent: "Код отправлен",
     done: "Готово",
   },
@@ -97,7 +102,9 @@ const T = {
     change: "Change",
     tgTitle: "Telegram",
     tgYes: "Telegram connected — the bot can message you",
-    tgNo: "Telegram not connected. The bot cannot message you — send /start to the bot.",
+    tgNo: "Telegram not connected. The bot cannot send you tasks or reminders.",
+    tgLink: "Connect Telegram",
+    tgOpen: "Telegram opened — press Start in the bot, then refresh this page.",
     codeSent: "Code sent",
     done: "Done",
   },
@@ -299,6 +306,21 @@ export default function Profile({ lang = "uz" }) {
         <p className={p.has_telegram ? "prof__good" : "prof__sub"}>
           {p.has_telegram ? <Check size={15} /> : null} {p.has_telegram ? t.tgYes : t.tgNo}
         </p>
+        {!p.has_telegram && (
+          <button
+            className="eauth__primary"
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                const d = await startTelegramLink();
+                if (d.link) window.open(d.link, "_blank", "noopener");
+              }, t.tgOpen)
+            }
+            type="button"
+          >
+            <Send size={15} /> {t.tgLink}
+          </button>
+        )}
       </section>
 
       {ok && <p className="eauth__note">{ok}</p>}
