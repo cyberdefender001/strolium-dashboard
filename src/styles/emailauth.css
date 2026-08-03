@@ -1,0 +1,157 @@
+/* Email auth — append to your existing stylesheet.
+   Deliberately reuses the .login__* shell (brand side, form side, error text)
+   so this sits inside the current page rather than introducing a second look. */
+
+.eauth__tabs {
+  display: flex;
+  gap: 4px;
+  margin: 20px 0 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.eauth__tab {
+  flex: 1;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.55;
+  font: 600 13px inherit;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.eauth__tab.is-on {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.eauth__tab:focus-visible,
+.eauth__primary:focus-visible,
+.eauth__link:focus-visible,
+.eauth__back:focus-visible,
+.eauth__input:focus-visible {
+  outline: 2px solid #2fb67c;
+  outline-offset: 2px;
+}
+
+.eauth__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  opacity: 0.7;
+  font: 600 13px inherit;
+  cursor: pointer;
+}
+
+.eauth__label {
+  display: block;
+  margin: 14px 0 6px;
+  font: 600 12px inherit;
+  opacity: 0.65;
+}
+
+.eauth__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: 500 15px inherit;
+}
+
+.eauth__input::placeholder {
+  opacity: 0.35;
+}
+
+.eauth__input:focus {
+  border-color: #2fb67c;
+}
+
+/* The code is six characters and read aloud from a phone -- space it out so a
+   mistyped digit is visible at a glance. */
+.eauth__input--code {
+  letter-spacing: 0.4em;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.eauth__primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px;
+  border: 0;
+  border-radius: 11px;
+  background: #2fb67c;
+  color: #08130d;
+  font: 700 15px inherit;
+  cursor: pointer;
+}
+
+.eauth__primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.eauth__link {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  opacity: 0.6;
+  font: 500 13px inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.eauth__hint {
+  margin: 6px 0 0;
+  font: 500 12px inherit;
+  opacity: 0.5;
+}
+
+.eauth__note {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(47, 182, 124, 0.35);
+  border-radius: 9px;
+  background: rgba(47, 182, 124, 0.1);
+  color: #2fb67c;
+  font: 600 13px inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eauth__tab {
+    transition: none;
+  }
+}
+
+/* The secondary block under the email form: Telegram options, the prospect CTA
+   and the member note. Visually quieter than the primary card so the email path
+   stays the obvious one. */
+.login__form--alt {
+  margin-top: 14px;
+  padding-top: 4px;
+}
+
+.login__form--alt .hint {
+  opacity: 0.6;
+}

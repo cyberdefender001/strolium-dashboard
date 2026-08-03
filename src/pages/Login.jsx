@@ -2,21 +2,26 @@ import { useEffect, useRef, useState } from "react";
 import { ShieldCheck, Smartphone } from "lucide-react";
 import { loginWithTelegram, requestLoginCode, pollLoginCode } from "../auth";
 import { TG_BOT } from "../config";
+import EmailAuth from "./EmailAuth";
 
-// Telegram Login Widget.
+// Login page.
 //
-// Telegram injects its own <script> which renders the button. It calls a GLOBAL
-// callback with the signed payload, so we hang one on window and clean it up on
-// unmount. The payload is NOT trusted here -- the backend verifies its HMAC
-// signature before issuing any session.
+// ORDER IS DELIBERATE: email + password comes first, Telegram second. Cold leads
+// will not tap an unknown bot link -- that hesitation is exactly why the email
+// account layer exists. Existing Telegram members lose nothing; their button is
+// still here, one click away under "Boshqa usullar".
 //
-// If the button never appears, the cause is almost always that the site's domain
-// is not registered with BotFather (/setdomain). Telegram silently refuses.
+// The Telegram widget injects its own <script> and calls a GLOBAL callback with
+// the signed payload, so we hang one on window and clean it up on unmount. The
+// payload is NOT trusted here -- the backend verifies its HMAC before issuing a
+// session. If the button never appears, the domain is almost certainly not
+// registered with BotFather (/setdomain); Telegram fails silently.
 
 export default function Login({ onLogin }) {
   const holder = useRef(null);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showTg, setShowTg] = useState(false);
 
   // Phone login -- for shared computers, where the widget's telegram.org
   // cookie keeps the FIRST person logged in forever. phase: idle -> waiting.
@@ -68,7 +73,12 @@ export default function Login({ onLogin }) {
     }
   };
 
+  // The widget script is only injected once the user opens the Telegram section.
+  // Mounting it up front would load a third-party script on every visit for a
+  // path most visitors now skip.
   useEffect(() => {
+    if (!showTg) return undefined;
+
     window.onTelegramAuth = async (tgUser) => {
       setErr("");
       setBusy(true);
@@ -95,7 +105,7 @@ export default function Login({ onLogin }) {
     return () => {
       delete window.onTelegramAuth;
     };
-  }, [onLogin]);
+  }, [onLogin, showTg]);
 
   return (
     <div className="login">
@@ -134,42 +144,55 @@ export default function Login({ onLogin }) {
       </div>
 
       <div className="login__formside">
-        <div className="login__form">
-          <h2>Tizimga kirish</h2>
-          <p className="hint">Telegram akkauntingiz bilan kiring</p>
+        {/* Email + password: the default door. */}
+        <EmailAuth onLogin={onLogin} />
 
-          <div ref={holder} style={{ margin: "22px 0 6px" }} />
+        <div className="login__form login__form--alt">
+          <button
+            className="eauth__link"
+            onClick={() => setShowTg((v) => !v)}
+            type="button"
+          >
+            {showTg ? "Boshqa usullarni yashirish" : "Boshqa usullar — Telegram orqali kirish"}
+          </button>
 
-          <div className="login__or">yoki</div>
+          {showTg && (
+            <>
+              <p className="hint">Telegram akkauntingiz bilan kiring</p>
 
-          {phone.phase === "idle" ? (
-            <button className="login__phone" onClick={startPhoneLogin}>
-              <Smartphone size={15} /> Telefondagi Telegram orqali kirish
-            </button>
-          ) : (
-            <div className="login__phonewait">
-              <p className="hint">
-                Telefoningizda Telegram ochildi — botda <b>Start</b> bosing.
-                Tasdiqlangach bu sahifa o'zi ochiladi…
+              <div ref={holder} style={{ margin: "18px 0 6px" }} />
+
+              <div className="login__or">yoki</div>
+
+              {phone.phase === "idle" ? (
+                <button className="login__phone" onClick={startPhoneLogin}>
+                  <Smartphone size={15} /> Telefondagi Telegram orqali kirish
+                </button>
+              ) : (
+                <div className="login__phonewait">
+                  <p className="hint">
+                    Telefoningizda Telegram ochildi — botda <b>Start</b> bosing.
+                    Tasdiqlangach bu sahifa o'zi ochiladi…
+                  </p>
+                  <a href={phone.link} target="_blank" rel="noreferrer">
+                    Havola ochilmadimi? Shu yerni bosing
+                  </a>
+                </div>
+              )}
+              <p className="hint login__sharednote">
+                Umumiy kompyuterdami? Telefon orqali kiring — har kim o'z
+                akkauntidan kiradi.
               </p>
-              <a href={phone.link} target="_blank" rel="noreferrer">
-                Havola ochilmadimi? Shu yerni bosing
-              </a>
-            </div>
-          )}
-          <p className="hint login__sharednote">
-            Umumiy kompyuterdami? Telefon orqali kiring — har kim o'z
-            akkauntidan kiradi.
-          </p>
 
-          {busy && <p className="hint">Tekshirilmoqda…</p>}
-          <p className="login__err">{err}</p>
+              {busy && <p className="hint">Tekshirilmoqda…</p>}
+              <p className="login__err">{err}</p>
+            </>
+          )}
 
           {/* Prospect CTA -- the deck prints this URL, so a potential BUYER
               lands here. Without this block the page only spoke to existing
               members ("your boss must add you"), which reads as "go away" to
-              the person holding the money. Signup lives in the bot; send them
-              there, with the trial promise the deck makes. */}
+              the person holding the money. */}
           <div className="login__cta">
             <div className="login__cta-title">Strolium'ni sinab ko'rmoqchimisiz?</div>
             <div className="login__cta-sub">
@@ -187,8 +210,8 @@ export default function Login({ onLogin }) {
           </div>
 
           <div className="login__demo">
-            Jamoa a'zosimisiz? Sizga yuborilgan taklif havolasi orqali
-            qo'shiling — keyin shu yerdan kirasiz.
+            Jamoa a'zosimisiz? Rahbaringiz bergan taklif kodi bilan
+            ro'yxatdan o'ting — keyin email va parol bilan kirasiz.
           </div>
         </div>
       </div>
