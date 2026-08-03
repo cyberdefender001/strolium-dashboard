@@ -71,13 +71,19 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
       </nav>
 
       <div className="side__foot">
-        <div className="side__user">
+        {/* The user block was static; it is the obvious place a person clicks
+            looking for account settings, so it opens the profile. */}
+        <button
+          className={"side__user side__user--btn" + (active === "profile" ? " active" : "")}
+          onClick={() => onNav("profile")}
+          type="button"
+        >
           <div className="avatar">{initials(user.name)}</div>
           <div>
             <div className="side__user-name">{user.name}</div>
-            <div className="side__user-mail">{user.email}</div>
+            <div className="side__user-mail">{user.email || "Profil"}</div>
           </div>
-        </div>
+        </button>
         <button className="logout" onClick={onLogout}>
           <LogOut size={15} /> Chiqish
         </button>

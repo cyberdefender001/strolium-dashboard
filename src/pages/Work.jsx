@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   ShieldCheck, LogOut, ListChecks, Wallet, Calendar, Clock, X,
   ImagePlus, Paperclip, Send, FileText, MessageSquare, Plus, Check,
+  User as UserIcon,
 } from "lucide-react";
 import {
   getWorkerBoard, getWorkerTask, workerAddPhoto, workerAddDocument,
@@ -9,6 +10,7 @@ import {
 } from "../api/client";
 import { initials } from "../lib/format";
 import BrickLoader from "../components/BrickLoader.jsx";
+import Profile from "./Profile.jsx";
 import AddExpense from "../components/AddExpense.jsx";
 import "./work.css";
 
@@ -510,13 +512,23 @@ export default function Work({ user, onLogout }) {
       <main className="main">
         <div className="topbar">
           <div>
-            <h1>{nav === "tasks" ? "Vazifalarim" : "Xarajat"}</h1>
+            <h1>{nav === "tasks" ? "Vazifalarim" : nav === "profile" ? "Profil" : "Xarajat"}</h1>
             <div className="sub">{(data && data.org) || user.company}</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div className="period">
               <Calendar size={15} /> {monthUz()}
             </div>
+            {/* Workers need this too: it is where a bot-first worker adds an
+                email so the site opens on an office computer. */}
+            <button
+              className="topbar__profile"
+              onClick={() => setNav("profile")}
+              title="Profil"
+              type="button"
+            >
+              <UserIcon size={15} />
+            </button>
           </div>
         </div>
 
@@ -589,6 +601,7 @@ export default function Work({ user, onLogout }) {
             </>
           )}
 
+          {nav === "profile" && <Profile />}
           {nav === "spend" && (
             <>
               <div className="xhead">

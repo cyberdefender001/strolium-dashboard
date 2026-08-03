@@ -14,6 +14,7 @@ import Tasks from "./Tasks.jsx";
 import ProjectsPage from "./Projects.jsx";
 import Team from "./Team.jsx";
 import Admin from "./Admin.jsx";
+import Profile from "./Profile.jsx";
 
 // Four of these were missing, so the topbar heading was blank on Vazifalar,
 // Xarajatlar, Loyihalar and Jamoa.
@@ -26,6 +27,7 @@ const TITLES = {
   team: "Jamoa",
   company: "Kompaniya",
   admin: "Boshqaruv",
+  profile: "Profil",
 };
 
 export default function Dashboard({ user, onLogout }) {
@@ -224,6 +226,7 @@ export default function Dashboard({ user, onLogout }) {
           )}
           {nav === "company" && <Company data={data} />}
           {nav === "admin" && isOwner && <Admin />}
+          {nav === "profile" && <Profile />}
         </div>
       </main>
 
