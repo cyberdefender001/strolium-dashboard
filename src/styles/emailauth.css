@@ -155,3 +155,112 @@
 .login__form--alt .hint {
   opacity: 0.6;
 }
+
+/* ---- "no company yet" screen -------------------------------------------
+   Holds no company data by construction: the session behind it resolves to no
+   member, so the server refuses every data endpoint. What it shows is the
+   product and one action -- redeem an invite. */
+
+.nocomp {
+  min-height: 100vh;
+  padding: 26px clamp(18px, 5vw, 56px) 48px;
+  box-sizing: border-box;
+}
+
+.nocomp__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(28px, 6vh, 56px);
+}
+
+.nocomp__out {
+  width: auto;
+  margin: 0;
+}
+
+.nocomp__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+  gap: clamp(24px, 5vw, 64px);
+  align-items: start;
+  max-width: 1080px;
+}
+
+@media (max-width: 860px) {
+  .nocomp__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.nocomp__hi {
+  margin: 0 0 6px;
+  font: 600 13px inherit;
+  opacity: 0.55;
+}
+
+.nocomp__lead {
+  margin: 0 0 24px;
+  font: 700 clamp(21px, 3vw, 28px) / 1.25 inherit;
+  letter-spacing: -0.01em;
+}
+
+.nocomp__card {
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nocomp__card--quiet {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.nocomp__cardtitle {
+  margin: 0 0 4px;
+  font: 700 15px inherit;
+}
+
+.nocomp__cardsub {
+  margin: 0 0 12px;
+  font: 500 13px / 1.45 inherit;
+  opacity: 0.6;
+}
+
+.nocomp__whattitle {
+  margin: 0 0 16px;
+  font: 700 13px inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.nocomp__feat {
+  display: flex;
+  gap: 13px;
+  margin-bottom: 20px;
+}
+
+.nocomp__featicon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(47, 182, 124, 0.14);
+  color: #2fb67c;
+}
+
+.nocomp__feattitle {
+  margin-bottom: 3px;
+  font: 700 14px inherit;
+}
+
+.nocomp__featbody {
+  margin: 0;
+  font: 500 13px / 1.5 inherit;
+  opacity: 0.62;
+}

@@ -107,7 +107,6 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [name, setName] = useState("");
-  const [invite, setInvite] = useState("");
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
 
@@ -153,7 +152,6 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
       const session = await emailSignup({
         identifier: email.trim(),
         code: code.trim(),
-        invite_code: invite.trim(),
         full_name: name.trim(),
         password,
         lang,
@@ -260,14 +258,6 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
-
-              <label className="eauth__label">{t.invite}</label>
-              <input
-                className="eauth__input"
-                value={invite}
-                onChange={(e) => setInvite(e.target.value.toUpperCase())}
-              />
-              <p className="eauth__hint">{t.needInvite}</p>
 
               <label className="eauth__label">{t.password}</label>
               <input

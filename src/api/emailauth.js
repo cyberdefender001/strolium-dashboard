@@ -77,3 +77,43 @@ export function saveEmailSession(d) {
   localStorage.setItem(KEY, JSON.stringify(user));
   return user;
 }
+
+// ---- company membership ---------------------------------------------------
+// Signup grants an identity, not access. These two calls are what move an
+// account from "no company" to "member of a company".
+
+function authHeader() {
+  try {
+    const u = JSON.parse(localStorage.getItem(KEY));
+    return u && u.token ? { Authorization: `Bearer ${u.token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
+export async function joinCompany(invite_code, lang = "uz") {
+  const r = await fetch(`${API_BASE}/api/web/account/join`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ invite_code, lang }),
+  });
+  const text = await r.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    /* non-JSON error page */
+  }
+  if (!r.ok) {
+    const err = new Error(data.detail || `Xatolik (${r.status})`);
+    err.status = r.status;
+    throw err;
+  }
+  return data;
+}
+
+export async function accountStatus() {
+  const r = await fetch(`${API_BASE}/api/web/account/status`, { headers: authHeader() });
+  if (!r.ok) throw new Error(`status ${r.status}`);
+  return r.json();
+}
