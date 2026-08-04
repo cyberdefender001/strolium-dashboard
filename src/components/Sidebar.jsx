@@ -26,9 +26,18 @@ const NAV = [
 // company, it is running the PRODUCT. The check here is convenience -- every
 // /api/owner/* endpoint enforces _require_owner server-side, so hiding the item
 // is not what keeps a manager out.
-export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout }) {
+export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout, open, onClose }) {
+  // On phones .side is a slide-out drawer (it used to be display:none, which
+  // left the whole app with no navigation at all below 920px). The scrim sits
+  // behind it and closes on tap.
+  const pick = (key) => {
+    onNav(key);
+    if (onClose) onClose();
+  };
   return (
-    <aside className="side">
+    <>
+    {open && <div className="side__scrim" onClick={onClose} />}
+    <aside className={"side" + (open ? " is-open" : "")}>
       <div className="side__brand">
         <div className="side__mark">
           <ShieldCheck size={18} />
@@ -48,7 +57,7 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
             <button
               key={item.key}
               className={"navitem" + (active === item.key ? " active" : "")}
-              onClick={() => onNav(item.key)}
+              onClick={() => pick(item.key)}
             >
               <Icon size={17} />
               {item.label}
@@ -61,7 +70,7 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
         {isOwner && (
           <button
             className={"navitem" + (active === "admin" ? " active" : "")}
-            onClick={() => onNav("admin")}
+            onClick={() => pick("admin")}
             style={{ marginTop: 10 }}
           >
             <SlidersHorizontal size={17} />
@@ -75,7 +84,7 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
             looking for account settings, so it opens the profile. */}
         <button
           className={"side__user side__user--btn" + (active === "profile" ? " active" : "")}
-          onClick={() => onNav("profile")}
+          onClick={() => pick("profile")}
           type="button"
         >
           <div className="avatar">{initials(user.name)}</div>
@@ -89,5 +98,6 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
         </button>
       </div>
     </aside>
+    </>
   );
 }

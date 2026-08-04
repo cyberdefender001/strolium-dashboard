@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Calendar, Scale, FileText, Calculator, FolderKanban, Users } from "lucide-react";
+import { Calendar, Scale, FileText, Calculator, FolderKanban, Users, Menu } from "lucide-react";
 import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
 import { fmtSom } from "../lib/format";
 import Sidebar from "../components/Sidebar.jsx";
@@ -34,6 +34,7 @@ export default function Dashboard({ user, onLogout }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [nav, setNav] = useState("alerts");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
   // The login payload carries name/company/role but no owner flag -- that lives on
@@ -179,6 +180,8 @@ export default function Dashboard({ user, onLogout }) {
         </button>
       )}
       <Sidebar
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
         active={nav}
         onNav={setNav}
         user={user}
@@ -189,7 +192,10 @@ export default function Dashboard({ user, onLogout }) {
 
       <main className="main">
         <div className="topbar">
-          <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button className="burger" onClick={() => setMenuOpen(true)} aria-label="Menyu" type="button">
+              <Menu size={19} />
+            </button>
             <h1>{TITLES[nav]}</h1>
             <div className="sub">{data.org.name}</div>
           </div>
