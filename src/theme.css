@@ -836,114 +836,161 @@ a { color: inherit; }
 .tm-code { color:var(--dim); font-size:12.5px; margin-top:10px; }
 .tm-code b { font-family:var(--font-mono); color:var(--text); letter-spacing:.06em; }
 
-/* ============================================================
-   PHONE LAYOUT  (<= 560px)
-   The stylesheet had exactly one breakpoint, at 920px, so on a
-   390px phone the desktop layout was simply squeezed: 27px
-   monospace KPI numbers overflowed their cards and wrapped
-   mid-word ("925.7 mln" broke across lines), three-column stat
-   grids left ~110px per cell, wide tables forced the page to
-   scroll sideways, and modals sat at a fixed 430-640px.
-   ============================================================ */
-@media (max-width: 560px) {
+/* ══════════════════════════════════════════════════════════════════════
+   PHONE LAYER
+   ──────────────────────────────────────────────────────────────────────
+   The app was built desktop-first with a single breakpoint at 920px, so
+   every layout primitive below that width was simply compressed. This is
+   one deliberate pass over all of them rather than per-symptom patches.
 
-  /* --- page padding: 28px each side ate 15% of a 390px screen --- */
-  .content { padding: 16px 14px 90px; }
+   Rules that govern this layer:
+     · No horizontal page scroll. Wide content scrolls inside its own
+       container, never by moving the page.
+     · Never break a word mid-character. Squeezed columns must scroll,
+       not shatter.
+     · Inputs at 16px minimum, or iOS zooms the whole page on focus.
+     · Touch targets at 44px minimum.
+     · Panels that are side-drawers on desktop become full-screen sheets.
+   ══════════════════════════════════════════════════════════════════════ */
 
-  /* --- KPI cards: the visible bug --- */
-  .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .kpi { padding: 13px 12px; min-width: 0; }
-  .kpi__label { font-size: 11.5px; gap: 5px; }
-  /* fmtSom returns "925.7 mln" and so'm is a separate inline <span>, so the
-     browser wrapped between them and left "mln" stranded on its own line.
-     Keeping the number unbreakable and dropping the unit to its own line fixes
-     it properly -- clipping with an ellipsis would have hidden real digits. */
-  .kpi__value {
-    font-size: 19px;          /* was 27px -- could not fit a half-width card */
-    margin-top: 6px;
-    white-space: nowrap;
-    line-height: 1.15;
-  }
-  .kpi__unit {
-    display: block;
-    margin-left: 0;
-    margin-top: 1px;
-    font-size: 10.5px;
-    letter-spacing: .02em;
-  }
-  .kpi__foot { font-size: 11px; margin-top: 4px; }
+@media (max-width: 700px) {
 
-  /* --- other grids that stayed multi-column --- */
-  .tstats { grid-template-columns: 1fr; gap: 9px; }
-  .xrail  { grid-template-columns: 1fr; gap: 10px; }
-  .pj-grid { grid-template-columns: 1fr; gap: 11px; }
-  .axp__grid { grid-template-columns: 1fr; }
-  .doc-meta { grid-template-columns: 1fr; gap: 9px; }
+  /* ── page frame ───────────────────────────────────────────────── */
+  html, body { overflow-x: hidden; }
+  .shell { grid-template-columns: 1fr; }
+  .main { min-width: 0; }                 /* lets grid children shrink */
+  .content { padding: 14px 13px 96px; min-width: 0; }
 
-  /* --- tables: let them scroll INSIDE their card instead of
-         forcing the whole page sideways --- */
-  .xtable__wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .xtable { font-size: 12px; min-width: 460px; }
-  .xtable thead th,
-  .xtable td { padding: 9px 10px; }
-
-  /* --- modals sized for desktop (430-640px) on a 390px screen --- */
-  .modal__wrap { padding: 12px; align-items: flex-end; }
-  .modal { max-width: 100%; padding: 18px 16px; max-height: 88vh; overflow-y: auto; }
-  .modal__foot { flex-direction: column-reverse; gap: 8px; }
-  .modal__foot .btn { width: 100%; }
-  .drawer { width: 100% !important; max-width: 100%; }
-  .fld__row { flex-direction: column; }
-
-  /* --- NAVIGATION. The sidebar was display:none below 920px, which left the
-         phone with no way to reach Vazifalar, Xarajat, Jamoa or Profil at all.
-         It is now a slide-out drawer opened by the burger in the topbar. --- */
+  /* ── navigation: the sidebar was display:none, leaving the phone
+        with no way to reach any section. It becomes a drawer. ────── */
   .side {
     display: flex !important;
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    width: 264px;
-    max-width: 84vw;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: 268px; max-width: 84vw;
     z-index: 1200;
     transform: translateX(-100%);
     transition: transform .22s ease;
     overflow-y: auto;
   }
   .side.is-open { transform: translateX(0); }
-  .side__scrim {
-    position: fixed; inset: 0;
-    background: rgba(4, 8, 13, .6);
-    z-index: 1150;
-  }
+  .side__scrim { position: fixed; inset: 0; background: rgba(4,8,13,.62); z-index: 1150; }
   .burger {
     display: grid; place-items: center;
-    width: 38px; height: 38px; flex: 0 0 auto;
+    width: 40px; height: 40px; flex: 0 0 auto;
     border: 1px solid var(--line); border-radius: 10px;
     background: var(--panel); color: var(--text); cursor: pointer;
   }
 
-  /* --- headings and topbar --- */
-  .topbar { padding: 12px 0 10px; }
-  .topbar h1 { font-size: 19px; }
-  .period { font-size: 11.5px; padding: 5px 9px; }
+  /* ── topbar ───────────────────────────────────────────────────── */
+  .topbar { padding: 11px 0 10px; gap: 8px; flex-wrap: wrap; }
+  .topbar h1 { font-size: 18px; line-height: 1.2; }
+  .topbar .sub { font-size: 11.5px; }
+  .period { font-size: 11px; padding: 5px 9px; white-space: nowrap; }
 
-  /* --- touch targets: 44px is the accessibility floor --- */
-  .btn, .prof__btn, .eauth__primary, .wl-b { min-height: 44px; }
+  /* ── KPI cards ────────────────────────────────────────────────────
+     fmtSom returns "925.7 mln" with so'm as a separate inline span, so
+     the browser wrapped between them and stranded the unit. The number
+     stays unbreakable; the unit drops to its own line. ─────────────── */
+  .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  .kpi { padding: 13px 12px; min-width: 0; }
+  .kpi__label { font-size: 11.5px; gap: 5px; line-height: 1.25; }
+  .kpi__value { font-size: 19px; margin-top: 6px; white-space: nowrap; line-height: 1.15; }
+  .kpi__unit { display: block; margin: 1px 0 0; font-size: 10.5px; }
+  .kpi__foot { font-size: 11px; margin-top: 5px; }
 
-  /* --- long words (vendor names, emails) must not push the
-         layout wider than the screen --- */
-  .card, .kpi, .xtable td, .prof__card { overflow-wrap: anywhere; }
+  /* ── grids that never collapsed ───────────────────────────────── */
+  .row2, .xrail, .pj-grid, .axp__grid, .doc-meta,
+  .tstats, .adm__tiers { grid-template-columns: 1fr !important; }
+  .adm__totals { grid-template-columns: repeat(2, 1fr); }
+  .adm__row { grid-template-columns: 1fr; gap: 6px; padding: 12px; }
+
+  /* ── TABLES ───────────────────────────────────────────────────────
+     Tasks/Expenses set inline column widths (175+165+235+62 = 637px),
+     which cannot fit 390px: the flexible title column collapsed and its
+     text broke one letter per line. The table keeps its true width and
+     scrolls inside its card; cells never break mid-word. ───────────── */
+  .xtable__wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+  .xtable, .tbl { min-width: 640px; font-size: 12.5px; table-layout: auto; }
+  .xtable thead th, .xtable td,
+  .tbl thead th, .tbl td {
+    padding: 10px; white-space: nowrap;
+    overflow-wrap: normal; word-break: normal;
+  }
+  /* the description column is the one that should wrap — on whole words */
+  .xtable td:nth-child(2), .xtable th:nth-child(2) {
+    white-space: normal; min-width: 190px; overflow-wrap: break-word;
+  }
+  .xtable__wrap::-webkit-scrollbar { height: 3px; }
+  .xtable__wrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  /* ── task / flag detail: a 440px-min side panel on a 390px screen.
+        Becomes a full-screen sheet. ──────────────────────────────── */
+  .tdet {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: 100vh;
+    border-left: none;
+  }
+  .tdet__photo { width: 100%; }
+  .tdet__photo img { height: 150px; }
+  .treview__who { width: auto; flex: 1 1 100%; }
+
+  /* ── modals: fixed at 430–640px. Become bottom sheets. ─────────── */
+  .modal__wrap { padding: 0; align-items: flex-end; }
+  .modal {
+    max-width: 100%; width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding: 18px 15px calc(18px + env(safe-area-inset-bottom));
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal__foot { flex-direction: column-reverse; gap: 8px; }
+  .modal__foot .btn { width: 100%; justify-content: center; }
+  .fld__row { flex-direction: column; }
+  .axp { max-width: 100%; border-radius: 16px 16px 0 0; }
+
+  /* ── forms: 16px stops iOS zooming the page on focus ──────────── */
+  .fld input, .fld select, .fld textarea,
+  .doc-meta input, .xsearch input, .wknote textarea { font-size: 16px; }
+  .xsearch { width: 100%; }
+  .xsearch input { width: 100%; }
+
+  /* ── pill / tab rows scroll instead of stacking three rows tall ─ */
+  .tpills, .adm__tabs {
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap; padding-bottom: 4px;
+  }
+  .tpills > *, .adm__tab { white-space: nowrap; flex: 0 0 auto; }
+  .tpills__search { width: 100%; flex: 1 1 100%; }
+
+  /* ── worker page ──────────────────────────────────────────────── */
+  .wknote { flex-direction: column; align-items: stretch; }
+  .wknote textarea { width: 100%; }
+  .wkadders { gap: 7px; }
+  .lb { padding: 14px; }
+  .lb__x { top: 12px; right: 12px; }
+
+  /* ── touch targets ────────────────────────────────────────────── */
+  .btn, .prof__btn, .eauth__primary, .wl-b, .navitem { min-height: 44px; }
+
+  /* ── long strings in cards (vendor names, emails) may wrap; this is
+        deliberately NOT applied to table cells, where it shattered
+        words one character per line. ─────────────────────────────── */
+  .card, .kpi, .prof__card { overflow-wrap: anywhere; }
 }
 
-/* Very small phones (iPhone SE and similar) */
+/* Small phones (SE-class, ~360px) */
 @media (max-width: 380px) {
   .kpis { grid-template-columns: 1fr; }
   .kpi__value { font-size: 22px; }
+  .adm__totals { grid-template-columns: 1fr; }
 }
 
-/* The burger only exists for the drawer, so it is hidden wherever the sidebar
-   is permanently visible. */
-@media (min-width: 561px) {
-  .burger { display: none; }
-  .side__scrim { display: none; }
+/* The burger and scrim exist only for the drawer. */
+@media (min-width: 701px) {
+  .burger, .side__scrim { display: none; }
 }
