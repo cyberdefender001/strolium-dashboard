@@ -1164,3 +1164,38 @@ a { color: inherit; }
 /* The mark inherits currentColor, so it takes the brand blue in the app chrome
    and plain white wherever it sits on the navy. */
 .login__logo-mark, .side__logo { color: var(--brand, #4D8DF0); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   FIXES — all widths
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* .flag is a <button>. Browsers give buttons their own dark UA text colour and
+   nothing here overrode it, so every alert title rendered near-black on a dark
+   panel -- effectively invisible. The button must inherit the app's text
+   colour, and the title is the primary line so it takes full contrast. */
+.flag { color: var(--text); }
+.flag__title { color: var(--text); font-weight: 600; }
+.flag__desc { color: var(--dim); }
+
+/* The sidebar profile button had width:100% plus 11px padding plus a 1px
+   border with no box-sizing, so its computed width exceeded the sidebar and
+   the border spilled past the edge. */
+.side__user--btn {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.side__user--btn > div:last-child { min-width: 0; flex: 1; overflow: hidden; }
+
+/* The original loader rule sets background/opacity/animation on the same
+   selector, so those declarations survive unless each is restated. The bricks
+   were still running the old 1.4s pulse because only some properties were
+   overridden. */
+.brickload__row i {
+  animation: brickstack 1.5s cubic-bezier(.4, 0, .2, 1) infinite !important;
+  width: 22px !important;
+  height: 9px !important;
+  border-radius: 2.5px !important;
+}
