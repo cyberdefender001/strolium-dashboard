@@ -165,3 +165,22 @@ export function changePassword(old_password, new_password) {
 export function startTelegramLink() {
   return postAuthed("/api/web/account/profile/telegram-link", {});
 }
+
+// One-tap handoff from the Mini App: the URL carries a single-use 60-second
+// code (never a session token), which we trade for a real session here.
+export async function redeemHandoff(token) {
+  const r = await fetch(`${API_BASE}/api/web/account/handoff`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  const text = await r.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    /* non-JSON error page */
+  }
+  if (!r.ok) throw new Error(data.detail || `Xatolik (${r.status})`);
+  return data;
+}
