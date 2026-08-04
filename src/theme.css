@@ -1073,3 +1073,81 @@ a { color: inherit; }
 @media (min-width: 701px) {
   .burger, .side__scrim { display: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   LOADER — all widths
+   Three flat bricks pulsing in place read as a generic spinner and say
+   nothing about the product. Strolium's mark is an hourglass and the
+   product is about deadlines, so the bricks now STACK — each one settles
+   into place like courses of a wall going up, then the row breathes and
+   repeats. Same element, no new markup.
+   ══════════════════════════════════════════════════════════════════════ */
+.brickload { gap: 14px; padding: 56px 0; }
+.brickload__row { gap: 5px; align-items: flex-end; height: 30px; }
+.brickload__row i {
+  width: 22px;
+  height: 9px;
+  border-radius: 2.5px;
+  background: var(--brand, #4D8DF0);
+  opacity: .28;
+  animation: brickstack 1.5s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+@keyframes brickstack {
+  0%   { opacity: .18; transform: translateY(-16px) scaleX(.7); }
+  18%  { opacity: 1;   transform: translateY(0) scaleX(1); }
+  22%  { transform: translateY(0) scaleX(1.12); }   /* the settle */
+  28%  { transform: translateY(0) scaleX(1); }
+  72%  { opacity: 1;   transform: translateY(0) scaleX(1); }
+  100% { opacity: .18; transform: translateY(-16px) scaleX(.7); }
+}
+.brickload__label {
+  color: var(--dim);
+  font-size: 12.5px;
+  letter-spacing: .04em;
+  animation: loadfade 1.5s ease-in-out infinite;
+}
+@keyframes loadfade { 0%, 100% { opacity: .45; } 50% { opacity: .9; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .brickload__row i, .brickload__label { animation-duration: .01ms; animation-iteration-count: 1; opacity: .8; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SIDEBAR PROFILE BLOCK
+   It sat as a bare row at the very bottom with the avatar, name and the
+   word "Profil" all the same weight, so it read as leftover text rather
+   than the account button it is. Now it looks pressable: contained, with
+   the name leading and a quiet caption underneath.
+   ══════════════════════════════════════════════════════════════════════ */
+.side__user--btn {
+  gap: 11px;
+  padding: 10px 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: var(--panel-2, rgba(255,255,255,.03));
+  transition: border-color .15s ease, background .15s ease;
+}
+.side__user--btn:hover {
+  border-color: var(--brand, #4D8DF0);
+  background: rgba(77, 141, 240, .1);
+}
+.side__user--btn .avatar {
+  width: 34px; height: 34px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: var(--brand, #4D8DF0);
+  color: #fff;
+  display: grid; place-items: center;
+  font: 700 12.5px/1 var(--font-body);
+  letter-spacing: .02em;
+}
+.side__user-name {
+  font: 600 13px/1.25 var(--font-body);
+  color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.side__user-mail {
+  font: 500 11px/1.2 var(--font-body);
+  color: var(--faint);
+  margin-top: 2px;
+}
