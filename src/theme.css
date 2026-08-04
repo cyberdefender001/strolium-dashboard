@@ -1074,43 +1074,88 @@ a { color: inherit; }
   .burger, .side__scrim { display: none; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  }
+
 /* ══════════════════════════════════════════════════════════════════════
-   LOADER — all widths
-   Three flat bricks pulsing in place read as a generic spinner and say
-   nothing about the product. Strolium's mark is an hourglass and the
-   product is about deadlines, so the bricks now STACK — each one settles
-   into place like courses of a wall going up, then the row breathes and
-   repeats. Same element, no new markup.
+   SIDEBAR PROFILE BLOCK
+   It sat as a bare row at the very bottom with the avatar, name and the
+   word "Profil" all the same weight, so it read as leftover text rather
+   than the account button it is. Now it looks pressable: contained, with
+   the name leading and a quiet caption underneath.
    ══════════════════════════════════════════════════════════════════════ */
-.brickload { gap: 14px; padding: 56px 0; }
-.brickload__row { gap: 5px; align-items: flex-end; height: 30px; }
-.brickload__row i {
-  width: 22px;
-  height: 9px;
-  border-radius: 2.5px;
+.side__user--btn {
+  gap: 11px;
+  padding: 10px 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: var(--panel-2, rgba(255,255,255,.03));
+  transition: border-color .15s ease, background .15s ease;
+}
+.side__user--btn:hover {
+  border-color: var(--brand, #4D8DF0);
+  background: rgba(77, 141, 240, .1);
+}
+.side__user--btn .avatar {
+  width: 34px; height: 34px;
+  flex: 0 0 auto;
+  border-radius: 9px;
   background: var(--brand, #4D8DF0);
-  opacity: .28;
-  animation: brickstack 1.5s cubic-bezier(.4, 0, .2, 1) infinite;
+  color: #fff;
+  display: grid; place-items: center;
+  font: 700 12.5px/1 var(--font-body);
+  letter-spacing: .02em;
 }
-@keyframes brickstack {
-  0%   { opacity: .18; transform: translateY(-16px) scaleX(.7); }
-  18%  { opacity: 1;   transform: translateY(0) scaleX(1); }
-  22%  { transform: translateY(0) scaleX(1.12); }   /* the settle */
-  28%  { transform: translateY(0) scaleX(1); }
-  72%  { opacity: 1;   transform: translateY(0) scaleX(1); }
-  100% { opacity: .18; transform: translateY(-16px) scaleX(.7); }
+.side__user-name {
+  font: 600 13px/1.25 var(--font-body);
+  color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.brickload__label {
-  color: var(--dim);
-  font-size: 13px;
-  letter-spacing: .04em;
-  animation: loadfade 1.5s ease-in-out infinite;
+.side__user-mail {
+  font: 500 11px/1.2 var(--font-body);
+  color: var(--faint);
+  margin-top: 2px;
 }
-@keyframes loadfade { 0%, 100% { opacity: .45; } 50% { opacity: .9; } }
+
+/* Wordmark lockup: the mark sits optically low next to cap-height letters,
+   so it is nudged up rather than baseline-aligned. */
+.stlogo { display: inline-flex; align-items: center; gap: 9px; }
+.stlogo svg { transform: translateY(-1px); flex: 0 0 auto; }
+.stlogo__word {
+  font: 700 17px/1 var(--font-display, inherit);
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+/* The mark inherits currentColor, so it takes the brand blue in the app chrome
+   and plain white wherever it sits on the navy. */
+.login__logo-mark, .side__logo { color: var(--brand, #4D8DF0); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   FIXES — all widths
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* .flag is a <button>. Browsers give buttons their own dark UA text colour and
+   nothing here overrode it, so every alert title rendered near-black on a dark
+   panel -- effectively invisible. The button must inherit the app's text
+   colour, and the title is the primary line so it takes full contrast. */
+.flag { color: var(--text); }
+.flag__title { color: var(--text); font-weight: 600; }
+.flag__desc { color: var(--dim); }
+
+/* The sidebar profile button had width:100% plus 11px padding plus a 1px
+   border with no box-sizing, so its computed width exceeded the sidebar and
+   the border spilled past the edge. */
+.side__user--btn {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.side__user--btn > div:last-child { min-width: 0; flex: 1; overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
-  .brickload__row i, .brickload__label { animation-duration: .01ms; animation-iteration-count: 1; opacity: .8; }
-}
+  }
 
 /* ══════════════════════════════════════════════════════════════════════
    SIDEBAR PROFILE BLOCK
@@ -1198,39 +1243,83 @@ a { color: inherit; }
    itself within 260px, i.e. hard against the left edge. It now spans every grid
    column and fills the viewport, so it centres on the page no matter which
    container it is dropped into. */
+
+/* ── LOADER ────────────────────────────────────────────────────────────
+   The full-page branch renders this inside .shell, a 260px + 1fr grid, so
+   it used to land in the sidebar column and hug the left edge. It now
+   spans every column and fills the viewport.
+
+   The animation is the mark itself. Blue rectangles pulsing read as an
+   unfinished skeleton; an hourglass reads as time passing, which is both
+   what the logo is and what a loader means. It runs, it gets turned over,
+   it runs again. Deliberately slow — a loader that thrashes reads as panic.
+   ─────────────────────────────────────────────────────────────────────── */
 .brickload {
   grid-column: 1 / -1;
   width: 100%;
-  min-height: 70vh;
-  gap: 16px !important;
-  padding: 24px !important;
+  min-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 24px;
 }
-.brickload__mark { color: var(--brand, #4D8DF0); line-height: 0; }
-.brickload__mark svg { width: 46px; height: auto; }
+
+.brickload__glass {
+  color: var(--brand, #4D8DF0);
+  line-height: 0;
+  transform-origin: 50% 50%;
+  animation: glassflip 2.8s cubic-bezier(.7, 0, .3, 1) infinite;
+}
+.brickload__glass svg { display: block; }
+
+/* The hold before each turn is the point: that is the sand still running. */
+@keyframes glassflip {
+  0%, 40%   { transform: rotate(0deg); }
+  56%, 90%  { transform: rotate(180deg); }
+  100%      { transform: rotate(360deg); }
+}
+
 .brickload__word {
-  font: 700 21px/1 var(--font-display, inherit);
-  letter-spacing: .2em;
+  margin-top: 22px;
+  font: 700 20px/1 var(--font-display, inherit);
+  letter-spacing: .26em;
+  text-indent: .26em;        /* optical: tracking otherwise shifts it left */
   color: var(--text);
 }
-.brickload__row {
-  width: 104px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  justify-content: center;
-  align-items: flex-start;
-  height: auto;
+
+/* One measured pass per turn, so the rail and the glass keep the same beat. */
+.brickload__rail {
+  position: relative;
+  width: 132px;
+  height: 2px;
+  margin-top: 20px;
+  border-radius: 2px;
+  background: var(--line-soft, rgba(255,255,255,.09));
+  overflow: hidden;
 }
-.brickload__row i {
-  width: 48px !important;
-  height: 15px !important;
-  border-radius: 2.5px !important;
+.brickload__rail span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: 2px;
   background: var(--brand, #4D8DF0);
-  opacity: 0;
-  animation: brickstack 1.6s ease-in-out infinite !important;
+  animation: railrun 1.4s cubic-bezier(.65, 0, .35, 1) infinite;
 }
-@keyframes brickstack {
-  0%        { opacity: 0;   transform: translateY(-9px) scaleX(.75); }
-  14%, 62%  { opacity: 1;   transform: translateY(0) scaleX(1); }
-  100%      { opacity: 0;   transform: translateY(0) scaleX(1); }
+@keyframes railrun {
+  0%   { transform: translateX(-105%); }
+  100% { transform: translateX(345%); }
+}
+
+.brickload__label {
+  margin-top: 14px;
+  color: var(--dim);
+  font-size: 13px;
+  letter-spacing: .03em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brickload__glass { animation: none; }
+  .brickload__rail span { animation: none; width: 100%; }
 }

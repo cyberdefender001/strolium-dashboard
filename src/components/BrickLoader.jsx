@@ -1,28 +1,23 @@
 import { StroliumMark } from "./StroliumMark";
 
-// The web loader.
+// The loader.
 //
-// It used to be three bare bricks pulsing in place, which said nothing about
-// the product and did not match the Mini App's splash. Both now read the same
-// way and in the same order: mark, wordmark, then the wall going up. Keeping
-// the two surfaces identical matters more than either being clever -- a user
-// moving between the bot and the site should not feel they changed product.
+// It used to be blue rectangles pulsing, which read as an unfinished skeleton
+// rather than an intentional state. The mark is an HOURGLASS -- the oldest
+// loading metaphor there is -- so the loader is simply the logo doing what an
+// hourglass does: it runs, then it gets flipped, then it runs again.
 //
-// The bricks carry their delays inline so the stagger survives any stylesheet.
-
-const DELAYS = [0, 0.1, 0.2, 0.3, 0.4, 0.5];
+// The animation IS the brand asset. Nothing generic bolted on beside it.
 
 export default function BrickLoader({ label }) {
   return (
     <div className="brickload">
-      <div className="brickload__mark">
-        <StroliumMark size={30} />
+      <div className="brickload__glass">
+        <StroliumMark size={54} />
       </div>
       <div className="brickload__word">STROLIUM</div>
-      <div className="brickload__row">
-        {DELAYS.map((d) => (
-          <i key={d} style={{ animationDelay: `${d}s` }} />
-        ))}
+      <div className="brickload__rail">
+        <span />
       </div>
       {label && <span className="brickload__label">{label}</span>}
     </div>
