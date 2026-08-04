@@ -902,7 +902,23 @@ a { color: inherit; }
   .row2, .xrail, .pj-grid, .axp__grid, .doc-meta,
   .tstats, .adm__tiers { grid-template-columns: 1fr !important; }
   .adm__totals { grid-template-columns: repeat(2, 1fr); }
-  .adm__row { grid-template-columns: 1fr; gap: 6px; padding: 12px; }
+  /* The company list's header row aligns column-for-column with the data rows,
+     so collapsing it to one column orphaned "Odam"/"Faol vazifa" from their
+     numbers. Header and rows keep the SAME tracks, just narrower: the two count
+     columns shrink and the tariff column is dropped on the smallest screens. */
+  .adm__row, .adm__row--head {
+    grid-template-columns: 1fr auto;
+    gap: 6px 10px; padding: 12px;
+    align-items: start;
+  }
+  /* Odam / Faol vazifa are dropped: both numbers already appear in the meta
+     line beneath the company name, so the columns were pure duplication once
+     there was no room for them. The trial pill stays -- it is the one piece of
+     status the owner opens this screen for. */
+  .adm__row > *:nth-child(3), .adm__row > *:nth-child(4),
+  .adm__row--head > *:nth-child(3), .adm__row--head > *:nth-child(4) { display: none; }
+  .adm__cname { font-size: 14px; }
+  .adm__cmeta { font-size: 11px; line-height: 1.35; }
 
   /* ── TABLES ───────────────────────────────────────────────────────
      Tasks/Expenses set inline column widths (175+165+235+62 = 637px),
@@ -914,7 +930,21 @@ a { color: inherit; }
     -webkit-overflow-scrolling: touch;
     border-radius: 12px;
   }
-  .xtable, .tbl { min-width: 640px; font-size: 12.5px; table-layout: auto; }
+  /* .tbl tables sit bare inside a .card with no scroll wrapper, so their right
+     columns were clipped off the screen entirely -- Manzil, Rol and Sarflandi
+     were invisible with no way to reach them. Making the TABLE itself the
+     scroll container works without :has(), which older mobile browsers lack.
+     thead/tbody are re-declared as table rows so the header stays aligned. */
+  .tbl {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+  .tbl thead, .tbl tbody { display: table; width: 100%; min-width: 540px; }
+  .tbl th, .tbl td { padding: 10px; }
+  .xtable { min-width: 640px; font-size: 12.5px; table-layout: auto; }
   .xtable thead th, .xtable td,
   .tbl thead th, .tbl td {
     padding: 10px; white-space: nowrap;
@@ -973,6 +1003,17 @@ a { color: inherit; }
   .wkadders { gap: 7px; }
   .lb { padding: 14px; }
   .lb__x { top: 12px; right: 12px; }
+
+  /* ── page headers: the title and its action button ("+ Yangi loyiha",
+        "+ Xarajat qo'shish") were crushed side by side. Stack them. ──── */
+  .xhead { flex-wrap: wrap; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
+  .xhead__title { font-size: 19px; }
+  .xhead .btn-primary { width: 100%; justify-content: center; }
+
+  /* ── budget rail cards: the amount sat tight against the bar below ── */
+  .xrail__card { padding: 13px 12px; }
+  .xrail__spent { line-height: 1.25; }
+  .xrail__bar { margin-top: 9px; }
 
   /* ── touch targets ────────────────────────────────────────────── */
   .btn, .prof__btn, .eauth__primary, .wl-b, .navitem { min-height: 44px; }
