@@ -990,6 +990,19 @@ a { color: inherit; }
   .xsearch { width: 100%; }
   .xsearch input { width: 100%; }
 
+  /* Xarajatlar filter bar: search + project select + total shared one flex row,
+     so the total was squeezed into the leftover sliver and "925.7 mln so'm"
+     broke across three lines. Each element gets its own full-width line. */
+  .xfilters { flex-wrap: wrap; gap: 8px; }
+  .xfilters .xsearch { flex: 1 1 100%; }
+  .xfilters select { flex: 1 1 100%; width: 100%; font-size: 15px; }
+  .xfilters__tot {
+    margin-left: 0;
+    flex: 1 1 100%;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
   /* ── pill / tab rows scroll instead of stacking three rows tall ─ */
   .tpills, .adm__tabs {
     overflow-x: auto; -webkit-overflow-scrolling: touch;
