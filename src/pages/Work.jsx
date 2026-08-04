@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import {
-  ShieldCheck, LogOut, ListChecks, Wallet, Calendar, Clock, X,
+  LogOut, ListChecks, Wallet, Calendar, Clock, X,
   ImagePlus, Paperclip, Send, FileText, MessageSquare, Plus, Check,
   User as UserIcon,
 } from "lucide-react";
+import { StroliumMark } from "../components/StroliumMark";
 import {
   getWorkerBoard, getWorkerTask, workerAddPhoto, workerAddDocument,
   workerAddNote, workerDeleteAttachment, workerSubmit, listProjects, fileUrl,
@@ -463,7 +464,7 @@ export default function Work({ user, onLogout }) {
       <aside className="side">
         <div className="side__brand">
           <div className="side__mark">
-            <ShieldCheck size={18} />
+            <StroliumMark size={18} />
           </div>
           <span className="side__name">Strolium</span>
         </div>

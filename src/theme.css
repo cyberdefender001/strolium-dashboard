@@ -1151,3 +1151,16 @@ a { color: inherit; }
   color: var(--faint);
   margin-top: 2px;
 }
+
+/* Wordmark lockup: the mark sits optically low next to cap-height letters,
+   so it is nudged up rather than baseline-aligned. */
+.stlogo { display: inline-flex; align-items: center; gap: 9px; }
+.stlogo svg { transform: translateY(-1px); flex: 0 0 auto; }
+.stlogo__word {
+  font: 700 17px/1 var(--font-display, inherit);
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+/* The mark inherits currentColor, so it takes the brand blue in the app chrome
+   and plain white wherever it sits on the navy. */
+.login__logo-mark, .side__logo { color: var(--brand, #4D8DF0); }

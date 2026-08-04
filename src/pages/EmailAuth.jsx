@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ShieldCheck, Mail, ArrowLeft } from "lucide-react";
+import { Mail, ArrowLeft } from "lucide-react";
+import { StroliumMark } from "../components/StroliumMark";
 import {
   requestEmailCode,
   emailSignup,
@@ -170,7 +171,7 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
     <div className="login__form">
       <div className="login__logo">
         <div className="login__logo-mark">
-          <ShieldCheck size={20} />
+          <StroliumMark size={20} />
         </div>
         <span className="login__logo-name">Strolium</span>
       </div>

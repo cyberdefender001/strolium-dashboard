@@ -1,5 +1,4 @@
 import {
-  ShieldCheck,
   Flag,
   Wallet,
   Receipt,
@@ -10,6 +9,7 @@ import {
   SlidersHorizontal,
   LogOut,
 } from "lucide-react";
+import { StroliumMark } from "./StroliumMark";
 import { initials } from "../lib/format";
 
 const NAV = [
@@ -40,7 +40,7 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
     <aside className={"side" + (open ? " is-open" : "")}>
       <div className="side__brand">
         <div className="side__mark">
-          <ShieldCheck size={18} />
+          <StroliumMark size={18} />
         </div>
         <span className="side__name">Strolium</span>
       </div>

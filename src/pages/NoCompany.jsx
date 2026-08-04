@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ShieldCheck, Eye, Wallet, ClipboardCheck, Bot } from "lucide-react";
+import { Eye, Wallet, ClipboardCheck, Bot } from "lucide-react";
+import { StroliumMark } from "../components/StroliumMark";
 import { joinCompany, saveEmailSession } from "../api/emailauth";
 
 // Shown to someone who has an account but belongs to no company yet.
@@ -104,7 +105,7 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
       <div className="nocomp__bar">
         <div className="login__logo">
           <div className="login__logo-mark">
-            <ShieldCheck size={20} />
+            <StroliumMark size={20} />
           </div>
           <span className="login__logo-name">Strolium</span>
         </div>

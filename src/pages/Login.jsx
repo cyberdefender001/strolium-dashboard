@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ShieldCheck, Smartphone } from "lucide-react";
+import { Smartphone } from "lucide-react";
+import { StroliumMark } from "../components/StroliumMark";
 import { loginWithTelegram, requestLoginCode, pollLoginCode } from "../auth";
 import { TG_BOT } from "../config";
 import EmailAuth from "./EmailAuth";
@@ -112,7 +113,7 @@ export default function Login({ onLogin }) {
       <div className="login__brandside">
         <div className="login__logo">
           <div className="login__logo-mark">
-            <ShieldCheck size={20} />
+            <StroliumMark size={20} />
           </div>
           <span className="login__logo-name">Strolium</span>
         </div>
