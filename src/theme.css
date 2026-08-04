@@ -1189,13 +1189,35 @@ a { color: inherit; }
 }
 .side__user--btn > div:last-child { min-width: 0; flex: 1; overflow: hidden; }
 
-/* The original loader rule sets background/opacity/animation on the same
-   selector, so those declarations survive unless each is restated. The bricks
-   were still running the old 1.4s pulse because only some properties were
-   overridden. */
+/* The loader now mirrors the Mini App splash: mark, wordmark, then a wall of
+   bricks going up. Two bricks per row so it reads as courses being laid, not a
+   progress bar. !important on the animation because the original rule declares
+   background, opacity and animation together on the same selector. */
+.brickload__mark { color: var(--brand, #4D8DF0); line-height: 0; }
+.brickload__word {
+  font: 700 15px/1 var(--font-display, inherit);
+  letter-spacing: .18em;
+  color: var(--text);
+}
+.brickload__row {
+  width: 74px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  align-items: flex-start;
+  height: auto;
+}
 .brickload__row i {
-  animation: brickstack 1.5s cubic-bezier(.4, 0, .2, 1) infinite !important;
-  width: 22px !important;
-  height: 9px !important;
+  width: 33px !important;
+  height: 11px !important;
   border-radius: 2.5px !important;
+  background: var(--brand, #4D8DF0);
+  opacity: 0;
+  animation: brickstack 1.6s ease-in-out infinite !important;
+}
+@keyframes brickstack {
+  0%        { opacity: 0;   transform: translateY(-9px) scaleX(.75); }
+  14%, 62%  { opacity: 1;   transform: translateY(0) scaleX(1); }
+  100%      { opacity: 0;   transform: translateY(0) scaleX(1); }
 }
