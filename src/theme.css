@@ -835,3 +835,72 @@ a { color: inherit; }
   padding:10px 14px; font-size:12.5px; }
 .tm-code { color:var(--dim); font-size:12.5px; margin-top:10px; }
 .tm-code b { font-family:var(--font-mono); color:var(--text); letter-spacing:.06em; }
+
+/* ============================================================
+   PHONE LAYOUT  (<= 560px)
+   The stylesheet had exactly one breakpoint, at 920px, so on a
+   390px phone the desktop layout was simply squeezed: 27px
+   monospace KPI numbers overflowed their cards and wrapped
+   mid-word ("925.7 mln" broke across lines), three-column stat
+   grids left ~110px per cell, wide tables forced the page to
+   scroll sideways, and modals sat at a fixed 430-640px.
+   ============================================================ */
+@media (max-width: 560px) {
+
+  /* --- page padding: 28px each side ate 15% of a 390px screen --- */
+  .content { padding: 16px 14px 90px; }
+
+  /* --- KPI cards: the visible bug --- */
+  .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .kpi { padding: 13px 12px; min-width: 0; }
+  .kpi__label { font-size: 11.5px; gap: 5px; }
+  .kpi__value {
+    font-size: 20px;          /* was 27px -- overflowed at 390px */
+    margin-top: 6px;
+    white-space: nowrap;       /* never break "925.7 mln" again */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .kpi__unit { font-size: 11px; margin-left: 3px; }
+  .kpi__foot { font-size: 11px; margin-top: 4px; }
+
+  /* --- other grids that stayed multi-column --- */
+  .tstats { grid-template-columns: 1fr; gap: 9px; }
+  .xrail  { grid-template-columns: 1fr; gap: 10px; }
+  .pj-grid { grid-template-columns: 1fr; gap: 11px; }
+  .axp__grid { grid-template-columns: 1fr; }
+  .doc-meta { grid-template-columns: 1fr; gap: 9px; }
+
+  /* --- tables: let them scroll INSIDE their card instead of
+         forcing the whole page sideways --- */
+  .xtable__wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .xtable { font-size: 12px; min-width: 460px; }
+  .xtable thead th,
+  .xtable td { padding: 9px 10px; }
+
+  /* --- modals sized for desktop (430-640px) on a 390px screen --- */
+  .modal__wrap { padding: 12px; align-items: flex-end; }
+  .modal { max-width: 100%; padding: 18px 16px; max-height: 88vh; overflow-y: auto; }
+  .modal__foot { flex-direction: column-reverse; gap: 8px; }
+  .modal__foot .btn { width: 100%; }
+  .drawer { width: 100% !important; max-width: 100%; }
+  .fld__row { flex-direction: column; }
+
+  /* --- headings and topbar --- */
+  .topbar { padding: 12px 0 10px; }
+  .topbar h1 { font-size: 19px; }
+  .period { font-size: 11.5px; padding: 5px 9px; }
+
+  /* --- touch targets: 44px is the accessibility floor --- */
+  .btn, .prof__btn, .eauth__primary, .wl-b { min-height: 44px; }
+
+  /* --- long words (vendor names, emails) must not push the
+         layout wider than the screen --- */
+  .card, .kpi, .xtable td, .prof__card { overflow-wrap: anywhere; }
+}
+
+/* Very small phones (iPhone SE and similar) */
+@media (max-width: 380px) {
+  .kpis { grid-template-columns: 1fr; }
+  .kpi__value { font-size: 22px; }
+}
