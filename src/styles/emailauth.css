@@ -287,11 +287,8 @@
   padding: 26px clamp(16px, 4vw, 32px) 56px;
 }
 
-.prof__title {
-  margin: 0 0 20px;
-  font: 700 clamp(20px, 3vw, 26px) inherit;
-  letter-spacing: -0.01em;
-}
+/* The amber topbar already names the page; this repeated it. */
+.prof__title { display: none; }
 
 .prof__card {
   margin-bottom: 16px;

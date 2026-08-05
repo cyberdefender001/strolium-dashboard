@@ -287,6 +287,7 @@ a { color: inherit; }
   display: grid; place-items: center; font-weight: 600; font-size: 13px;
   letter-spacing: .02em;
 }
+.side__user-txt { min-width: 0; overflow: hidden; }
 .side__user-name { font-size: 14px; font-weight: 600; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
 .side__user-mail { font-size: 12px; color: var(--amber-on); opacity: .85; margin-top: 1px; }
 
@@ -299,6 +300,7 @@ a { color: inherit; }
 .rail-mini .navitem .badge,
 .rail-mini .navitem span,
 .rail-mini .side__collapse span,
+.rail-mini .side__user-txt,
 .rail-mini .side__user-name,
 .rail-mini .side__user-mail { display: none; }
 .rail-mini .navitem { padding-left: 0; justify-content: center; border-left: 0; }
@@ -559,10 +561,10 @@ a { color: inherit; }
 .sec-intro { margin: 4px 0 12px; }
 .sec-intro:not(:first-child) { margin-top: 28px; }
 .sec-intro h2 {
-  font-family: var(--font-display); font-weight: 600; font-size: 17px;
+  font-family: var(--font-display); font-weight: 600; font-size: 18px;
   margin: 0; letter-spacing: -0.01em; color: var(--text);
 }
-.sec-intro p { margin: 3px 0 0; font-size: 13px; color: var(--dim); max-width: 70ch; }
+.sec-intro p { margin: 3px 0 0; font-size: 14px; color: var(--dim); max-width: 70ch; }
 
 /* ---- brick loader (web) ---- */
 .brickload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 48px 0; }
@@ -576,9 +578,12 @@ a { color: inherit; }
    not scroll a phone column. Flags live inline in the table because the whole
    product exists to make suspicious spending impossible to miss. */
 
-.xhead { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px; }
-.xhead__title { font-family:var(--font-display); font-size:22px; font-weight:700; letter-spacing:-.02em; margin:0; }
-.xhead__sub { color:var(--faint); font-size:12.5px; margin-top:3px; }
+.xhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; min-height:34px; }
+/* The topbar already names the page. A second 22px title repeated it, made
+   every menu look different from Belgilar (which has none), and pushed the
+   real content below the fold. */
+.xhead__title { display:none; }
+.xhead__sub { color:var(--dim); font-size:14px; margin-top:0; }
 
 /* budget rail: every project's burn, at a glance */
 .xrail { display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:12px; margin-bottom:18px; }

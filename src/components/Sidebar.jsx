@@ -103,7 +103,7 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
           type="button"
         >
           <div className="avatar">{initials(user.name)}</div>
-          <div>
+          <div className="side__user-txt">
             <div className="side__user-name">{user.name}</div>
             <div className="side__user-mail">{user.email || "Profil"}</div>
           </div>
