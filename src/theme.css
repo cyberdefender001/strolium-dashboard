@@ -381,8 +381,8 @@ a { color: inherit; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 15px 18px; border-bottom: 1px solid var(--line-soft);
 }
-.card__title { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 600; font-size: 15px; }
-.card__title .count { font-family: var(--font-mono); font-size: 12px; color: var(--faint); }
+.card__title { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+.card__title .count { font-family: var(--font-mono); font-size: 13px; color: var(--dim); }
 
 /* Flag feed */
 .flag {
@@ -834,28 +834,28 @@ a { color: inherit; }
 .tstat { background:var(--panel); border:1px solid var(--line-soft); border-radius:var(--radius);
   padding:14px 16px; text-align:left; cursor:pointer; transition:border-color .12s; }
 .tstat:hover { border-color:var(--line); }
-.tstat.on { border-color:var(--brand-dim); background:rgba(77,141,240,.06); }
-.tstat__n { font-family:var(--font-display); font-size:24px; font-weight:700; line-height:1; }
-.tstat__l { color:var(--faint); font-size:12px; margin-top:6px; }
+.tstat.on { border-color:var(--navy); background:var(--panel-3); }
+.tstat__n { font-family:var(--font-display); font-size:26px; font-weight:700; line-height:1; }
+.tstat__l { color:var(--dim); font-size:14px; margin-top:6px; }
 .tstat--review .tstat__n { color:var(--warn); }
 .tstat--over .tstat__n { color:var(--danger); }
 .tstat--act .tstat__n { color:var(--brand); }
 
 .tpills { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
-.tpill { background:var(--ink); border:1px solid var(--line-soft); border-radius:999px;
+.tpill { background:var(--panel); border:1px solid var(--line); border-radius:999px; font-size:14px;
   padding:7px 13px; color:var(--dim); font:600 12.5px/1 var(--font-body); cursor:pointer;
   display:inline-flex; align-items:center; gap:6px; }
 .tpill:hover { border-color:var(--line); }
-.tpill.on { background:rgba(77,141,240,.14); border-color:var(--brand-dim); color:var(--brand); }
-.tpill .c { color:var(--faint); font-family:var(--font-mono); font-size:11px; }
-.tpill.on .c { color:var(--brand); }
+.tpill.on { background:var(--panel-3); border-color:var(--navy); color:var(--navy); font-weight:500; }
+.tpill .c { color:var(--dim); font-family:var(--font-mono); font-size:12.5px; }
+.tpill.on .c { color:var(--navy); }
 .tpills__search { margin-left:auto; }
 
 .ttable td { vertical-align:middle; }
-.tnum { position:relative; color:var(--faint); font-family:var(--font-mono); font-size:12px;
+.tnum { position:relative; color:var(--dim); font-family:var(--font-mono); font-size:13.5px;
   padding-left:20px !important; }
 .tspine { position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:0 2px 2px 0; }
-.tbadge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600;
+.tbadge { display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:600;
   margin-left:9px; flex:none; }
 .tbadge i { width:5px; height:5px; border-radius:50%; display:block; }
 .tworker { white-space:nowrap; }
@@ -887,13 +887,16 @@ a { color: inherit; }
   padding:1px 7px; font-size:10.5px; font-weight:700; flex:none; }
 
 
-/* task drawer: fill the full height, a touch wider, slide from the right */
-.drawer-bg { position:fixed; inset:0; background:rgba(4,8,13,.55); z-index:900;
+/* task drawer: a touch wider, slides from the right.
+   NOTE: this rule sits AFTER the .drawer-bg above and used to reset inset to 0,
+   which is why the amber header kept darkening no matter what the first rule
+   said. Both must agree. */
+.drawer-bg { position:fixed; inset:64px 0 0 0; background:rgba(6,16,35,.38); z-index:900;
   display:flex; justify-content:flex-end; }
-.tdet { max-height:none; height:100vh; max-width:560px; width:46vw; min-width:440px;
+.tdet { max-height:none; height:calc(100vh - 64px); max-width:560px; width:46vw; min-width:440px;
   border-radius:0; border-right:none; border-top:none; border-bottom:none;
   border-left:1px solid var(--line); box-shadow:-24px 0 60px rgba(0,0,0,.5);
-  overflow-y:auto; }
+  overflow-y:auto; box-shadow:none; }
 
 /* photo lightbox -- opens in-page, not a new tab */
 .lb { position:fixed; inset:0; z-index:1200; background:rgba(4,8,13,.9);
