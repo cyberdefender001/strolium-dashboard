@@ -42,7 +42,7 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
     <aside className={"side" + (open ? " is-open" : "")}>
       <div className="side__brand">
         <div className="side__mark">
-          <StroliumMark size={21} />
+          <StroliumMark size={26} />
         </div>
         <span className="side__name">Strolium</span>
       </div>

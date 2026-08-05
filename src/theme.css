@@ -205,17 +205,17 @@ a { color: inherit; }
 }
 
 .side__brand {
-  display: flex; align-items: center; gap: 9px;
-  height: 56px; padding-left: 20px;
+  display: flex; align-items: center; gap: 10px;
+  height: 64px; padding-left: 20px;
   border-bottom: 1px solid rgba(6,16,35,.16);
 }
 .side__mark { color: var(--navy); line-height: 0; flex: 0 0 auto; }
 /* sized by HEIGHT: the hourglass is 512x594, so sizing by width leaves it
    optically smaller than the letters beside it */
-.side__mark svg { height: 21px; width: auto; display: block; }
+.side__mark svg { height: 26px; width: auto; display: block; }
 .side__name {
-  font-family: var(--font-display); font-weight: 500; font-size: 17px;
-  letter-spacing: -.02em; color: var(--navy); white-space: nowrap;
+  font-family: var(--font-display); font-weight: 600; font-size: 20px;
+  letter-spacing: -.025em; color: var(--navy); white-space: nowrap;
 }
 
 .side__org {
@@ -258,23 +258,33 @@ a { color: inherit; }
 .side__collapse svg { width: 18px; flex: 0 0 auto; }
 .side__collapse:hover { color: var(--navy); }
 
-.side__foot { margin-top: auto; padding: 0 8px; }
+/* The account block sits in its own band at the foot of the rail, separated by
+   a rule, so it reads as a distinct region rather than a seventh nav item that
+   happens to be at the bottom. */
+.side__foot {
+  margin-top: auto; padding: 10px 8px 0;
+  border-top: 1px solid rgba(6,16,35,.16);
+}
 .side__user {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 11px;
   width: 100%; box-sizing: border-box; min-width: 0;
-  padding: 8px 9px; border-radius: var(--radius);
-  background: none; border: 1px solid transparent;
+  padding: 9px 10px; border-radius: var(--radius);
+  background: rgba(6,16,35,.06); border: 1px solid transparent;
   text-align: left; cursor: pointer; overflow: hidden;
+  transition: background .12s, border-color .12s;
 }
-.side__user:hover { background: rgba(6,16,35,.08); border-color: rgba(6,16,35,.2); }
+.side__user:hover { background: rgba(6,16,35,.12); border-color: rgba(6,16,35,.24); }
 .side__user.active { background: var(--amber-active); }
+.side__user.active .side__user-name { color: #fff; }
+.side__user.active .side__user-mail { color: rgba(255,255,255,.75); }
 .avatar {
-  width: 30px; height: 30px; border-radius: var(--radius);
+  width: 34px; height: 34px; border-radius: var(--radius);
   background: var(--navy); color: #fff; flex: 0 0 auto;
-  display: grid; place-items: center; font-weight: 600; font-size: 12px;
+  display: grid; place-items: center; font-weight: 600; font-size: 13px;
+  letter-spacing: .02em;
 }
-.side__user-name { font-size: 13px; font-weight: 500; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.side__user-mail { font-size: 11px; color: var(--amber-on); opacity: .8; }
+.side__user-name { font-size: 13.5px; font-weight: 600; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
+.side__user-mail { font-size: 11px; color: var(--amber-on); opacity: .85; margin-top: 1px; }
 
 /* collapsed: labels hide, icons centre, the mark holds on its own */
 .rail-mini .side__brand { padding-left: 0; justify-content: center; }
@@ -290,13 +300,17 @@ a { color: inherit; }
 .rail-mini .side__collapse { padding-left: 0; justify-content: center; }
 .rail-mini .side__user { justify-content: center; padding: 8px 0; }
 
+.side__foot .logout { margin-top: 6px; }
+/* --line-soft and --dim are page-canvas colours; on the amber rail they are
+   nearly invisible. The logout gets rail-native values instead. */
 .logout {
-  margin-top: 6px; width: 100%; display: flex; align-items: center; gap: 9px;
-  padding: 9px 12px; border-radius: 8px; background: none;
-  border: 1px solid var(--line-soft); color: var(--dim); font-size: 13px;
-  transition: border-color .12s, color .12s;
+  margin: 6px 0 10px; width: 100%; display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px; border-radius: var(--radius); background: none;
+  border: 1px solid rgba(6,16,35,.2); color: var(--amber-on); font-size: 13px;
+  cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
 }
-.logout:hover { color: var(--text); border-color: var(--line); }
+.logout:hover { color: var(--navy); border-color: rgba(6,16,35,.4); background: rgba(6,16,35,.07); }
 
 /* ---------- Main ---------- */
 .main { overflow-y: auto; }
@@ -305,7 +319,7 @@ a { color: inherit; }
    page hairline, or the seam shows. */
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 22px; height: 56px; box-sizing: border-box;
+  padding: 0 22px; height: 64px; box-sizing: border-box;
   border-bottom: 1px solid rgba(6,16,35,.16);
   position: sticky; top: 0; background: var(--amber); z-index: 5;
 }
@@ -404,14 +418,20 @@ a { color: inherit; }
 .pill.bad { background: var(--danger-bg); color: var(--danger); }
 
 /* Drawer (flag detail) */
+/* The scrim starts BELOW the 56px header band so the amber stays amber while a
+   detail is open. Covering it turned the rail and topbar muddy brown, which
+   made the app look like it had dimmed rather than opened something. */
 .drawer-bg {
-  position: fixed; inset: 0; background: rgba(6,10,16,0.55);
+  position: fixed; inset: 64px 0 0 0; background: rgba(6,16,35,0.38);
   display: flex; justify-content: flex-end; z-index: 50;
 }
+.drawer-bg .drawer { height: 100%; }
 .drawer {
-  width: 440px; max-width: 92vw; height: 100%;
+  width: 440px; max-width: 92vw;
+  position: fixed; top: 0; right: 0; bottom: 0;
   background: var(--panel); border-left: 1px solid var(--line);
   display: flex; flex-direction: column; overflow-y: auto;
+  z-index: 60;
 }
 .drawer__head {
   display: flex; align-items: flex-start; gap: 13px;
@@ -594,7 +614,7 @@ a { color: inherit; }
 .xnote { display:flex; align-items:center; gap:6px; color:var(--faint); font-size:11.5px; margin-top:11px; }
 
 /* add-expense modal */
-.modal__wrap { position:fixed; inset:0; background:rgba(6,16,35,.45); display:flex; align-items:center;
+.modal__wrap { position:fixed; inset:64px 0 0 0; background:rgba(6,16,35,.38); display:flex; align-items:center;
                justify-content:center; z-index:1000; padding:24px; }
 .modal { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px;
          width:100%; max-width:430px; box-shadow:0 24px 60px rgba(0,0,0,.55); }
@@ -1047,6 +1067,10 @@ a { color: inherit; }
   }
   .xtable__wrap::-webkit-scrollbar { height: 3px; }
   .xtable__wrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  /* On a phone the header is not a fixed band to preserve, so scrims cover the
+     full viewport again -- otherwise a 56px strip of amber floats above them. */
+  .drawer-bg, .modal__wrap { inset: 0; }
 
   /* ── task / flag detail: a 440px-min side panel on a 390px screen.
         Becomes a full-screen sheet. ──────────────────────────────── */
