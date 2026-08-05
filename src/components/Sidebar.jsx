@@ -8,6 +8,8 @@ import {
   Building2,
   SlidersHorizontal,
   LogOut,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { StroliumMark } from "./StroliumMark";
 import { initials } from "../lib/format";
@@ -26,7 +28,7 @@ const NAV = [
 // company, it is running the PRODUCT. The check here is convenience -- every
 // /api/owner/* endpoint enforces _require_owner server-side, so hiding the item
 // is not what keeps a manager out.
-export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout, open, onClose }) {
+export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout, open, onClose, mini, onToggleMini }) {
   // On phones .side is a slide-out drawer (it used to be display:none, which
   // left the whole app with no navigation at all below 920px). The scrim sits
   // behind it and closes on tap.
@@ -40,7 +42,7 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
     <aside className={"side" + (open ? " is-open" : "")}>
       <div className="side__brand">
         <div className="side__mark">
-          <StroliumMark size={18} />
+          <StroliumMark size={21} />
         </div>
         <span className="side__name">Strolium</span>
       </div>
@@ -60,7 +62,7 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
               onClick={() => pick(item.key)}
             >
               <Icon size={17} />
-              {item.label}
+              <span>{item.label}</span>
               {item.badgeKey === "openFlags" && openFlags > 0 && (
                 <span className="badge">{openFlags}</span>
               )}
@@ -74,9 +76,21 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
             style={{ marginTop: 10 }}
           >
             <SlidersHorizontal size={17} />
-            Boshqaruv
+            <span>Boshqaruv</span>
           </button>
         )}
+        {/* Collapse lives below the navigation: it is a setting touched rarely,
+            so it should not sit above the items touched constantly. */}
+        <button
+          className="side__collapse"
+          onClick={onToggleMini}
+          type="button"
+          aria-label={mini ? "Menyuni ochish" : "Menyuni yig'ish"}
+          title={mini ? "Menyuni ochish" : "Menyuni yig'ish"}
+        >
+          {mini ? <ChevronRight size={17} /> : <ChevronLeft size={17} />}
+          <span>Yig&#8217;ish</span>
+        </button>
       </nav>
 
       <div className="side__foot">

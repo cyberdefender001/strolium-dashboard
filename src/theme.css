@@ -1,29 +1,50 @@
 :root {
-  --ink: #0E141C;
-  --panel: #141C26;
-  --panel-2: #1B2531;
-  --panel-3: #222E3C;
-  --line: #283544;
-  --line-soft: #1F2A36;
+  /* ── Strolium light theme ─────────────────────────────────────────────
+     Procore's structural discipline (light canvas, dense type, 4px corners,
+     hairline borders, no shadows) executed in Strolium's own brand.
 
-  --text: #E7EDF3;
-  --dim: #93A1B0;
-  --faint: #647280;
+     #061023 is the exact logo navy. At 8% lightness it cannot serve as an
+     accent on dark -- it is a TEXT and SURFACE colour. That is the reason the
+     app is light: it is the only mode where the brand colour appears in every
+     word on the page rather than in one button.
 
-  --brand: #4D8DF0;
-  --brand-dim: #2C5D9E;
-  --danger: #F2585C;
-  --danger-bg: #2A1518;
-  --warn: #E8A23D;
-  --warn-bg: #2A2113;
-  --good: #37B27A;
-  --good-bg: #122318;
+     Amber is ONE large surface (the sidebar rail). It is deliberately not a
+     button colour -- if it appeared on buttons, pills and links too it would
+     stop meaning anything.
+     ────────────────────────────────────────────────────────────────────── */
+
+  --navy: #061023;            /* logo colour, exact */
+  --amber: #F0A500;           /* the rail */
+  --amber-on: #3D2A00;        /* inactive labels on the rail */
+  --amber-hover: rgba(6,16,35,.07);
+  --amber-active: rgba(6,16,35,.16);
+
+  /* surfaces — old names kept so existing rules keep working */
+  --ink: #F7F8FA;             /* page canvas */
+  --panel: #FFFFFF;           /* cards, topbar */
+  --panel-2: #FFFFFF;
+  --panel-3: #F1F3F6;         /* subtle fills, hovers */
+  --line: #E3E6EB;            /* hairlines */
+  --line-soft: #EEF0F3;       /* row dividers inside cards */
+
+  --text: #061023;            /* the brand navy IS the text colour */
+  --dim: #6B7280;
+  --faint: #9AA3AF;
+
+  --brand: #061023;           /* primary actions are navy, not amber */
+  --brand-dim: #1B2A45;
+  --danger: #C0392B;
+  --danger-bg: #FCEBEB;
+  --warn: #8A5A00;
+  --warn-bg: #FAEEDA;
+  --good: #0F7A5A;
+  --good-bg: #E1F5EE;
 
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --radius: 10px;
+  --radius: 4px;              /* was 10px -- Procore's 4px is the whole feel */
 }
 
 * { box-sizing: border-box; }
@@ -51,22 +72,25 @@ a { color: inherit; }
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
 }
+/* The brand side stays NAVY while the form side goes light. On an all-white
+   login the page had nothing to anchor it and the logo had nowhere to live. */
 .login__brandside {
-  background:
-    radial-gradient(900px 500px at 15% 0%, rgba(77,141,240,0.10), transparent 60%),
-    var(--ink);
+  background: var(--navy);
+  color: #fff;
   padding: 56px 64px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid var(--line-soft);
+  border-right: none;
 }
+.login__brandside .login__sub,
+.login__brandside .login__meta { color: rgba(255,255,255,.66); }
+.login__brandside .login__meta b { color: #fff; }
+.login__brandside .login__logo-name { color: #fff; }
 .login__logo { display: flex; align-items: center; gap: 11px; }
-.login__logo-mark {
-  width: 34px; height: 34px; border-radius: 9px;
-  background: var(--brand); color: #06101F;
-  display: grid; place-items: center;
-}
+/* No tile: the mark sits on the navy in amber, sized by height like the rail */
+.login__logo-mark { color: var(--amber); line-height: 0; }
+.login__logo-mark svg { height: 26px; width: auto; display: block; }
 .login__logo-name {
   font-family: var(--font-display); font-weight: 700;
   font-size: 19px; letter-spacing: -0.01em;
@@ -80,7 +104,7 @@ a { color: inherit; }
   max-width: 15ch;
   margin: 0 0 18px;
 }
-.login__thesis em { color: var(--brand); font-style: normal; }
+.login__thesis em { color: var(--amber); font-style: normal; }
 .login__sub { color: var(--dim); max-width: 42ch; font-size: 16px; }
 .login__meta { display: flex; gap: 28px; color: var(--faint); font-size: 13px; }
 .login__meta b { color: var(--text); font-family: var(--font-mono); font-weight: 500; display:block; font-size: 18px; }
@@ -161,50 +185,111 @@ a { color: inherit; }
 .login__cta-btn:hover { filter: brightness(1.08); }
 
 /* ---------- App shell ---------- */
-.shell { display: grid; grid-template-columns: 232px 1fr; height: 100%; }
+.shell { display: grid; grid-template-columns: 190px 1fr; height: 100%; transition: grid-template-columns .18s ease; }
+.shell.rail-mini { grid-template-columns: 60px 1fr; }
 
+/* ── SIDEBAR ────────────────────────────────────────────────────────────
+   The amber rail. Its left inset (20px) is shared by the logo mark and every
+   nav icon, so they sit on one vertical line -- that alignment is what makes
+   the lockup read as attached rather than pasted on.
+
+   White means "you are here", never "you are pointing at this". If hover also
+   went white there would be two white rows whenever the mouse crossed the rail
+   and the active state would stop communicating anything.
+   ──────────────────────────────────────────────────────────────────────── */
 .side {
-  background: var(--panel);
-  border-right: 1px solid var(--line-soft);
+  background: var(--amber);
   display: flex; flex-direction: column;
-  padding: 18px 14px;
+  padding: 0 0 10px;
+  overflow: hidden;
 }
-.side__brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
-.side__mark {
-  width: 30px; height: 30px; border-radius: 8px; background: var(--brand);
-  color: #06101F; display: grid; place-items: center;
+
+.side__brand {
+  display: flex; align-items: center; gap: 9px;
+  height: 56px; padding-left: 20px;
+  border-bottom: 1px solid rgba(6,16,35,.16);
 }
-.side__name { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.side__mark { color: var(--navy); line-height: 0; flex: 0 0 auto; }
+/* sized by HEIGHT: the hourglass is 512x594, so sizing by width leaves it
+   optically smaller than the letters beside it */
+.side__mark svg { height: 21px; width: auto; display: block; }
+.side__name {
+  font-family: var(--font-display); font-weight: 500; font-size: 17px;
+  letter-spacing: -.02em; color: var(--navy); white-space: nowrap;
+}
+
 .side__org {
-  margin: 4px 8px 14px; padding: 10px 12px;
-  background: var(--panel-2); border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
+  margin: 10px 8px 6px; padding: 8px 11px;
+  background: rgba(6,16,35,.08); border-radius: var(--radius);
 }
-.side__org-label { font-size: 11px; color: var(--faint); letter-spacing: 0.04em; text-transform: uppercase; }
-.side__org-name { font-weight: 600; font-size: 14px; margin-top: 2px; }
-.side__nav { display: flex; flex-direction: column; gap: 2px; }
+.side__org-label { font-size: 10px; color: var(--amber-on); opacity: .75; letter-spacing: .05em; text-transform: uppercase; }
+.side__org-name { font-weight: 600; font-size: 13px; margin-top: 1px; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.side__nav { display: flex; flex-direction: column; }
 .navitem {
-  display: flex; align-items: center; gap: 11px;
-  padding: 9px 12px; border-radius: 8px;
-  color: var(--dim); background: none; border: none; text-align: left;
-  font-size: 14px; width: 100%; transition: background .12s, color .12s;
+  display: flex; align-items: center; gap: 9px;
+  height: 38px; padding: 0 0 0 17px;
+  border: none; border-left: 3px solid transparent;
+  background: none; text-align: left; width: 100%;
+  color: var(--amber-on); font-size: 13.5px; cursor: pointer;
+  transition: background .12s, color .12s;
 }
-.navitem:hover { background: var(--panel-2); color: var(--text); }
-.navitem.active { background: var(--panel-3); color: var(--text); }
+.navitem svg { width: 18px; flex: 0 0 auto; }
+.navitem:hover { background: var(--amber-hover); color: var(--navy); }
+.navitem.active { background: var(--amber-active); border-left-color: var(--navy); color: #fff; font-weight: 500; }
+.navitem.active:hover { background: rgba(6,16,35,.2); color: #fff; }
+.navitem:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
 .navitem .badge {
-  margin-left: auto; font-family: var(--font-mono); font-size: 11px;
-  background: var(--danger-bg); color: var(--danger);
-  padding: 1px 7px; border-radius: 20px;
+  margin-left: auto; margin-right: 12px;
+  font-family: var(--font-mono); font-size: 11px;
+  background: var(--navy); color: #fff;
+  padding: 1px 6px; border-radius: var(--radius);
 }
-.side__foot { margin-top: auto; }
-.side__user { display: flex; align-items: center; gap: 10px; padding: 8px; }
+
+/* collapse toggle — a setting touched rarely, so it sits below the navigation
+   that is touched constantly */
+.side__collapse {
+  display: flex; align-items: center; gap: 9px;
+  height: 38px; padding-left: 20px; margin-top: 8px;
+  border: none; border-top: 1px solid rgba(6,16,35,.16);
+  background: none; color: var(--amber-on); font-size: 13px;
+  cursor: pointer; width: 100%;
+}
+.side__collapse svg { width: 18px; flex: 0 0 auto; }
+.side__collapse:hover { color: var(--navy); }
+
+.side__foot { margin-top: auto; padding: 0 8px; }
+.side__user {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; box-sizing: border-box; min-width: 0;
+  padding: 8px 9px; border-radius: var(--radius);
+  background: none; border: 1px solid transparent;
+  text-align: left; cursor: pointer; overflow: hidden;
+}
+.side__user:hover { background: rgba(6,16,35,.08); border-color: rgba(6,16,35,.2); }
+.side__user.active { background: var(--amber-active); }
 .avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--brand-dim); color: var(--text);
-  display: grid; place-items: center; font-weight: 600; font-size: 13px;
+  width: 30px; height: 30px; border-radius: var(--radius);
+  background: var(--navy); color: #fff; flex: 0 0 auto;
+  display: grid; place-items: center; font-weight: 600; font-size: 12px;
 }
-.side__user-name { font-size: 13px; font-weight: 500; }
-.side__user-mail { font-size: 11px; color: var(--faint); }
+.side__user-name { font-size: 13px; font-weight: 500; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.side__user-mail { font-size: 11px; color: var(--amber-on); opacity: .8; }
+
+/* collapsed: labels hide, icons centre, the mark holds on its own */
+.rail-mini .side__brand { padding-left: 0; justify-content: center; }
+.rail-mini .side__name,
+.rail-mini .side__org,
+.rail-mini .navitem .badge,
+.rail-mini .navitem span,
+.rail-mini .side__collapse span,
+.rail-mini .side__user-name,
+.rail-mini .side__user-mail { display: none; }
+.rail-mini .navitem { padding-left: 0; justify-content: center; border-left: 0; }
+.rail-mini .navitem.active { border-radius: var(--radius); margin: 0 7px; }
+.rail-mini .side__collapse { padding-left: 0; justify-content: center; }
+.rail-mini .side__user { justify-content: center; padding: 8px 0; }
+
 .logout {
   margin-top: 6px; width: 100%; display: flex; align-items: center; gap: 9px;
   padding: 9px 12px; border-radius: 8px; background: none;
@@ -542,7 +627,7 @@ a { color: inherit; }
 .axp__amt { flex:1; min-width:0; background:none; border:none; outline:none; color:var(--text);
   font:700 32px/1 var(--font-display); letter-spacing:-.02em; padding:0;
   font-variant-numeric:tabular-nums; }
-.axp__amt::placeholder { color:#2E3B4A; }
+.axp__amt::placeholder { color: var(--faint); }
 
 .axp__body { padding:20px 24px 6px; }
 .axp__grid { display:grid; grid-template-columns:1fr 1fr; gap:11px; }

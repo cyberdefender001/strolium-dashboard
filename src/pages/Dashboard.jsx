@@ -35,6 +35,17 @@ export default function Dashboard({ user, onLogout }) {
   const [err, setErr] = useState("");
   const [nav, setNav] = useState("alerts");
   const [menuOpen, setMenuOpen] = useState(false);
+  // Persisted: a boss who collapses the rail expects it collapsed next visit.
+  const [mini, setMini] = useState(() => {
+    try { return localStorage.getItem("strolium_rail") === "mini"; } catch { return false; }
+  });
+  const toggleMini = () => {
+    setMini((v) => {
+      const n = !v;
+      try { localStorage.setItem("strolium_rail", n ? "mini" : "full"); } catch { /* private mode */ }
+      return n;
+    });
+  };
   const [selected, setSelected] = useState(null);
 
   // The login payload carries name/company/role but no owner flag -- that lives on
@@ -146,7 +157,7 @@ export default function Dashboard({ user, onLogout }) {
 
   if (err) {
     return (
-      <div className="shell">
+      <div className={"shell" + (mini ? " rail-mini" : "")}>
         <div style={{ margin: "auto", textAlign: "center", padding: 40 }}>
           <h2 style={{ marginBottom: 8 }}>Ma'lumotni yuklab bo'lmadi</h2>
           <p className="hint" style={{ marginBottom: 18 }}>{err}</p>
@@ -158,14 +169,14 @@ export default function Dashboard({ user, onLogout }) {
 
   if (!data) {
     return (
-      <div className="shell">
+      <div className={"shell" + (mini ? " rail-mini" : "")}>
         <BrickLoader label="Yuklanmoqda" />
       </div>
     );
   }
 
   return (
-    <div className="shell">
+    <div className={"shell" + (mini ? " rail-mini" : "")}>
       {stale && (
         <button
           onClick={() => { setStale(false); refresh(); }}
@@ -180,6 +191,8 @@ export default function Dashboard({ user, onLogout }) {
         </button>
       )}
       <Sidebar
+        mini={mini}
+        onToggleMini={toggleMini}
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         active={nav}
