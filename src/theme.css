@@ -447,11 +447,9 @@ a { color: inherit; }
 }
 .drawer-bg .drawer { height: 100%; }
 .drawer {
-  width: 440px; max-width: 92vw;
-  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 46vw; max-width: 560px; min-width: 440px; height: 100%;
   background: var(--panel); border-left: 1px solid var(--line);
   display: flex; flex-direction: column; overflow-y: auto;
-  z-index: 60;
 }
 .drawer__head {
   display: flex; align-items: flex-start; gap: 13px;
@@ -583,7 +581,7 @@ a { color: inherit; }
    every menu look different from Belgilar (which has none), and pushed the
    real content below the fold. */
 .xhead__title { display:none; }
-.xhead__sub { color:var(--dim); font-size:14px; margin-top:0; }
+.xhead__sub { color:var(--dim); font-size:15.5px; margin-top:0; }
 
 /* budget rail: every project's burn, at a glance */
 .xrail { display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:12px; margin-bottom:18px; }
@@ -618,8 +616,9 @@ a { color: inherit; }
 
 /* the table */
 .xtable__wrap { padding:0; overflow:hidden; }
-.xtable { width:100%; border-collapse:collapse; font-size:14px; }
-.xtable thead th { text-align:left; padding:12px 14px; font-size:11.5px; letter-spacing:.07em;
+/* Belgilar rows are 15.5px; tables matched that so every menu reads alike. */
+.xtable { width:100%; border-collapse:collapse; font-size:15.5px; }
+.xtable thead th { text-align:left; padding:12px 14px; font-size:12.5px; letter-spacing:.06em;
                    text-transform:uppercase; color:var(--faint); font-weight:600; }
 .xtable thead th.num { text-align:right; }
 .xtable tbody tr { border-top:1px solid var(--line-soft); }
@@ -842,20 +841,20 @@ a { color: inherit; }
 .tstat--act .tstat__n { color:var(--brand); }
 
 .tpills { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
-.tpill { background:var(--panel); border:1px solid var(--line); border-radius:999px; font-size:14px;
+.tpill { background:var(--panel); border:1px solid var(--line); border-radius:999px; font-size:15px;
   padding:7px 13px; color:var(--dim); font:600 12.5px/1 var(--font-body); cursor:pointer;
   display:inline-flex; align-items:center; gap:6px; }
 .tpill:hover { border-color:var(--line); }
 .tpill.on { background:var(--panel-3); border-color:var(--navy); color:var(--navy); font-weight:500; }
-.tpill .c { color:var(--dim); font-family:var(--font-mono); font-size:12.5px; }
+.tpill .c { color:var(--dim); font-family:var(--font-mono); font-size:14px; }
 .tpill.on .c { color:var(--navy); }
 .tpills__search { margin-left:auto; }
 
 .ttable td { vertical-align:middle; }
-.tnum { position:relative; color:var(--dim); font-family:var(--font-mono); font-size:13.5px;
+.tnum { position:relative; color:var(--dim); font-family:var(--font-mono); font-size:15px;
   padding-left:20px !important; }
 .tspine { position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:0 2px 2px 0; }
-.tbadge { display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:600;
+.tbadge { display:inline-flex; align-items:center; gap:5px; font-size:14px; font-weight:600;
   margin-left:9px; flex:none; }
 .tbadge i { width:5px; height:5px; border-radius:50%; display:block; }
 .tworker { white-space:nowrap; }
@@ -895,8 +894,7 @@ a { color: inherit; }
   display:flex; justify-content:flex-end; }
 .tdet { max-height:none; height:calc(100vh - 64px); max-width:560px; width:46vw; min-width:440px;
   border-radius:0; border-right:none; border-top:none; border-bottom:none;
-  border-left:1px solid var(--line); box-shadow:-24px 0 60px rgba(0,0,0,.5);
-  overflow-y:auto; box-shadow:none; }
+  border-left:1px solid var(--line); overflow-y:auto; }
 
 /* photo lightbox -- opens in-page, not a new tab */
 .lb { position:fixed; inset:0; z-index:1200; background:rgba(4,8,13,.9);
