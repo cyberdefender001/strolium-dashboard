@@ -88,6 +88,7 @@ a { color: inherit; }
 .login__brandside .login__meta b { color: #fff; }
 .login__brandside .login__logo-name { color: #fff; }
 .login__logo { display: flex; align-items: center; gap: 11px; }
+.login__lockup { height: 30px; width: auto; display: block; }
 /* No tile: the mark sits on the navy in amber, sized by height like the rail */
 .login__logo-mark { color: var(--amber); line-height: 0; }
 .login__logo-mark svg { height: 26px; width: auto; display: block; }
@@ -210,9 +211,12 @@ a { color: inherit; }
   border-bottom: 1px solid rgba(6,16,35,.16);
 }
 .side__mark { color: var(--navy); line-height: 0; flex: 0 0 auto; }
-/* sized by HEIGHT: the hourglass is 512x594, so sizing by width leaves it
-   optically smaller than the letters beside it */
 .side__mark svg { height: 26px; width: auto; display: block; }
+
+/* The supplied lockup is 4.26:1, so height drives it. At 26px tall it occupies
+   ~111px -- comfortable inside a 190px rail with the 20px inset. */
+.side__lockup { height: 26px; width: auto; display: block; }
+.side__markonly { display: none; color: var(--navy); line-height: 0; }
 .side__name {
   font-family: var(--font-display); font-weight: 600; font-size: 20px;
   letter-spacing: -.025em; color: var(--navy); white-space: nowrap;
@@ -288,6 +292,8 @@ a { color: inherit; }
 
 /* collapsed: labels hide, icons centre, the mark holds on its own */
 .rail-mini .side__brand { padding-left: 0; justify-content: center; }
+.rail-mini .side__lockup { display: none; }
+.rail-mini .side__markonly { display: block; }
 .rail-mini .side__name,
 .rail-mini .side__org,
 .rail-mini .navitem .badge,
@@ -298,7 +304,19 @@ a { color: inherit; }
 .rail-mini .navitem { padding-left: 0; justify-content: center; border-left: 0; }
 .rail-mini .navitem.active { border-radius: var(--radius); margin: 0 7px; }
 .rail-mini .side__collapse { padding-left: 0; justify-content: center; }
-.rail-mini .side__user { justify-content: center; padding: 8px 0; }
+/* At 60px the account block and logout had padding and borders wider than the
+   rail, so they spilled over the edge. Collapsed they become icon-only. */
+.rail-mini .side__foot { padding: 10px 6px 0; }
+.rail-mini .side__user {
+  justify-content: center; padding: 7px 0; gap: 0;
+  background: none; border-color: transparent;
+}
+.rail-mini .side__user:hover { background: rgba(6,16,35,.1); }
+.rail-mini .avatar { width: 32px; height: 32px; }
+.rail-mini .logout {
+  justify-content: center; padding: 9px 0; margin: 6px 0 10px;
+}
+.rail-mini .logout span { display: none; }
 
 .side__foot .logout { margin-top: 6px; }
 /* --line-soft and --dim are page-canvas colours; on the amber rail they are

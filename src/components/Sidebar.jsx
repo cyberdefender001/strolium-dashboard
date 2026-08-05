@@ -41,10 +41,11 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
     {open && <div className="side__scrim" onClick={onClose} />}
     <aside className={"side" + (open ? " is-open" : "")}>
       <div className="side__brand">
-        <div className="side__mark">
-          <StroliumMark size={26} />
-        </div>
-        <span className="side__name">Strolium</span>
+        {/* The designer's lockup, not mark + text: it has its own letterforms
+            and spacing that a system font cannot reproduce. Collapsed, we fall
+            back to the SVG mark, which the lockup cannot shrink to. */}
+        <img className="side__lockup" src="/logo-lockup.png" alt="Strolium" />
+        <span className="side__markonly"><StroliumMark size={26} /></span>
       </div>
 
       <div className="side__org">
@@ -107,8 +108,8 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
             <div className="side__user-mail">{user.email || "Profil"}</div>
           </div>
         </button>
-        <button className="logout" onClick={onLogout}>
-          <LogOut size={15} /> Chiqish
+        <button className="logout" onClick={onLogout} title="Chiqish">
+          <LogOut size={15} /> <span>Chiqish</span>
         </button>
       </div>
     </aside>

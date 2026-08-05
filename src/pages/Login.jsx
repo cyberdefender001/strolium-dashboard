@@ -112,10 +112,8 @@ export default function Login({ onLogin }) {
     <div className="login">
       <div className="login__brandside">
         <div className="login__logo">
-          <div className="login__logo-mark">
-            <StroliumMark size={20} />
-          </div>
-          <span className="login__logo-name">Strolium</span>
+          {/* white variant: this panel is navy */}
+          <img className="login__lockup" src="/logo-lockup-white.png" alt="Strolium" />
         </div>
 
         <div>

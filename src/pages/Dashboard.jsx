@@ -223,13 +223,11 @@ export default function Dashboard({ user, onLogout }) {
           {nav === "alerts" && (
             <>
               <KpiStrip kpis={data.kpis} />
-              <div className="row2">
-                <FlagFeed
-                  flags={data.audit.flags}
-                  leakage={data.audit.overview.leakageFlagged}
-                  onOpen={setSelected}
-                />
-              </div>
+              <FlagFeed
+                flags={data.audit.flags}
+                leakage={data.audit.overview.leakageFlagged}
+                onOpen={setSelected}
+              />
               <div className="proof-note">
                 Belgilar to'lov, yetkazib berish va smeta ma'lumotlaridan avtomatik aniqlangan
               </div>
