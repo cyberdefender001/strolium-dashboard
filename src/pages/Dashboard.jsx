@@ -210,7 +210,6 @@ export default function Dashboard({ user, onLogout }) {
               <Menu size={19} />
             </button>
             <h1>{TITLES[nav]}</h1>
-            <div className="sub">{data.org.name}</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div className="period">
