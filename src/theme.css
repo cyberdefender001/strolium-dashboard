@@ -397,7 +397,7 @@ a { color: inherit; }
 .flag__icon.high { background: var(--danger-bg); color: var(--danger); }
 .flag__icon.med { background: var(--warn-bg); color: var(--warn); }
 .flag__body { min-width: 0; flex: 1; }
-.flag__title { font-weight: 500; font-size: 15.5px; }
+.flag__title { font-weight: 600; font-size: 15.5px; }
 .flag__desc { font-size: 13.5px; color: var(--dim); margin-top: 1px; }
 .flag__right { text-align: right; flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
 .flag__amt { font-family: var(--font-mono); font-weight: 700; font-size: 15px; }
@@ -624,12 +624,13 @@ a { color: inherit; }
 .xtable tbody tr { border-top:1px solid var(--line-soft); }
 .xtable tbody tr:nth-child(even) { background:#FBFCFD; }
 .xtable tbody tr:hover { background:rgba(77,141,240,.05); }
-.xtable td { padding:12px 14px; }
+.xtable td { padding:15px 14px; }
 .xtable td.num { text-align:right; font-weight:600; }
 .xtable td.mono { font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
 .xtable td.dim { color:var(--dim); }
 .xtable td.faint { color:var(--faint); }
-.xtable__item { font-weight:500; display:flex; align-items:center; gap:7px; }
+/* matched to .flag__title so a row reads the same on every page */
+.xtable__item { font-weight:600; font-size:15.5px; display:flex; align-items:center; gap:8px; }
 .xtable__ico { color:var(--faint); flex:none; }
 .xtable__flag { display:inline-flex; align-items:center; color:var(--danger); flex:none; }
 .xtable__empty { text-align:center; color:var(--faint); padding:34px 14px; }
@@ -857,7 +858,7 @@ a { color: inherit; }
 .tbadge { display:inline-flex; align-items:center; gap:5px; font-size:14px; font-weight:600;
   margin-left:9px; flex:none; }
 .tbadge i { width:5px; height:5px; border-radius:50%; display:block; }
-.tworker { white-space:nowrap; }
+.tworker { white-space:nowrap; font-size:15px; }
 .tava { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
   border-radius:50%; background:var(--panel-3); color:var(--dim); font-size:9.5px; font-weight:700;
   margin-right:7px; vertical-align:middle; }
