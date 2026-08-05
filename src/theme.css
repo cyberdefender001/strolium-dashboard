@@ -1014,6 +1014,27 @@ a { color: inherit; }
     overflow-y: auto;
   }
   .side.is-open { transform: translateX(0); }
+
+  /* A drawer is open or closed -- a third "collapsed" state has no meaning
+     here, and rail-mini was centring the icons while the drawer kept its full
+     width. The toggle is hidden on phones and the drawer always renders its
+     full form, whatever the desktop preference happens to be. */
+  .side__collapse { display: none; }
+  .rail-mini .side__brand { padding-left: 20px; justify-content: flex-start; }
+  .rail-mini .side__lockup { display: block; }
+  .rail-mini .side__markonly { display: none; }
+  .rail-mini .side__org,
+  .rail-mini .navitem span,
+  .rail-mini .navitem .badge,
+  .rail-mini .side__user-txt,
+  .rail-mini .side__user-name,
+  .rail-mini .side__user-mail,
+  .rail-mini .logout span { display: revert; }
+  .rail-mini .navitem { padding-left: 17px; justify-content: flex-start; border-left: 3px solid transparent; margin: 0; }
+  .rail-mini .navitem.active { border-left-color: var(--navy); border-radius: 0; }
+  .rail-mini .side__foot { padding: 10px 8px 0; }
+  .rail-mini .side__user { justify-content: flex-start; padding: 9px 10px; gap: 11px; }
+  .rail-mini .logout { justify-content: flex-start; padding: 9px 12px; }
   .side__scrim { position: fixed; inset: 0; background: rgba(4,8,13,.62); z-index: 1150; }
   .burger {
     display: grid; place-items: center;
