@@ -992,8 +992,14 @@ a { color: inherit; }
 
   /* ── page frame ───────────────────────────────────────────────── */
   html, body { overflow-x: hidden; }
-  .shell { grid-template-columns: 1fr; }
-  .main { min-width: 0; }                 /* lets grid children shrink */
+  /* .shell.rail-mini (0,2,0) outranks a plain .shell (0,1,0) regardless of
+     order, so a rail collapsed on desktop kept its grid column on the phone and
+     crushed the content into a sliver. Both states are forced to one column. */
+  .shell,
+  .shell.rail-mini { grid-template-columns: 1fr !important; }
+  .main { min-width: 0; width: 100%; }    /* lets the grid child actually shrink */
+  /* the drawer is position:fixed, so it must never also occupy a track */
+  .side { grid-column: 1 / -1; }
   .content { padding: 14px 13px 96px; min-width: 0; }
 
   /* ── navigation: the sidebar was display:none, leaving the phone
