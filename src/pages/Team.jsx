@@ -15,6 +15,9 @@ function InviteModal({ roles, onClose }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
+  // Separate from `copied` above: that one belongs to the invite modal, and
+  // sharing it would make both buttons flip to "Nusxalandi" at once.
+  const [bossCopied, setBossCopied] = useState(false);
 
   const make = async (uses) => {
     setBusy(true);
@@ -163,6 +166,41 @@ export default function Team({ tick, onChange }) {
           </button>
         )}
       </div>
+
+      {/* A controller-first company has no boss yet, and a manager cannot mint an
+          executive invite -- so without this the company is stuck: the only person
+          who could add the boss is the boss. The code was reserved at approval. */}
+      {data.needs_boss && data.boss_code && (
+        <div className="card tm-boss">
+          <div className="tm-boss__t">Rahbar hali qo'shilmagan</div>
+          <div className="tm-boss__s">
+            Rahbaringizga shu kodni bering. U saytda ro'yxatdan o'tib kodni kiritadi
+            — kod bir marta ishlaydi.
+          </div>
+          <div className="tm-boss__code">{data.boss_code}</div>
+          <div className="tm-boss__acts">
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                try {
+                  navigator.clipboard.writeText(data.boss_code);
+                  setBossCopied(true);
+                  setTimeout(() => setBossCopied(false), 1800);
+                } catch { /* clipboard blocked -- the code is on screen to read */ }
+              }}
+            >
+              {bossCopied ? <Check size={14} /> : <Copy size={14} />}
+              {bossCopied ? "Nusxalandi" : "Kodni nusxalash"}
+            </button>
+            {data.boss_link && (
+              <a className="tm-boss__link" href={data.boss_link} target="_blank" rel="noreferrer">
+                Telegram havolasi
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="card tm-list">
         {data.members.map((m) => (
