@@ -1629,3 +1629,20 @@ a { color: inherit; }
   .home__risk, .home__card { transition: none; }
   .home__risk:active, .home__card:active { transform: none; }
 }
+
+/* ── Rahbar hali qo'shilmagan (controller-first company) ───────────────
+   Uses --warn rather than --danger: nothing is wrong, a step is outstanding.
+   Danger red here would read as a fault on a company that was set up
+   correctly. */
+.tm-boss { border-color: rgba(138,90,0,.32); background: var(--warn-bg); margin-bottom: 14px; }
+.tm-boss__t { font-weight: 700; font-size: 14px; color: var(--warn); }
+.tm-boss__s { font-size: 12.5px; color: var(--dim); margin: 5px 0 12px; line-height: 1.5; }
+.tm-boss__code {
+  font-family: var(--font-mono); font-weight: 700; font-size: 20px;
+  letter-spacing: .18em; color: var(--text);
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 11px 14px; text-align: center;
+  margin-bottom: 12px; overflow-wrap: anywhere;
+}
+.tm-boss__acts { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.tm-boss__link { font-size: 12.5px; font-weight: 600; color: var(--brand); }
