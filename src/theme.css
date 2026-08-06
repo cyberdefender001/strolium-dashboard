@@ -1525,3 +1525,107 @@ a { color: inherit; }
   .brickload__glass { animation: none; }
   .brickload__rail span { animation: none; width: 100%; }
 }
+
+/* ── BOSH SAHIFA (website welcome) ──────────────────────────────────────
+   The website had no landing view: signing in dropped a boss straight into
+   Belgilar. This is the counterpart of the Mini App's Bosh sahifa.
+
+   Every colour here comes from the tokens above -- no new palette. The one
+   place boldness is spent is .home__risk: the money-at-risk figure, set in
+   the display face at a size nothing else on the page competes with. The
+   four cards below it are deliberately quiet so that number lands first. */
+.home { max-width: 860px; }
+
+.home__org {
+  font-family: var(--font-mono, ui-monospace);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--faint);
+}
+.home__who {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 26px; line-height: 1.15; letter-spacing: -0.01em;
+  margin: 4px 0 22px; color: var(--text);
+}
+.home__role { color: var(--dim); font-weight: 400; }
+
+/* The signature element. */
+.home__risk {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 16px;
+  background: var(--panel); padding: 20px 22px 18px;
+  transition: border-color .15s, transform .12s;
+}
+.home__risk:hover { border-color: var(--brand-dim); }
+.home__risk:active { transform: scale(.995); }
+.home__risk.is-live { border-color: rgba(192,57,43,.34); background: var(--danger-bg); }
+
+.home__risk-top {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 600; color: var(--dim);
+}
+.home__risk.is-live .home__risk-top { color: var(--danger); }
+
+.home__risk-sum {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 44px; line-height: 1.05; letter-spacing: -0.02em;
+  margin: 10px 0 2px; color: var(--danger);
+  overflow-wrap: anywhere;
+}
+.home__risk-sum--clear { color: var(--good); font-size: 34px; }
+.home__risk-unit { font-size: 20px; font-weight: 600; margin-left: 7px; }
+.home__risk-sub { font-size: 13px; color: var(--dim); }
+.home__risk-sub b { color: var(--danger); font-weight: 700; }
+.home__risk-go {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--brand);
+}
+
+.home__cards {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-top: 14px;
+}
+.home__card {
+  text-align: left; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 14px;
+  background: var(--panel); padding: 14px 15px;
+  transition: border-color .15s, transform .12s;
+}
+.home__card:hover { border-color: var(--brand-dim); }
+.home__card:active { transform: scale(.99); }
+.home__card-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--dim); margin-bottom: 8px;
+}
+.home__card-value {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 21px; line-height: 1.1; color: var(--text);
+  overflow-wrap: anywhere;
+}
+.home__card-unit { font-size: 12px; font-weight: 600; color: var(--dim); margin-left: 4px; }
+
+.home__next { margin-top: 26px; }
+.home__next-label {
+  font-family: var(--font-mono, ui-monospace);
+  font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--faint); margin-bottom: 9px;
+}
+.home__next-row { display: flex; flex-wrap: wrap; gap: 9px; }
+.home__next-row button {
+  cursor: pointer; padding: 9px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel);
+  font: 600 13px var(--font-body, inherit); color: var(--text);
+  transition: border-color .15s, background .15s;
+}
+.home__next-row button:hover { border-color: var(--brand-dim); background: var(--panel-3); }
+
+@media (max-width: 920px) {
+  .home__cards { grid-template-columns: 1fr 1fr; }
+  .home__who { font-size: 22px; }
+  .home__risk-sum { font-size: 36px; }
+  .home__next-row button { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home__risk, .home__card { transition: none; }
+  .home__risk:active, .home__card:active { transform: none; }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import Home from "./Home";
 import { Calendar, Scale, FileText, Calculator, FolderKanban, Users, Menu } from "lucide-react";
 import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
 import { fmtSom } from "../lib/format";
@@ -19,6 +20,7 @@ import Profile from "./Profile.jsx";
 // Four of these were missing, so the topbar heading was blank on Vazifalar,
 // Xarajatlar, Loyihalar and Jamoa.
 const TITLES = {
+  home: "Bosh sahifa",
   alerts: "Belgilar",
   money: "Pul nazorati",
   tasks: "Vazifalar",
@@ -41,9 +43,9 @@ export default function Dashboard({ user, onLogout }) {
   const readHash = () => {
     try {
       const k = (window.location.hash || "").replace(/^#\/?/, "").trim();
-      return TITLES[k] ? k : "alerts";
+      return TITLES[k] ? k : "home";
     } catch {
-      return "alerts";
+      return "home";
     }
   };
   const [nav, setNavRaw] = useState(readHash);
@@ -254,6 +256,8 @@ export default function Dashboard({ user, onLogout }) {
         </div>
 
         <div className="content">
+          {nav === "home" && <Home user={user} data={data} onNav={setNav} />}
+
           {nav === "alerts" && (
             <>
               <KpiStrip kpis={data.kpis} />

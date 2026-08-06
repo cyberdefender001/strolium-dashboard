@@ -1,4 +1,5 @@
 import {
+  House,
   Flag,
   Wallet,
   Receipt,
@@ -15,6 +16,7 @@ import { StroliumMark } from "./StroliumMark";
 import { initials } from "../lib/format";
 
 const NAV = [
+  { key: "home", label: "Bosh sahifa", icon: House },
   { key: "alerts", label: "Belgilar", icon: Flag, badgeKey: "openFlags" },
   { key: "money", label: "Pul nazorati", icon: Wallet },
   { key: "tasks", label: "Vazifalar", icon: ListChecks, badgeKey: "review" },
