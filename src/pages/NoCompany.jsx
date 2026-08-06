@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Eye, Wallet, ClipboardCheck, Bot } from "lucide-react";
 import { StroliumMark } from "../components/StroliumMark";
-import { accountStatus, applyStatus, joinCompany, requestAccess, saveEmailSession } from "../api/emailauth";
+import { accountStatus, applyStatus, joinCompany, requestAccess, saveEmailSession, startTelegramLink } from "../api/emailauth";
 
 // Shown to someone who has an account but belongs to no company yet.
 //
@@ -35,6 +35,12 @@ const T = {
     reqOr: "yoki",
     reqDone: "So'rovingiz yuborildi. Tez orada bog'lanamiz.",
     waiting: "So'rovingiz ko'rib chiqilmoqda. Tasdiqlangach shu sahifa o'zi ochiladi.",
+    tgTitle: "Strolium'ni Telegramda ishlatganmisiz?",
+    tgSub: "Unda yangi kompaniya so'rash shart emas. Telegram hisobingizni ulasangiz, mavjud kompaniyangiz shu yerda ochiladi.",
+    tgBtn: "Telegram bilan ulash",
+    tgOpen: "Telegramni ochish",
+    tgStep: "Botda Start bosing — keyin bu sahifa o'zi ochiladi.",
+    tgCode: "Kod",
     reqNeedCompany: "Kompaniya nomini kiriting.",
     reqNeedSeats: "Kamida 1 foydalanuvchi kiriting.",
     reqWho: "Siz kimsiz?",
@@ -68,6 +74,12 @@ const T = {
     reqOr: "или",
     reqDone: "Заявка отправлена. Мы скоро свяжемся с вами.",
     waiting: "Заявка на рассмотрении. Эта страница откроется сама после одобрения.",
+    tgTitle: "Уже пользуетесь Strolium в Telegram?",
+    tgSub: "Тогда новую компанию запрашивать не нужно. Подключите Telegram — ваша компания откроется здесь.",
+    tgBtn: "Подключить Telegram",
+    tgOpen: "Открыть Telegram",
+    tgStep: "Нажмите Start в боте — страница откроется сама.",
+    tgCode: "Код",
     reqNeedCompany: "Введите название компании.",
     reqNeedSeats: "Укажите минимум 1 пользователя.",
     reqWho: "Кто вы?",
@@ -101,6 +113,12 @@ const T = {
     reqOr: "or",
     reqDone: "Request sent. We will get back to you shortly.",
     waiting: "Your request is being reviewed. This page will open by itself once approved.",
+    tgTitle: "Already using Strolium in Telegram?",
+    tgSub: "Then you do not need a new company. Link your Telegram account and your existing company opens here.",
+    tgBtn: "Link Telegram",
+    tgOpen: "Open Telegram",
+    tgStep: "Press Start in the bot — this page will open by itself.",
+    tgCode: "Code",
     reqNeedCompany: "Enter your company name.",
     reqNeedSeats: "Enter at least 1 user.",
     reqWho: "Who are you?",
@@ -141,6 +159,33 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
   const enter = (u) => {
     try { window.location.hash = "/home"; } catch { /* non-browser env */ }
     onJoined(u);
+  };
+
+  // Someone who is ALREADY a member via the bot must not request a second
+  // company -- that is what produced duplicates. The backend can attach this
+  // orphan account to the member they already are, but only if they prove they
+  // own that Telegram account, which is what this link does. Profil is
+  // unreachable from here (App renders NoCompany whenever there is no company),
+  // so the button has to live on this screen or the fix cannot be triggered.
+  const [tgBusy, setTgBusy] = useState(false);
+  const [tgLink, setTgLink] = useState(null);
+  const [tgCode, setTgCode] = useState(null);
+  const [tgErr, setTgErr] = useState("");
+
+  const linkTelegram = async () => {
+    setTgErr("");
+    setTgBusy(true);
+    try {
+      const r = await startTelegramLink();
+      setTgLink((r && r.link) || null);
+      setTgCode((r && r.code) || null);
+      // No further action needed here: the status poll above notices the moment
+      // the bot attaches the account and lets them straight in.
+    } catch (e) {
+      setTgErr(e.message || "Xatolik");
+    } finally {
+      setTgBusy(false);
+    }
   };
 
   const setField = (k) => (e) => setReq((r) => ({ ...r, [k]: e.target.value }));
@@ -377,6 +422,38 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
             >
               <Bot size={15} /> {t.bossBtn}
             </a>
+          </div>
+
+          {/* Placed AFTER the request form on purpose: requesting a company is the
+              normal case, and this is the exception for people who already have one
+              in the bot. */}
+          <div className="nocomp__card nocomp__card--quiet">
+            <h3 className="nocomp__cardtitle">{t.tgTitle}</h3>
+            <p className="nocomp__cardsub">{t.tgSub}</p>
+
+            {tgLink ? (
+              <>
+                <a className="login__cta-btn" href={tgLink} target="_blank" rel="noreferrer">
+                  <Bot size={15} /> {t.tgOpen}
+                </a>
+                {tgCode && (
+                  <p className="eauth__note">
+                    {t.tgCode}: <b>{tgCode}</b>
+                  </p>
+                )}
+                <p className="eauth__note">{t.tgStep}</p>
+              </>
+            ) : (
+              <button
+                className="eauth__primary"
+                onClick={linkTelegram}
+                disabled={tgBusy}
+                type="button"
+              >
+                {tgBusy ? "…" : t.tgBtn}
+              </button>
+            )}
+            {tgErr && <p className="login__err">{tgErr}</p>}
           </div>
         </div>
 
