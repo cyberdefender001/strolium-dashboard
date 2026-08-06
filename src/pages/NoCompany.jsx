@@ -37,6 +37,9 @@ const T = {
     waiting: "So'rovingiz ko'rib chiqilmoqda. Tasdiqlangach shu sahifa o'zi ochiladi.",
     reqNeedCompany: "Kompaniya nomini kiriting.",
     reqNeedSeats: "Kamida 1 foydalanuvchi kiriting.",
+    reqWho: "Siz kimsiz?",
+    reqBoss: "Rahbar",
+    reqCtrlRole: "Nazoratchi",
     what: "Strolium nima qiladi",
     f1t: "Vazifa va muddat",
     f1d: "Ishchiga vazifa berasiz, muddatini belgilaysiz, bajarilganini rasm bilan ko'rasiz.",
@@ -67,6 +70,9 @@ const T = {
     waiting: "Заявка на рассмотрении. Эта страница откроется сама после одобрения.",
     reqNeedCompany: "Введите название компании.",
     reqNeedSeats: "Укажите минимум 1 пользователя.",
+    reqWho: "Кто вы?",
+    reqBoss: "Руководитель",
+    reqCtrlRole: "Контролёр",
     what: "Что делает Strolium",
     f1t: "Задачи и сроки",
     f1d: "Ставите задачу работнику, задаёте срок, видите результат с фото.",
@@ -97,6 +103,9 @@ const T = {
     waiting: "Your request is being reviewed. This page will open by itself once approved.",
     reqNeedCompany: "Enter your company name.",
     reqNeedSeats: "Enter at least 1 user.",
+    reqWho: "Who are you?",
+    reqBoss: "Owner",
+    reqCtrlRole: "Controller",
     what: "What Strolium does",
     f1t: "Tasks and deadlines",
     f1d: "Assign work, set a deadline, see it done with photo proof.",
@@ -118,6 +127,9 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
   // error in one never clears the other -- a boss who mistypes his phone should
   // not lose the code he already pasted.
   const [req, setReq] = useState({ company: "", phone: "", controllers: "", workers: "", message: "" });
+  // The Mini App asks this too ("Kim: Rahbar / Nazoratchi") and the backend
+  // already takes requester_role -- the web form was hardcoding "boss".
+  const [role, setRole] = useState("boss");
   const [reqBusy, setReqBusy] = useState(false);
   const [reqErr, setReqErr] = useState("");
   const [reqSent, setReqSent] = useState(false);
@@ -184,7 +196,7 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
         controllers,
         workers,
         message: req.message.trim(),
-        requester_role: "boss",
+        requester_role: role,
       });
       setReqSent(true);
     } catch (e) {
@@ -268,6 +280,26 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
               </>
             ) : (
               <>
+                <label className="eauth__label">{t.reqWho}</label>
+                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                  {[["boss", t.reqBoss], ["controller", t.reqCtrlRole]].map(([val, lbl]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setRole(val)}
+                      className={role === val ? "eauth__primary" : "login__cta-btn"}
+                      style={
+                        role === val
+                          ? { flex: 1, margin: 0 }
+                          : { flex: 1, margin: 0, background: "transparent",
+                              color: "var(--text)", border: "1px solid var(--line)" }
+                      }
+                    >
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+
                 <label className="eauth__label">{t.reqCompany}</label>
                 <input
                   className="eauth__input"

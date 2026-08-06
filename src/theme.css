@@ -507,8 +507,44 @@ a { color: inherit; }
 .loading { padding: 60px; text-align: center; color: var(--faint); }
 
 @media (max-width: 920px) {
-  .login { grid-template-columns: 1fr; }
-  .login__brandside { display: none; }
+  .login { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+
+  /* The brand side used to be display:none here, which left the whole login
+     page flat white with no brand anywhere -- on a phone that is the FIRST
+     thing a prospect sees. Keep it as a slim navy band with just the lockup;
+     the thesis and stats are desktop-only copy. */
+  .login__brandside {
+    display: flex; align-items: center;
+    padding: 18px 20px;
+    min-height: 0;
+  }
+  .login__brandside .login__thesis,
+  .login__brandside .login__sub,
+  .login__brandside .login__meta { display: none; }
+
+  /* .login__formside is display:flex, i.e. a ROW, and it has TWO children:
+     the email form and the panel with the Telegram option plus the trial CTA.
+     Side by side is right on a wide screen. On a phone they were squeezed to
+     roughly 180px each and align-items:center pushed them to different
+     heights, so the CTA card overlapped the form and long email addresses were
+     cut off mid-word. Stack them instead. */
+  .login__formside {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 26px 18px 44px;
+  }
+  .login__formside > * {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    min-width: 0;
+  }
+  .login__form { max-width: 440px; }
+  /* A long address must wrap or shrink, never overflow its field. */
+  .login__formside input { width: 100%; min-width: 0; }
+
   .shell { grid-template-columns: 1fr; }
   .side { display: none; }
   .kpis { grid-template-columns: repeat(2, 1fr); }
