@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Eye, Wallet, ClipboardCheck, Bot } from "lucide-react";
 import { StroliumMark } from "../components/StroliumMark";
-import { joinCompany, saveEmailSession } from "../api/emailauth";
+import { joinCompany, requestAccess, saveEmailSession } from "../api/emailauth";
 
 // Shown to someone who has an account but belongs to no company yet.
 //
@@ -26,6 +26,16 @@ const T = {
     bossTitle: "Kompaniya rahbarimisiz?",
     bossSub: "Strolium'ni 14 kun bepul sinab ko'ring — karta kerak emas.",
     bossBtn: "Botda so'rov qoldirish",
+    reqCompany: "Kompaniya nomi",
+    reqPhone: "Telefon raqamingiz",
+    reqCtrl: "Nazoratchi",
+    reqWork: "Ishchi",
+    reqMsg: "Qo'shimcha izoh",
+    reqSend: "So'rov yuborish",
+    reqOr: "yoki",
+    reqDone: "So'rovingiz yuborildi. Tez orada bog'lanamiz.",
+    reqNeedCompany: "Kompaniya nomini kiriting.",
+    reqNeedSeats: "Kamida 1 foydalanuvchi kiriting.",
     what: "Strolium nima qiladi",
     f1t: "Vazifa va muddat",
     f1d: "Ishchiga vazifa berasiz, muddatini belgilaysiz, bajarilganini rasm bilan ko'rasiz.",
@@ -45,6 +55,16 @@ const T = {
     bossTitle: "Вы руководитель компании?",
     bossSub: "Попробуйте Strolium 14 дней бесплатно — карта не нужна.",
     bossBtn: "Оставить заявку в боте",
+    reqCompany: "Название компании",
+    reqPhone: "Ваш телефон",
+    reqCtrl: "Контролёры",
+    reqWork: "Работники",
+    reqMsg: "Комментарий",
+    reqSend: "Отправить заявку",
+    reqOr: "или",
+    reqDone: "Заявка отправлена. Мы скоро свяжемся с вами.",
+    reqNeedCompany: "Введите название компании.",
+    reqNeedSeats: "Укажите минимум 1 пользователя.",
     what: "Что делает Strolium",
     f1t: "Задачи и сроки",
     f1d: "Ставите задачу работнику, задаёте срок, видите результат с фото.",
@@ -64,6 +84,16 @@ const T = {
     bossTitle: "Are you the company owner?",
     bossSub: "Try Strolium free for 14 days — no card needed.",
     bossBtn: "Request access in the bot",
+    reqCompany: "Company name",
+    reqPhone: "Your phone number",
+    reqCtrl: "Controllers",
+    reqWork: "Workers",
+    reqMsg: "Anything else",
+    reqSend: "Send request",
+    reqOr: "or",
+    reqDone: "Request sent. We will get back to you shortly.",
+    reqNeedCompany: "Enter your company name.",
+    reqNeedSeats: "Enter at least 1 user.",
     what: "What Strolium does",
     f1t: "Tasks and deadlines",
     f1d: "Assign work, set a deadline, see it done with photo proof.",
@@ -80,6 +110,43 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+
+  // Access-request form. Kept separate from the invite-code state above so an
+  // error in one never clears the other -- a boss who mistypes his phone should
+  // not lose the code he already pasted.
+  const [req, setReq] = useState({ company: "", phone: "", controllers: "", workers: "", message: "" });
+  const [reqBusy, setReqBusy] = useState(false);
+  const [reqErr, setReqErr] = useState("");
+  const [reqSent, setReqSent] = useState(false);
+
+  const setField = (k) => (e) => setReq((r) => ({ ...r, [k]: e.target.value }));
+
+  const sendRequest = async () => {
+    setReqErr("");
+    const company = req.company.trim();
+    if (!company) { setReqErr(t.reqNeedCompany); return; }
+    const controllers = parseInt(req.controllers, 10) || 0;
+    const workers = parseInt(req.workers, 10) || 0;
+    // The backend refuses seats < 1, so catch it here rather than showing the
+    // user a server error for something the form can see.
+    if (controllers + workers < 1) { setReqErr(t.reqNeedSeats); return; }
+    setReqBusy(true);
+    try {
+      await requestAccess({
+        company,
+        phone: req.phone.trim(),
+        controllers,
+        workers,
+        message: req.message.trim(),
+        requester_role: "boss",
+      });
+      setReqSent(true);
+    } catch (e) {
+      setReqErr(e.message || "Xatolik");
+    } finally {
+      setReqBusy(false);
+    }
+  };
 
   const submit = async () => {
     setErr("");
@@ -147,6 +214,71 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
           <div className="nocomp__card nocomp__card--quiet">
             <h3 className="nocomp__cardtitle">{t.bossTitle}</h3>
             <p className="nocomp__cardsub">{t.bossSub}</p>
+
+            {reqSent ? (
+              <p className="eauth__note">{t.reqDone}</p>
+            ) : (
+              <>
+                <label className="eauth__label">{t.reqCompany}</label>
+                <input
+                  className="eauth__input"
+                  value={req.company}
+                  onChange={setField("company")}
+                />
+
+                <label className="eauth__label">{t.reqPhone}</label>
+                <input
+                  className="eauth__input"
+                  value={req.phone}
+                  onChange={setField("phone")}
+                  inputMode="tel"
+                  placeholder="+998"
+                />
+
+                <div style={{ display: "flex", gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <label className="eauth__label">{t.reqCtrl}</label>
+                    <input
+                      className="eauth__input"
+                      value={req.controllers}
+                      onChange={setField("controllers")}
+                      inputMode="numeric"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label className="eauth__label">{t.reqWork}</label>
+                    <input
+                      className="eauth__input"
+                      value={req.workers}
+                      onChange={setField("workers")}
+                      inputMode="numeric"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <label className="eauth__label">{t.reqMsg}</label>
+                <input
+                  className="eauth__input"
+                  value={req.message}
+                  onChange={setField("message")}
+                />
+
+                <button
+                  className="eauth__primary"
+                  onClick={sendRequest}
+                  disabled={reqBusy}
+                  type="button"
+                >
+                  {reqBusy ? "…" : t.reqSend}
+                </button>
+                {reqErr && <p className="login__err">{reqErr}</p>}
+
+                <p className="eauth__note" style={{ textAlign: "center" }}>{t.reqOr}</p>
+              </>
+            )}
+
             <a
               className="login__cta-btn"
               href={`https://t.me/${botName}`}

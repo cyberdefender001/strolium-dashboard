@@ -91,6 +91,32 @@ function authHeader() {
   }
 }
 
+// Ask the platform owner for a company. The backend endpoint is the SAME one the
+// Mini App uses -- deps._identity accepts a website Bearer session as proof, so
+// no separate web endpoint exists or is needed. Until this existed, a boss who
+// signed up on the website was sent to the Telegram bot to ask, which is the one
+// thing the website is meant to avoid.
+export async function requestAccess({ company, phone, controllers, workers, message, requester_role = "boss" }) {
+  const r = await fetch(`${API_BASE}/api/request-access`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ company, phone, controllers, workers, message, requester_role }),
+  });
+  const text = await r.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    /* non-JSON error page */
+  }
+  if (!r.ok) {
+    const err = new Error(data.detail || `Xatolik (${r.status})`);
+    err.status = r.status;
+    throw err;
+  }
+  return data;
+}
+
 export async function joinCompany(invite_code, lang = "uz") {
   const r = await fetch(`${API_BASE}/api/web/account/join`, {
     method: "POST",
