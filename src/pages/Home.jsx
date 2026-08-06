@@ -20,7 +20,9 @@ export default function Home({ user, data, onNav }) {
 
   const name = (user && user.name) || "";
   const role = (user && user.role) || "";
-  const company = (data && data.org) || (user && user.company) || "";
+  // data.org is an OBJECT -- {name, period} (web.py:206). Rendering it directly
+  // threw "Objects are not valid as a React child" and blanked the whole app.
+  const company = (data && data.org && data.org.name) || (user && user.company) || "";
 
   const cards = [
     {
