@@ -436,11 +436,6 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
                 <a className="login__cta-btn" href={tgLink} target="_blank" rel="noreferrer">
                   <Bot size={15} /> {t.tgOpen}
                 </a>
-                {tgCode && (
-                  <p className="eauth__note">
-                    {t.tgCode}: <b>{tgCode}</b>
-                  </p>
-                )}
                 <p className="eauth__note">{t.tgStep}</p>
               </>
             ) : (

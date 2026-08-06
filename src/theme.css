@@ -1633,19 +1633,41 @@ a { color: inherit; }
 /* ── Rahbar hali qo'shilmagan (controller-first company) ───────────────
    Uses --warn rather than --danger: nothing is wrong, a step is outstanding.
    Danger red here would read as a fault on a company that was set up
-   correctly. */
-.tm-boss { border-color: rgba(138,90,0,.32); background: var(--warn-bg); margin-bottom: 14px; }
-.tm-boss__t { font-weight: 700; font-size: 14px; color: var(--warn); }
-.tm-boss__s { font-size: 12.5px; color: var(--dim); margin: 5px 0 12px; line-height: 1.5; }
-.tm-boss__code {
-  font-family: var(--font-mono); font-weight: 700; font-size: 20px;
-  letter-spacing: .18em; color: var(--text);
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: 10px; padding: 11px 14px; text-align: center;
-  margin-bottom: 12px; overflow-wrap: anywhere;
+   correctly.
+
+   The code is the one thing being handed to another person, so it is the only
+   element allowed to be loud. The copy button is sized to its label rather than
+   stretched full-bleed -- a full-width dark slab competed with the code and made
+   the card read as two stacked buttons. */
+.tm-boss {
+  border-color: rgba(138,90,0,.32); background: var(--warn-bg);
+  margin-bottom: 14px; padding: 16px 18px 18px;
 }
-.tm-boss__acts { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.tm-boss__link { font-size: 12.5px; font-weight: 600; color: var(--brand); }
+.tm-boss__t { font-weight: 700; font-size: 14.5px; color: var(--warn); }
+.tm-boss__s { font-size: 12.5px; color: var(--dim); margin: 6px 0 14px; line-height: 1.55; max-width: 46em; }
+.tm-boss__code {
+  font-family: var(--font-mono); font-weight: 700; font-size: 19px;
+  letter-spacing: .1em; color: var(--text);
+  background: var(--panel); border: 1px solid rgba(138,90,0,.28);
+  border-radius: 10px; padding: 13px 14px; text-align: center;
+  margin-bottom: 14px; overflow-wrap: anywhere;
+}
+.tm-boss__acts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tm-boss__acts .btn-primary { width: auto; flex: 0 0 auto; }
+.tm-boss__link {
+  font-size: 12.5px; font-weight: 600; color: var(--brand);
+  text-decoration: none; padding: 10px 12px; border-radius: 9px;
+  border: 1px solid rgba(138,90,0,.28); background: var(--panel);
+}
+.tm-boss__link:hover { border-color: var(--brand-dim); }
+@media (max-width: 700px) {
+  /* Side by side at 360px would give two cramped half-buttons, so they stack --
+     but each stays its own control rather than one full-width slab. */
+  .tm-boss__acts { flex-direction: column; align-items: stretch; gap: 9px; }
+  .tm-boss__acts .btn-primary { width: 100%; justify-content: center; }
+  .tm-boss__link { text-align: center; }
+  .tm-boss__code { font-size: 18px; letter-spacing: .08em; }
+}
 
 /* ── Xarajatlar on a phone ──────────────────────────────────────────────
    Reported: you cannot tell where the project cards stop and the expense
