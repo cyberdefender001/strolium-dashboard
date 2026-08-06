@@ -146,9 +146,16 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
             return;           // stop polling
           }
         }
-      } catch {
-        /* offline, or the session expired -- keep waiting rather than bouncing
-           the user out of a screen they may have left open overnight */
+      } catch (e) {
+        // A dead session must NOT be waited on forever. 401/403 means the token
+        // is invalid or its account was deleted -- polling that until the end of
+        // time is exactly how a user ends up stuck on this screen through
+        // reload after reload. Anything else (offline, 502) is transient, so
+        // keep waiting: they may have left this tab open overnight.
+        if (alive && (e.status === 401 || e.status === 403)) {
+          onLogout();
+          return;
+        }
       }
       if (alive) timer = setTimeout(check, 10000);
     };
@@ -158,7 +165,7 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
       alive = false;
       if (timer) clearTimeout(timer);
     };
-  }, [onJoined]);
+  }, [onJoined, onLogout]);
 
   const sendRequest = async () => {
     setReqErr("");

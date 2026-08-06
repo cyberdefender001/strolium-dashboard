@@ -161,7 +161,14 @@ export async function joinCompany(invite_code, lang = "uz") {
 
 export async function accountStatus() {
   const r = await fetch(`${API_BASE}/api/web/account/status`, { headers: authHeader() });
-  if (!r.ok) throw new Error(`status ${r.status}`);
+  if (!r.ok) {
+    // The code must ride on the error: a caller polling this cannot tell a dead
+    // session (401/403 -- stop and sign out) from a transient failure (502,
+    // offline -- keep waiting) without it. NoCompany is the only caller.
+    const err = new Error(`status ${r.status}`);
+    err.status = r.status;
+    throw err;
+  }
   return r.json();
 }
 
