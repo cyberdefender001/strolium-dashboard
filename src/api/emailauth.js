@@ -117,6 +117,27 @@ export async function requestAccess({ company, phone, controllers, workers, mess
   return data;
 }
 
+// Merge a /status result into the stored user WITHOUT touching the token -- the
+// session is keyed on telegram_id and stays valid across gaining a company, so
+// re-minting it is unnecessary and would risk losing the only credential we have.
+export function applyStatus(status) {
+  try {
+    const u = JSON.parse(localStorage.getItem(KEY)) || {};
+    const user = {
+      ...u,
+      name: status.name || u.name,
+      company: status.company || u.company,
+      role: status.role || u.role,
+      accessLevel: status.access_level || u.accessLevel,
+      orgId: status.org_id || u.orgId,
+    };
+    localStorage.setItem(KEY, JSON.stringify(user));
+    return user;
+  } catch {
+    return null;
+  }
+}
+
 export async function joinCompany(invite_code, lang = "uz") {
   const r = await fetch(`${API_BASE}/api/web/account/join`, {
     method: "POST",

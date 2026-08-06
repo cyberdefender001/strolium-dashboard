@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, Wallet, ClipboardCheck, Bot } from "lucide-react";
 import { StroliumMark } from "../components/StroliumMark";
-import { joinCompany, requestAccess, saveEmailSession } from "../api/emailauth";
+import { accountStatus, applyStatus, joinCompany, requestAccess, saveEmailSession } from "../api/emailauth";
 
 // Shown to someone who has an account but belongs to no company yet.
 //
@@ -34,6 +34,7 @@ const T = {
     reqSend: "So'rov yuborish",
     reqOr: "yoki",
     reqDone: "So'rovingiz yuborildi. Tez orada bog'lanamiz.",
+    waiting: "So'rovingiz ko'rib chiqilmoqda. Tasdiqlangach shu sahifa o'zi ochiladi.",
     reqNeedCompany: "Kompaniya nomini kiriting.",
     reqNeedSeats: "Kamida 1 foydalanuvchi kiriting.",
     what: "Strolium nima qiladi",
@@ -63,6 +64,7 @@ const T = {
     reqSend: "Отправить заявку",
     reqOr: "или",
     reqDone: "Заявка отправлена. Мы скоро свяжемся с вами.",
+    waiting: "Заявка на рассмотрении. Эта страница откроется сама после одобрения.",
     reqNeedCompany: "Введите название компании.",
     reqNeedSeats: "Укажите минимум 1 пользователя.",
     what: "Что делает Strolium",
@@ -92,6 +94,7 @@ const T = {
     reqSend: "Send request",
     reqOr: "or",
     reqDone: "Request sent. We will get back to you shortly.",
+    waiting: "Your request is being reviewed. This page will open by itself once approved.",
     reqNeedCompany: "Enter your company name.",
     reqNeedSeats: "Enter at least 1 user.",
     what: "What Strolium does",
@@ -120,6 +123,42 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
   const [reqSent, setReqSent] = useState(false);
 
   const setField = (k) => (e) => setReq((r) => ({ ...r, [k]: e.target.value }));
+
+  // The owner approves out of band -- from the Mini App, minutes or hours later.
+  // Nothing pushes that to this browser, and App.jsx decides which screen to show
+  // from the STORED orgId, so before this poll existed a reload read the same
+  // stale localStorage forever and the only way in was signing out and back in.
+  //
+  // Poll while this screen is open. 10s is frequent enough to feel immediate to
+  // someone sitting and waiting, and it is one tiny authenticated GET.
+  useEffect(() => {
+    let alive = true;
+    let timer = null;
+
+    const check = async () => {
+      try {
+        const st = await accountStatus();
+        if (!alive) return;
+        if (st && st.has_company && st.org_id) {
+          const user = applyStatus(st);
+          if (user) {
+            onJoined(user);   // unmounts this screen
+            return;           // stop polling
+          }
+        }
+      } catch {
+        /* offline, or the session expired -- keep waiting rather than bouncing
+           the user out of a screen they may have left open overnight */
+      }
+      if (alive) timer = setTimeout(check, 10000);
+    };
+
+    check();
+    return () => {
+      alive = false;
+      if (timer) clearTimeout(timer);
+    };
+  }, [onJoined]);
 
   const sendRequest = async () => {
     setReqErr("");
@@ -216,7 +255,10 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
             <p className="nocomp__cardsub">{t.bossSub}</p>
 
             {reqSent ? (
-              <p className="eauth__note">{t.reqDone}</p>
+              <>
+                <p className="eauth__note">{t.reqDone}</p>
+                <p className="eauth__note">{t.waiting}</p>
+              </>
             ) : (
               <>
                 <label className="eauth__label">{t.reqCompany}</label>
