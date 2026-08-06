@@ -118,11 +118,22 @@ a { color: inherit; }
    other. */
 .login__formside {
   background: var(--panel);
-  display: flex; align-items: flex-start; justify-content: center;
-  gap: 48px;
-  padding: 72px 48px 48px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 40px;
 }
-.login__formside > * { flex: 0 1 340px; min-width: 0; }
+.login__col { width: 100%; max-width: 380px; }
+
+/* Secondary ways in, below the form and separated by a rule so the eye finishes
+   the form first. */
+.login__alt { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
+.login__alt-toggle {
+  display: block; width: 100%;
+  padding: 11px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel);
+  font: 600 13px var(--font-body, inherit); color: var(--text);
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.login__alt-toggle:hover { border-color: var(--brand-dim); background: var(--panel-3); }
 .login__form { width: 100%; max-width: 340px; }
 .login__form h2 {
   font-family: var(--font-display); font-weight: 600; font-size: 22px;
@@ -177,14 +188,14 @@ a { color: inherit; }
 
 /* prospect CTA (deck sends buyers to this page) */
 .login__cta {
-  margin-top: 20px; padding: 14px 16px;
-  border: 1px solid rgba(76, 141, 255, 0.45);
-  background: rgba(76, 141, 255, 0.07);
+  margin-top: 22px; padding: 15px 17px;
+  border: 1px solid rgba(240, 165, 0, 0.42);
+  background: rgba(240, 165, 0, 0.09);
   border-radius: var(--radius);
 }
 .login__cta-title { font-weight: 700; font-size: 14px; color: var(--text); }
 .login__cta-sub { font-size: 12.5px; color: var(--dim); margin: 5px 0 11px; }
-.login__cta-sub b { color: var(--good); }
+.login__cta-sub b { color: var(--warn); }
 .login__cta-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 100%; padding: 10px 14px; border-radius: 10px;
@@ -537,21 +548,10 @@ a { color: inherit; }
      heights, so the CTA card overlapped the form and long email addresses were
      cut off mid-word. Stack them instead. */
   .login__formside {
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 20px;
+    align-items: flex-start;
     padding: 26px 18px 44px;
   }
-  .login__formside > * {
-    /* flex-basis is the MAIN axis, and the main axis here is vertical, so the
-       desktop `flex: 0 1 340px` above would be read as a 340px HEIGHT. Reset it. */
-    flex: 0 0 auto;
-    width: 100%;
-    max-width: 440px;
-    margin: 0 auto;
-    min-width: 0;
-  }
+  .login__col { max-width: 440px; }
   .login__form { max-width: 440px; }
   /* A long address must wrap or shrink, never overflow its field. */
   .login__formside input { width: 100%; min-width: 0; }

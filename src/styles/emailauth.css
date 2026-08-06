@@ -16,31 +16,51 @@
    Deliberately reuses the .login__* shell (brand side, form side, error text)
    so this sits inside the current page rather than introducing a second look. */
 
+/* The form heading. The wordmark used to sit here, duplicating the lockup on the
+   navy panel a hand's width away. Naming the action instead tells you which of
+   the two things you are doing. */
+.eauth__head {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0 0 18px;
+}
+
+/* This control was invisible: the track was rgba(255,255,255,.04) and the active
+   pill rgba(255,255,255,.1), i.e. white on a white panel. The two tabs read as
+   loose floating words with no indication either was selected. */
 .eauth__tabs {
   display: flex;
   gap: 4px;
-  margin: 20px 0 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  margin: 4px 0 20px;
+  background: var(--panel-3);
+  border: 1px solid var(--line);
+  border-radius: 11px;
   padding: 4px;
 }
 
 .eauth__tab {
-  flex: 1;
-  padding: 9px 12px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 10px 8px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   background: transparent;
-  color: inherit;
-  opacity: 0.55;
-  font: 600 13px inherit;
+  color: var(--dim);
+  /* Both labels on one line: "Ro'yxatdan o'tish" wrapped to two rows and threw
+     the control out of alignment with "Kirish". */
+  white-space: nowrap;
+  font: 600 13px var(--font-body, inherit);
   cursor: pointer;
-  transition: opacity 0.15s ease, background 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .eauth__tab.is-on {
-  background: rgba(255, 255, 255, 0.1);
-  opacity: 1;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(6, 16, 35, 0.10);
 }
 
 .eauth__tab:focus-visible,

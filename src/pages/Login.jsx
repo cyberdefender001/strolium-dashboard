@@ -142,16 +142,21 @@ export default function Login({ onLogin }) {
       </div>
 
       <div className="login__formside">
-        {/* Email + password: the default door. */}
+        {/* ONE column. These used to be two siblings in a flex ROW, so the form
+            and this secondary block sat shoulder to shoulder, competing for the
+            eye and colliding at narrow widths. Signing in is the job of this
+            page; everything else belongs underneath it, in order of how often it
+            is used. */}
+        <div className="login__col">
         <EmailAuth onLogin={onLogin} />
 
-        <div className="login__form login__form--alt">
+        <div className="login__alt">
           <button
-            className="eauth__link"
+            className="login__alt-toggle"
             onClick={() => setShowTg((v) => !v)}
             type="button"
           >
-            {showTg ? "Boshqa usullarni yashirish" : "Boshqa usullar — Telegram orqali kirish"}
+            {showTg ? "Yashirish" : "Telegram bilan kirish"}
           </button>
 
           {showTg && (
@@ -207,10 +212,11 @@ export default function Login({ onLogin }) {
             </a>
           </div>
 
-          <div className="login__demo">
-            Jamoa a'zosimisiz? Rahbaringiz bergan taklif kodi bilan
-            ro'yxatdan o'ting — keyin email va parol bilan kirasiz.
-          </div>
+          <p className="login__demo">
+            Jamoa a'zosimisiz? Rahbaringiz bergan taklif kodi bilan ro'yxatdan
+            o'ting.
+          </p>
+        </div>
         </div>
       </div>
     </div>

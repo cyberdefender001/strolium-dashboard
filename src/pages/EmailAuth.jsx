@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Mail, ArrowLeft } from "lucide-react";
-import { StroliumMark } from "../components/StroliumMark";
 import {
   requestEmailCode,
   emailSignup,
@@ -169,12 +168,12 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
 
   return (
     <div className="login__form">
-      <div className="login__logo">
-        <div className="login__logo-mark">
-          <StroliumMark size={20} />
-        </div>
-        <span className="login__logo-name">Strolium</span>
-      </div>
+      {/* The lockup lives on the navy panel beside this form; repeating it here put
+          the wordmark on screen twice, a hand's width apart. In login and signup
+          the tab control below already names the action, so a heading would say
+          "Kirish" directly above a selected tab reading "Kirish". Reset has no
+          tabs, so it gets the heading. */}
+      {mode === "reset" && <h2 className="eauth__head">{t.reset}</h2>}
 
       {mode !== "reset" ? (
         <div className="eauth__tabs">
