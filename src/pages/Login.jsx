@@ -118,11 +118,10 @@ export default function Login({ onLogin }) {
 
         <div>
           <h1 className="login__thesis">
-            Qurilish budjetini <em>o'g'irlik va isrofdan</em> himoya qiluvchi AI.
+            Biznesingizni <em>istalgan joydan</em> to'liq nazorat qiling.
           </h1>
           <p className="login__sub">
-            Har bir somni buyurtmadan to'lovgacha kuzatadi. Yo'qotishni yo'q
-            bo'lib ketishidan oldin aniqlaydi.
+            Har bir vazifa, har bir so'm — doimiy e'tiboringizda.
           </p>
         </div>
 
@@ -136,8 +135,8 @@ export default function Login({ onLogin }) {
             avtomatik audit
           </div>
           <div>
-            <b>AI</b>
-            anomaliya aniqlash
+            <b>Rasm</b>
+            bilan tasdiq
           </div>
         </div>
       </div>
