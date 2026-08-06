@@ -110,11 +110,19 @@ a { color: inherit; }
 .login__meta { display: flex; gap: 28px; color: var(--faint); font-size: 13px; }
 .login__meta b { color: var(--text); font-family: var(--font-mono); font-weight: 500; display:block; font-size: 18px; }
 
+/* Two children live here: the email form and the panel with the Telegram option
+   plus the trial CTA. They sat side by side with NO gap and align-items:center,
+   so the card's left edge crowded the email input and the two columns floated at
+   different heights. A real gap separates them; flex-start lines their tops up so
+   they read as two columns instead of two things that happen to be near each
+   other. */
 .login__formside {
   background: var(--panel);
-  display: flex; align-items: center; justify-content: center;
-  padding: 40px;
+  display: flex; align-items: flex-start; justify-content: center;
+  gap: 48px;
+  padding: 72px 48px 48px;
 }
+.login__formside > * { flex: 0 1 340px; min-width: 0; }
 .login__form { width: 100%; max-width: 340px; }
 .login__form h2 {
   font-family: var(--font-display); font-weight: 600; font-size: 22px;
@@ -536,6 +544,9 @@ a { color: inherit; }
     padding: 26px 18px 44px;
   }
   .login__formside > * {
+    /* flex-basis is the MAIN axis, and the main axis here is vertical, so the
+       desktop `flex: 0 1 340px` above would be read as a 340px HEIGHT. Reset it. */
+    flex: 0 0 auto;
     width: 100%;
     max-width: 440px;
     margin: 0 auto;
