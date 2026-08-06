@@ -134,6 +134,15 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
   const [reqErr, setReqErr] = useState("");
   const [reqSent, setReqSent] = useState(false);
 
+  // Someone who has just gained a company must land on Bosh sahifa. The active
+  // page lives in the URL hash now, so a hash left over from earlier browsing in
+  // this same tab (#/expenses, say) would otherwise decide where they arrive --
+  // which is why joining dropped you on Xarajatlar instead of the welcome page.
+  const enter = (u) => {
+    try { window.location.hash = "/home"; } catch { /* non-browser env */ }
+    onJoined(u);
+  };
+
   const setField = (k) => (e) => setReq((r) => ({ ...r, [k]: e.target.value }));
 
   // The owner approves out of band -- from the Mini App, minutes or hours later.
@@ -154,7 +163,7 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
         if (st && st.has_company && st.org_id) {
           const user = applyStatus(st);
           if (user) {
-            onJoined(user);   // unmounts this screen
+            enter(user);   // unmounts this screen
             return;           // stop polling
           }
         }
@@ -211,7 +220,7 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
     setBusy(true);
     try {
       const session = await joinCompany(code.trim(), lang);
-      onJoined(saveEmailSession(session));
+      enter(saveEmailSession(session));
     } catch (e) {
       setErr(e.message || "Xatolik");
     } finally {

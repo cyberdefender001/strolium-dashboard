@@ -1646,3 +1646,34 @@ a { color: inherit; }
 }
 .tm-boss__acts { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .tm-boss__link { font-size: 12.5px; font-weight: 600; color: var(--brand); }
+
+/* ── Xarajatlar on a phone ──────────────────────────────────────────────
+   Reported: you cannot tell where the project cards stop and the expense
+   list starts, and the search box reads as just another card in the stack.
+
+   The project rail, the filters and the table are three different things
+   and on a narrow screen they were three identical-looking white blocks in
+   a row. A hairline plus real spacing separates them; the search field goes
+   full width so it reads as a control rather than a card; and the total
+   moves onto its own line where it belongs next to the row count. */
+@media (max-width: 700px) {
+  .xrail {
+    margin-bottom: 0;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .xfilters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin: 18px 0 12px;
+  }
+  .xsearch { width: 100%; background: var(--panel); border-color: var(--line); }
+  .xsearch input { width: 100%; padding: 11px 0; font-size: 14px; }
+  .xfilters select { width: 100%; background: var(--panel); border-color: var(--line); padding: 11px; font-size: 14px; }
+  .xfilters__tot {
+    margin-left: 0;
+    padding-top: 2px;
+    font-size: 13px;
+  }
+}

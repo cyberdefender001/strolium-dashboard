@@ -15,9 +15,6 @@ function InviteModal({ roles, onClose }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
-  // Separate from `copied` above: that one belongs to the invite modal, and
-  // sharing it would make both buttons flip to "Nusxalandi" at once.
-  const [bossCopied, setBossCopied] = useState(false);
 
   const make = async (uses) => {
     setBusy(true);
@@ -101,6 +98,9 @@ function InviteModal({ roles, onClose }) {
 }
 
 export default function Team({ tick, onChange }) {
+  // Belongs to Team, NOT to InviteModal -- InviteModal has its own `copied`
+  // for the invite link, and this one is for the reserved boss code below.
+  const [bossCopied, setBossCopied] = useState(false);
   const [data, setData] = useState(null);
   const [me, setMe] = useState(null);
   const [err, setErr] = useState("");
