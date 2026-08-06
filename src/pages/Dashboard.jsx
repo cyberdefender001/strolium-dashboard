@@ -33,7 +33,42 @@ const TITLES = {
 export default function Dashboard({ user, onLogout }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
-  const [nav, setNav] = useState("alerts");
+  // Reloading used to dump you back on Belgilar from wherever you were, because
+  // the active page lived only in React state. It now lives in the URL hash, so
+  // a reload keeps your place, the browser back button works, and a page can be
+  // linked to. TITLES is the whitelist -- a hand-edited or stale hash falls back
+  // rather than rendering a blank screen.
+  const readHash = () => {
+    try {
+      const k = (window.location.hash || "").replace(/^#\/?/, "").trim();
+      return TITLES[k] ? k : "alerts";
+    } catch {
+      return "alerts";
+    }
+  };
+  const [nav, setNavRaw] = useState(readHash);
+
+  // Single writer: every nav change goes through here so state and URL can never
+  // disagree. replaceState would eat the back button, so this assigns the hash.
+  const setNav = useCallback((key) => {
+    setNavRaw((prev) => {
+      const next = TITLES[key] ? key : prev;
+      try {
+        if (readHash() !== next) window.location.hash = "/" + next;
+      } catch { /* non-browser env */ }
+      return next;
+    });
+  }, []);
+
+  // Back/forward, and the very first paint when the hash is empty.
+  useEffect(() => {
+    const onHash = () => setNavRaw(readHash());
+    window.addEventListener("hashchange", onHash);
+    try {
+      if (!window.location.hash) window.location.replace("#/" + readHash());
+    } catch { /* ignore */ }
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   // Persisted: a boss who collapses the rail expects it collapsed next visit.
   const [mini, setMini] = useState(() => {
