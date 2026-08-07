@@ -89,27 +89,35 @@
 .eauth__label {
   display: block;
   margin: 14px 0 6px;
-  font: 600 12px inherit;
-  opacity: 0.65;
+  font: 600 12px var(--font-body, inherit);
+  color: var(--dim);
+  opacity: 1;
 }
 
+/* border and background were rgba(255,255,255,...) -- white on a white panel, so
+   every field on this form was invisible until it took focus. That is why the
+   password boxes looked like empty gaps under their labels. */
 .eauth__input {
   width: 100%;
   box-sizing: border-box;
   padding: 12px 13px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  color: inherit;
-  font: 500 15px inherit;
+  background: var(--panel);
+  color: var(--text);
+  font: 500 15px var(--font-body, inherit);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+.eauth__input:hover { border-color: var(--brand-dim); }
 
 .eauth__input::placeholder {
-  opacity: 0.35;
+  color: var(--faint);
+  opacity: 1;
 }
 
 .eauth__input:focus {
   border-color: var(--st-accent);
+  box-shadow: 0 0 0 3px rgba(6, 16, 35, 0.08);
 }
 
 /* The code is six characters and read aloud from a phone -- space it out so a
@@ -242,9 +250,9 @@
 .nocomp__card {
   margin-bottom: 16px;
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel);
 }
 
 .nocomp__card--quiet {
@@ -313,9 +321,9 @@
 .prof__card {
   margin-bottom: 16px;
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel);
 }
 
 .prof__card--quiet {
@@ -385,11 +393,11 @@
   gap: 6px;
   flex: 0 0 auto;
   padding: 0 15px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  color: inherit;
-  font: 600 13px inherit;
+  background: var(--panel);
+  color: var(--text);
+  font: 600 13px var(--font-body, inherit);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -410,10 +418,10 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  color: inherit;
+  background: var(--panel);
+  color: var(--text);
   cursor: pointer;
 }
 

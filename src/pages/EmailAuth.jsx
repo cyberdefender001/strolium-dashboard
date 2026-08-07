@@ -60,7 +60,6 @@ const T = {
     expired: "Kod muddati tugadi. Yangi kod so'rang.",
     resendIn: "Qayta yuborish",
     resendAfter: "Yangi kod so'rash:",
-    lastStep: "Oxirgi qadam",
   },
   ru: {
     tabLogin: "Вход",
@@ -92,7 +91,6 @@ const T = {
     expired: "Срок кода истёк. Запросите новый.",
     resendIn: "Отправить снова",
     resendAfter: "Новый код можно запросить через:",
-    lastStep: "Последний шаг",
   },
   en: {
     tabLogin: "Sign in",
@@ -124,7 +122,6 @@ const T = {
     expired: "Code has expired. Request a new one.",
     resendIn: "Resend",
     resendAfter: "New code available in:",
-    lastStep: "Last step",
   },
 };
 
@@ -406,8 +403,6 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
           {/* STEP 3 -- who you are and a password. The code is verified by now. */}
           {step === 3 && (
             <>
-              <div className="eauth__sent">{t.lastStep}</div>
-
               <label className="eauth__label">{t.name}</label>
               <input
                 className="eauth__input"
