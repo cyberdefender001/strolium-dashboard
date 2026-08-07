@@ -1042,8 +1042,20 @@ a { color: inherit; }
 .tm-role { background:var(--ink); border:1px solid var(--line); border-radius:10px;
   padding:11px 16px; color:var(--dim); font:600 13px var(--font-body); cursor:pointer; }
 .tm-role.on { background:rgba(6,16,35,.14); border-color:var(--brand-dim); color:var(--brand); }
-.tm-capacts { display:flex; gap:8px; margin-top:4px; }
-.tm-capacts .btn-primary, .tm-capacts .btn-ghost { width:auto; flex:none; padding:10px 18px; }
+/* Belt and braces: ANY flex row that holds both button styles gets them
+   normalised, so the next row someone adds does not inherit the 44px-vs-40px
+   mismatch and the stray margin-top. Specific overrides above still win. */
+:is(.tm-capacts, .axp__foot, .doc-actions, .tdet__dl) { align-items:center; }
+
+/* Same trap as .axp__foot: .btn-primary is 44px tall AND carries margin-top:8px,
+   .btn-ghost is 40px, so overriding only width and padding left OK taller than
+   Cheksiz and sitting lower. Height and margin have to be normalised too, and
+   align-items keeps them on one baseline whatever the labels do. */
+.tm-capacts { display:flex; align-items:center; gap:8px; margin-top:4px; }
+.tm-capacts .btn-primary, .tm-capacts .btn-ghost {
+  width:auto; flex:none; height:40px; margin:0; padding:0 18px;
+  box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center;
+}
 .tm-link { display:flex; gap:8px; }
 .tm-link input { flex:1; background:var(--ink); border:1px solid var(--line-soft); border-radius:9px;
   padding:10px 11px; color:var(--text); font:500 12px var(--font-mono); outline:none; }
@@ -1743,3 +1755,106 @@ a { color: inherit; }
     font-size: 13px;
   }
 }
+
+/* ── Demo video, floating on the login screen ───────────────────────────
+   Small in the corner by default, one click to enlarge, one to shrink, draggable
+   by its bar, dismissable. position:fixed so it never disturbs the form's layout
+   -- an inline player would push the sign-in fields around, which is the one
+   thing a login page must not do. */
+.dvid {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 300px;
+  z-index: 60;
+  background: var(--navy);
+  border: 1px solid rgba(255, 255, 255, 0.14);   /* on navy, so light is correct here */
+  border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(6, 16, 35, 0.32);
+  overflow: hidden;
+  /* Width/height only -- transitioning `left`/`top` would make dragging lag
+     behind the pointer. */
+  transition: width 0.18s ease;
+}
+.dvid--big { width: min(760px, calc(100vw - 32px)); }
+
+.dvid__bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 8px 9px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: grab;
+  touch-action: none;              /* or a touch drag scrolls the page instead */
+  user-select: none;
+}
+.dvid__bar:active { cursor: grabbing; }
+.dvid__grip { color: rgba(255, 255, 255, 0.4); flex: 0 0 auto; }
+.dvid__title {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 600 12.5px var(--font-body); color: #fff;
+}
+.dvid__icon {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 26px; height: 26px; padding: 0;
+  border: 0; border-radius: 7px;
+  background: transparent; color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+}
+.dvid__icon:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+
+.dvid__stage { position: relative; aspect-ratio: 16 / 9; background: #000; }
+.dvid__stage > iframe,
+.dvid__stage > video { width: 100%; height: 100%; border: 0; display: block; }
+
+.dvid__poster {
+  position: absolute; inset: 0;
+  display: grid; place-items: center; gap: 8px; align-content: center;
+  width: 100%; padding: 0;
+  border: 0; background: var(--navy-800, #061127); cursor: pointer;
+}
+.dvid__poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.55; }
+.dvid__play {
+  position: relative;
+  display: grid; place-items: center;
+  width: 46px; height: 46px; border-radius: 999px;
+  background: var(--amber); color: var(--navy);
+}
+.dvid__hint { position: relative; font: 600 12.5px var(--font-body); color: #fff; }
+
+@media (max-width: 700px) {
+  /* Cornered on a phone it would cover the keyboard area and the submit button,
+     so it spans the width and sits above the bottom edge instead. */
+  .dvid { left: 12px; right: 12px; bottom: 12px; width: auto; }
+  .dvid--big { width: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dvid { transition: none; }
+}
+
+/* Chapters. Only rendered when the card is enlarged: at 300px wide, five rows of
+   chapter list would be taller than the video above them. */
+.dvid__chapters {
+  max-height: 168px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--navy);
+}
+.dvid__chapter {
+  display: flex; align-items: baseline; gap: 10px;
+  width: 100%; padding: 10px 14px;
+  border: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent; text-align: left; cursor: pointer;
+  font: 500 13px var(--font-body); color: rgba(255, 255, 255, 0.78);
+  transition: background 0.12s;
+}
+.dvid__chapter:last-child { border-bottom: 0; }
+.dvid__chapter:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.dvid__chapter.is-on { background: rgba(240, 165, 0, 0.16); color: #fff; }
+.dvid__chapter.is-on .dvid__chapter-at { color: var(--amber); }
+.dvid__chapter-at {
+  flex: 0 0 auto;
+  font: 600 12px var(--font-mono);
+  color: rgba(255, 255, 255, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+.dvid__chapter-label { flex: 1; min-width: 0; }
