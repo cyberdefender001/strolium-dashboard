@@ -633,8 +633,10 @@ a { color: inherit; }
 /* budget rail: every project's burn, at a glance */
 .xrail { display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:12px; margin-bottom:18px; }
 .xrail__card { background:var(--panel); border:1px solid var(--line-soft); border-radius:var(--radius); padding:14px; }
-.xrail__card--warn { border-color:#3A2E19; }
-.xrail__card--bad  { border-color:#3E2124; }
+/* #3A2E19 / #3E2124 were dark-theme browns -- on the light canvas they drew a
+   near-black border round a white card. Tints of the real tokens instead. */
+.xrail__card--warn { border-color:rgba(138,90,0,.34); }
+.xrail__card--bad  { border-color:rgba(192,57,43,.34); }
 .xrail__top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
 .xrail__name { font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .xrail__pct { font-size:12px; font-weight:700; color:var(--dim); font-family:var(--font-mono); }
@@ -650,16 +652,41 @@ a { color: inherit; }
 .xrail__bar i.warn { background:var(--warn); }
 .xrail__bar i.bad  { background:var(--danger); }
 
-/* filters */
-.xfilters { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
-.xsearch { display:flex; align-items:center; gap:7px; background:var(--ink); border:1px solid var(--line-soft);
-           border-radius:8px; padding:0 10px; color:var(--faint); }
-.xsearch input { background:none; border:none; outline:none; color:var(--text); font:400 13px/1 var(--font-body);
-                 padding:9px 0; width:190px; }
-.xfilters select { background:var(--ink); border:1px solid var(--line-soft); border-radius:8px; padding:9px 11px;
-                   color:var(--dim); font:400 13px/1 var(--font-body); outline:none; }
-.xfilters__tot { margin-left:auto; color:var(--faint); font-size:12.5px; }
-.xfilters__tot b { color:var(--text); font-family:var(--font-mono); }
+/* filters
+   Three different things used to sit in one undifferentiated stack of white:
+   the project cards, the controls, and the expense table. You could not see
+   where one ended and the next began.
+
+   A rule closes the project section. The controls sit on white with a real
+   border -- they used var(--ink), the page CANVAS colour, so on a white card
+   they had no edge at all. And the count moves onto its own line as a heading
+   for the table, instead of hiding at 12.5px in --faint out to the right. */
+.xrail { border-bottom:1px solid var(--line); padding-bottom:20px; margin-bottom:22px; }
+
+.xfilters { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
+.xsearch { display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--line);
+           border-radius:10px; padding:0 12px; color:var(--dim); transition:border-color .15s; }
+.xsearch:focus-within { border-color:var(--brand-dim); }
+.xsearch input { background:none; border:none; outline:none; color:var(--text);
+                 font:500 13.5px/1 var(--font-body); padding:11px 0; width:210px; }
+.xsearch input::placeholder { color:var(--faint); font-weight:400; }
+.xfilters select { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:11px 12px;
+                   color:var(--text); font:500 13.5px/1 var(--font-body); outline:none; cursor:pointer;
+                   transition:border-color .15s; }
+.xfilters select:hover { border-color:var(--brand-dim); }
+
+.xfilters__tot {
+  flex:1 0 100%;
+  margin:4px 0 0;
+  color:var(--dim);
+  font-size:13.5px;
+  font-weight:500;
+  display:flex; align-items:baseline; gap:8px;
+}
+.xfilters__tot b {
+  color:var(--text); font-family:var(--font-mono); font-weight:700;
+  font-size:16px;
+}
 
 /* the table */
 .xtable__wrap { padding:0; overflow:hidden; }
@@ -761,11 +788,11 @@ a { color: inherit; }
    sits at the top and is clearable in place. Making him click into a detail page
    to approve is how approvals rot for a week. */
 
-.treview { background:var(--panel); border:1px solid #3A2E19; border-radius:var(--radius);
+.treview { background:var(--panel); border:1px solid rgba(138,90,0,.34); border-radius:var(--radius);
   margin-bottom:18px; overflow:hidden; }
 .treview__head { display:flex; align-items:center; gap:7px; padding:11px 15px; color:var(--warn);
   font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
-  background:var(--warn-bg); border-bottom:1px solid #3A2E19; }
+  background:var(--warn-bg); border-bottom:1px solid rgba(138,90,0,.34); }
 .treview__n { background:var(--warn); color:#1A1204; border-radius:999px; padding:1px 7px;
   font-size:11px; font-weight:800; margin-left:2px; }
 .treview__row { display:flex; align-items:center; gap:14px; padding:12px 15px;
@@ -920,7 +947,7 @@ a { color: inherit; }
 
 .trow-form td { padding:0 !important; background:var(--warn-bg); }
 .tform { display:flex; gap:9px; align-items:flex-start; padding:13px 15px;
-  border-top:1px solid #3A2E19; }
+  border-top:1px solid rgba(138,90,0,.34); }
 .tform textarea { flex:1; min-height:58px; resize:vertical; background:var(--ink);
   border:1px solid var(--line); border-radius:9px; padding:9px 11px; color:var(--text);
   font:400 13px/1.4 var(--font-body); outline:none; }
@@ -964,8 +991,8 @@ a { color: inherit; }
 .pj-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
 .pj { background:var(--panel); border:1px solid var(--line-soft); border-radius:var(--radius);
   padding:16px 17px; }
-.pj--warn { border-color:#3A2E19; }
-.pj--bad { border-color:#3E2124; }
+.pj--warn { border-color:rgba(138,90,0,.34); }
+.pj--bad { border-color:rgba(192,57,43,.34); }
 .pj__top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
 .pj__name { font-family:var(--font-display); font-size:15.5px; font-weight:700; }
 .pj__addr { display:flex; align-items:center; gap:4px; color:var(--faint); font-size:11.5px;
@@ -1690,16 +1717,12 @@ a { color: inherit; }
    full width so it reads as a control rather than a card; and the total
    moves onto its own line where it belongs next to the row count. */
 @media (max-width: 700px) {
-  .xrail {
-    margin-bottom: 0;
-    padding-bottom: 18px;
-    border-bottom: 1px solid var(--line);
-  }
+  /* The base rule now carries the divider; only the stacking differs here. */
   .xfilters {
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
-    margin: 18px 0 12px;
+    margin: 0 0 12px;
   }
   .xsearch { width: 100%; background: var(--panel); border-color: var(--line); }
   .xsearch input { width: 100%; padding: 11px 0; font-size: 14px; }

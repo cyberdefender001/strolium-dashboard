@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, ArrowLeft } from "lucide-react";
 import {
   requestEmailCode,
+  verifyEmailCode,
   emailSignup,
   emailLogin,
   emailResetPassword,
@@ -15,6 +16,12 @@ import {
 //
 // Flow, deliberately: login is email + password ONLY. A 6-digit code appears in
 // exactly two places -- proving the address at signup, and proving it again to
+// Matches OTP_TTL_MINUTES in app/security/webauth.py. The server is the real
+// authority; this is only what we show, so if that value changes, change this.
+const CODE_TTL_SEC = 10 * 60;
+// Other services make you wait about a minute before resending. Same here.
+const RESEND_AFTER_SEC = 60;
+
 // reset a forgotten password. A code by itself never opens an account, or the
 // password would be decorative.
 //
@@ -45,6 +52,14 @@ const T = {
     needInvite: "Taklif kodi rahbaringizdan olinadi",
     checking: "Tekshirilmoqda…",
     sending: "Yuborilmoqda…",
+    verify: "Tasdiqlash",
+    codeStep: "Emailga kelgan 6 xonali kod",
+    codeAt: "Kod yuborildi",
+    changeEmail: "Emailni o'zgartirish",
+    expiresIn: "Kod amal qiladi",
+    expired: "Kod muddati tugadi. Yangi kod so'rang.",
+    resendIn: "Qayta yuborish",
+    lastStep: "Oxirgi qadam",
   },
   ru: {
     tabLogin: "Вход",
@@ -68,6 +83,14 @@ const T = {
     needInvite: "Код приглашения даёт ваш руководитель",
     checking: "Проверка…",
     sending: "Отправка…",
+    verify: "Подтвердить",
+    codeStep: "6-значный код из письма",
+    codeAt: "Код отправлен",
+    changeEmail: "Изменить email",
+    expiresIn: "Код действителен",
+    expired: "Срок кода истёк. Запросите новый.",
+    resendIn: "Отправить снова",
+    lastStep: "Последний шаг",
   },
   en: {
     tabLogin: "Sign in",
@@ -91,6 +114,14 @@ const T = {
     needInvite: "Your manager gives you the invite code",
     checking: "Checking…",
     sending: "Sending…",
+    verify: "Verify",
+    codeStep: "6-digit code from your email",
+    codeAt: "Code sent",
+    changeEmail: "Change email",
+    expiresIn: "Code valid for",
+    expired: "Code has expired. Request a new one.",
+    resendIn: "Resend",
+    lastStep: "Last step",
   },
 };
 
@@ -110,6 +141,24 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
 
+  // Signup is three steps now, not one wall of fields. Every other service asks
+  // for the email, THEN reveals the code box, THEN the rest -- showing code, name,
+  // password and confirm-password together made it look like a form you had to
+  // fill blind before you had even opened your inbox.
+  //   1 = email   2 = code   3 = name + password
+  const [step, setStep] = useState(1);
+  const [left, setLeft] = useState(0);          // seconds the code is still valid
+
+  // One ticker for the code's remaining life. It is display-only -- the server is
+  // the authority on expiry -- but without it people stare at a dead code and
+  // retype it instead of asking for a new one.
+  useEffect(() => {
+    if (left <= 0) return;
+    const id = setInterval(() => setLeft((n) => (n > 0 ? n - 1 : 0)), 1000);
+    return () => clearInterval(id);
+  }, [left]);
+
+
   const reset = (next) => {
     setMode(next);
     setErr("");
@@ -118,6 +167,10 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
     setCodeSent(false);
     setPassword("");
     setPassword2("");
+    // Without these, switching Kirish <-> Ro'yxatdan o'tish mid-flow would drop you
+    // back into step 2 or 3 with a stale countdown still running.
+    setStep(1);
+    setLeft(0);
   };
 
   const run = async (fn) => {
@@ -137,8 +190,30 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
     run(async () => {
       await requestEmailCode(email.trim(), purpose, lang);
       setCodeSent(true);
+      setCode("");
+      setLeft(CODE_TTL_SEC);
+      if (purpose === "signup") setStep(2);
       setNote(t.codeSent);
     });
+
+  // Step 2 -> 3. verifyEmailCode checks the code WITHOUT consuming it, which is
+  // what makes a separate step possible: a wrong code is caught here instead of
+  // after someone has typed their name and password twice.
+  const doVerifyCode = () =>
+    run(async () => {
+      await verifyEmailCode(email.trim(), code.trim(), "signup");
+      setStep(3);
+      setNote("");
+    });
+
+  const backToEmail = () => {
+    setStep(1);
+    setCodeSent(false);
+    setCode("");
+    setLeft(0);
+    setErr("");
+    setNote("");
+  };
 
   const doLogin = () =>
     run(async () => {
@@ -198,16 +273,24 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
         </button>
       )}
 
-      <label className="eauth__label">{t.email}</label>
-      <input
-        className="eauth__input"
-        type="email"
-        autoComplete="email"
-        inputMode="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="ism@kompaniya.uz"
-      />
+      {/* Once signup moves past step 1 the address is settled and shown in the
+          summary block above, with its own "change email" link. Leaving the field
+          here too put the same address on screen twice, one copy editable and one
+          not. */}
+      {!(mode === "signup" && step > 1) && (
+        <>
+          <label className="eauth__label">{t.email}</label>
+          <input
+            className="eauth__input"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="ism@kompaniya.uz"
+          />
+        </>
+      )}
 
       {mode === "login" && (
         <>
@@ -231,7 +314,8 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
 
       {mode === "signup" && (
         <>
-          {!codeSent ? (
+          {/* STEP 1 -- email only. */}
+          {step === 1 && (
             <button
               className="eauth__primary"
               onClick={() => doSendCode("signup")}
@@ -240,22 +324,78 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
             >
               <Mail size={15} /> {busy ? t.sending : t.sendCode}
             </button>
-          ) : (
+          )}
+
+          {/* STEP 2 -- the code, on its own. Nothing else on screen, because
+              nothing else can be done until the code is right. */}
+          {step === 2 && (
             <>
-              <label className="eauth__label">{t.code}</label>
+              <div className="eauth__sent">
+                {t.codeAt}: <b>{email.trim()}</b>
+                <button className="eauth__inline" onClick={backToEmail} type="button">
+                  {t.changeEmail}
+                </button>
+              </div>
+
+              <label className="eauth__label">{t.codeStep}</label>
               <input
                 className="eauth__input eauth__input--code"
                 inputMode="numeric"
                 maxLength={6}
                 value={code}
+                autoFocus
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                 placeholder="••••••"
               />
+
+              <div className="eauth__timer">
+                {left > 0 ? (
+                  <>
+                    {t.expiresIn}{" "}
+                    <b>
+                      {String(Math.floor(left / 60)).padStart(1, "0")}:
+                      {String(left % 60).padStart(2, "0")}
+                    </b>
+                  </>
+                ) : (
+                  <span className="eauth__timer--dead">{t.expired}</span>
+                )}
+              </div>
+
+              <button
+                className="eauth__primary"
+                onClick={doVerifyCode}
+                disabled={busy || code.trim().length !== 6}
+                type="button"
+              >
+                {busy ? t.checking : t.verify}
+              </button>
+
+              <button
+                className="eauth__link"
+                onClick={() => doSendCode("signup")}
+                /* Resend stays locked for the first minute so a slow inbox does
+                   not turn into four codes and a rate-limit block. */
+                disabled={busy || left > CODE_TTL_SEC - RESEND_AFTER_SEC}
+                type="button"
+              >
+                {left > CODE_TTL_SEC - RESEND_AFTER_SEC
+                  ? `${t.resendIn} (${left - (CODE_TTL_SEC - RESEND_AFTER_SEC)})`
+                  : t.resend}
+              </button>
+            </>
+          )}
+
+          {/* STEP 3 -- who you are and a password. The code is verified by now. */}
+          {step === 3 && (
+            <>
+              <div className="eauth__sent">{t.lastStep}</div>
 
               <label className="eauth__label">{t.name}</label>
               <input
                 className="eauth__input"
                 value={name}
+                autoFocus
                 onChange={(e) => setName(e.target.value)}
               />
 
@@ -277,16 +417,13 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 onChange={(e) => setPassword2(e.target.value)}
               />
 
-              <button className="eauth__primary" onClick={doSignup} disabled={busy} type="button">
-                {busy ? t.checking : t.signup}
-              </button>
               <button
-                className="eauth__link"
-                onClick={() => doSendCode("signup")}
-                disabled={busy}
+                className="eauth__primary"
+                onClick={doSignup}
+                disabled={busy || !name.trim() || !password || !password2}
                 type="button"
               >
-                {t.resend}
+                {busy ? t.checking : t.signup}
               </button>
             </>
           )}

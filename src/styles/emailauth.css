@@ -444,3 +444,42 @@
   .eauth__input { font-size: 16px; }
   .eauth__input--code { font-size: 20px; letter-spacing: .3em; }
 }
+
+/* ── Stepped signup ─────────────────────────────────────────────────────
+   Email, then the code, then name and password. Each step shows only what can
+   be acted on, which is what every other service does and what the previous
+   single-screen version did not. */
+.eauth__sent {
+  font-size: 12.5px;
+  color: var(--dim);
+  background: var(--panel-3);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.eauth__sent b { color: var(--text); font-weight: 600; }
+
+.eauth__inline {
+  display: block;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 12.5px var(--font-body, inherit);
+  color: var(--brand);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* The countdown is informational, so it stays quiet until it runs out. */
+.eauth__timer {
+  font-size: 12.5px;
+  color: var(--dim);
+  margin: -4px 0 14px;
+  font-variant-numeric: tabular-nums;
+}
+.eauth__timer b { color: var(--text); font-weight: 600; }
+.eauth__timer--dead { color: var(--danger); font-weight: 600; }
