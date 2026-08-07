@@ -198,12 +198,10 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
       setLeft(CODE_TTL_SEC);
       // On signup the summary block already reads "Kod yuborildi: <email>", so the
       // note repeated it a second time lower down the same screen.
-      if (purpose === "signup") {
-        setStep(2);
-        setNote("");
-      } else {
-        setNote(t.codeSent);
-      }
+      // Both stepped flows advance; the summary block above already says the code
+      // was sent, so the note would repeat it on the same screen.
+      setStep(2);
+      setNote("");
     });
 
   // Step 2 -> 3. verifyEmailCode checks the code WITHOUT consuming it, which is
@@ -211,7 +209,10 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
   // after someone has typed their name and password twice.
   const doVerifyCode = () =>
     run(async () => {
-      await verifyEmailCode(email.trim(), code.trim(), "signup");
+      // The purpose must match the one the code was ISSUED under -- signup codes
+      // and login/reset codes are stored separately, so a hardcoded "signup" here
+      // would never find a reset code.
+      await verifyEmailCode(email.trim(), code.trim(), mode === "signup" ? "signup" : "login");
       setStep(3);
       setNote("");
     });
@@ -287,7 +288,7 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
           summary block above, with its own "change email" link. Leaving the field
           here too put the same address on screen twice, one copy editable and one
           not. */}
-      {!(mode === "signup" && step > 1) && (
+      {!((mode === "signup" || mode === "reset") && step > 1) && (
         <>
           <label className="eauth__label">{t.email}</label>
           <input
@@ -442,9 +443,12 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
         </>
       )}
 
+      {/* Reset is stepped exactly like signup. It had the same problem: code, new
+          password and confirm-password all on screen before you had opened your
+          inbox. Same states, same countdown, so the two flows behave alike. */}
       {mode === "reset" && (
         <>
-          {!codeSent ? (
+          {step === 1 && (
             <button
               className="eauth__primary"
               onClick={() => doSendCode("login")}
@@ -453,23 +457,71 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
             >
               <Mail size={15} /> {busy ? t.sending : t.sendCode}
             </button>
-          ) : (
+          )}
+
+          {step === 2 && (
             <>
-              <label className="eauth__label">{t.code}</label>
+              <div className="eauth__sent">
+                {t.codeAt}: <b>{email.trim()}</b>
+                <button className="eauth__inline" onClick={backToEmail} type="button">
+                  {t.changeEmail}
+                </button>
+              </div>
+
+              <label className="eauth__label">{t.codeStep}</label>
               <input
                 className="eauth__input eauth__input--code"
                 inputMode="numeric"
                 maxLength={6}
                 value={code}
+                autoFocus
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                 placeholder="••••••"
               />
+
+              <div className="eauth__timer">
+                {left <= 0 ? (
+                  <span className="eauth__timer--dead">{t.expired}</span>
+                ) : cool > 0 ? (
+                  <>
+                    {t.resendAfter} <b>{mmss(cool)}</b>
+                  </>
+                ) : (
+                  <>
+                    {t.expiresIn} <b>{mmss(left)}</b>
+                  </>
+                )}
+              </div>
+
+              <button
+                className="eauth__primary"
+                onClick={doVerifyCode}
+                disabled={busy || code.trim().length !== 6}
+                type="button"
+              >
+                {busy ? t.checking : t.verify}
+              </button>
+
+              <button
+                className="eauth__link"
+                onClick={() => doSendCode("login")}
+                disabled={busy || cool > 0}
+                type="button"
+              >
+                {t.resend}
+              </button>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
               <label className="eauth__label">{t.newPassword}</label>
               <input
                 className="eauth__input"
                 type="password"
                 autoComplete="new-password"
                 value={password}
+                autoFocus
                 onChange={(e) => setPassword(e.target.value)}
               />
               <label className="eauth__label">{t.passwordAgain}</label>
@@ -480,7 +532,12 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 value={password2}
                 onChange={(e) => setPassword2(e.target.value)}
               />
-              <button className="eauth__primary" onClick={doReset} disabled={busy} type="button">
+              <button
+                className="eauth__primary"
+                onClick={doReset}
+                disabled={busy || !password || !password2}
+                type="button"
+              >
                 {busy ? t.checking : t.reset}
               </button>
             </>
