@@ -475,10 +475,13 @@
 }
 
 /* The countdown is informational, so it stays quiet until it runs out. */
+/* The negative top margin pulled this line up under the code field, where the
+   focus ring -- drawn OUTSIDE the box by outline -- then sat on top of it and
+   sliced the text in half. */
 .eauth__timer {
   font-size: 12.5px;
   color: var(--dim);
-  margin: -4px 0 14px;
+  margin: 12px 0 16px;
   font-variant-numeric: tabular-nums;
 }
 .eauth__timer b { color: var(--text); font-weight: 600; }

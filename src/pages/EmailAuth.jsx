@@ -59,6 +59,7 @@ const T = {
     expiresIn: "Kod amal qiladi",
     expired: "Kod muddati tugadi. Yangi kod so'rang.",
     resendIn: "Qayta yuborish",
+    resendAfter: "Yangi kod so'rash:",
     lastStep: "Oxirgi qadam",
   },
   ru: {
@@ -90,6 +91,7 @@ const T = {
     expiresIn: "Код действителен",
     expired: "Срок кода истёк. Запросите новый.",
     resendIn: "Отправить снова",
+    resendAfter: "Новый код можно запросить через:",
     lastStep: "Последний шаг",
   },
   en: {
@@ -121,6 +123,7 @@ const T = {
     expiresIn: "Code valid for",
     expired: "Code has expired. Request a new one.",
     resendIn: "Resend",
+    resendAfter: "New code available in:",
     lastStep: "Last step",
   },
 };
@@ -173,6 +176,10 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
     setLeft(0);
   };
 
+  // Seconds still to wait before a resend is allowed.
+  const cool = Math.max(0, left - (CODE_TTL_SEC - RESEND_AFTER_SEC));
+  const mmss = (n) => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, "0")}`;
+
   const run = async (fn) => {
     setErr("");
     setNote("");
@@ -192,8 +199,14 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
       setCodeSent(true);
       setCode("");
       setLeft(CODE_TTL_SEC);
-      if (purpose === "signup") setStep(2);
-      setNote(t.codeSent);
+      // On signup the summary block already reads "Kod yuborildi: <email>", so the
+      // note repeated it a second time lower down the same screen.
+      if (purpose === "signup") {
+        setStep(2);
+        setNote("");
+      } else {
+        setNote(t.codeSent);
+      }
     });
 
   // Step 2 -> 3. verifyEmailCode checks the code WITHOUT consuming it, which is
@@ -348,17 +361,22 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 placeholder="••••••"
               />
 
+              {/* ONE number at a time. Showing the 10-minute validity AND the
+                  60-second resend lock together put "9:45" and "(45)" on screen
+                  at once, two unrelated countdowns with no way to tell which was
+                  which. While resend is locked, that is the only number that
+                  matters, because it is the only thing you are waiting on. */}
               <div className="eauth__timer">
-                {left > 0 ? (
+                {left <= 0 ? (
+                  <span className="eauth__timer--dead">{t.expired}</span>
+                ) : cool > 0 ? (
                   <>
-                    {t.expiresIn}{" "}
-                    <b>
-                      {String(Math.floor(left / 60)).padStart(1, "0")}:
-                      {String(left % 60).padStart(2, "0")}
-                    </b>
+                    {t.resendAfter} <b>{mmss(cool)}</b>
                   </>
                 ) : (
-                  <span className="eauth__timer--dead">{t.expired}</span>
+                  <>
+                    {t.expiresIn} <b>{mmss(left)}</b>
+                  </>
                 )}
               </div>
 
@@ -371,17 +389,16 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 {busy ? t.checking : t.verify}
               </button>
 
+              {/* Locked for the first minute so a slow inbox does not turn into
+                  four codes and a rate-limit block. The countdown above says how
+                  long, so the label stays a label. */}
               <button
                 className="eauth__link"
                 onClick={() => doSendCode("signup")}
-                /* Resend stays locked for the first minute so a slow inbox does
-                   not turn into four codes and a rate-limit block. */
-                disabled={busy || left > CODE_TTL_SEC - RESEND_AFTER_SEC}
+                disabled={busy || cool > 0}
                 type="button"
               >
-                {left > CODE_TTL_SEC - RESEND_AFTER_SEC
-                  ? `${t.resendIn} (${left - (CODE_TTL_SEC - RESEND_AFTER_SEC)})`
-                  : t.resend}
+                {t.resend}
               </button>
             </>
           )}
