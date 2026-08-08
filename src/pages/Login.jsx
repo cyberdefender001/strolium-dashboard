@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Smartphone } from "lucide-react";
 import { StroliumMark } from "../components/StroliumMark";
+import DemoVideo from "../components/DemoVideo";
 import { loginWithTelegram, requestLoginCode, pollLoginCode } from "../auth";
 import { TG_BOT } from "../config";
 import EmailAuth from "./EmailAuth";
@@ -219,6 +220,9 @@ export default function Login({ onLogin }) {
         </div>
         </div>
       </div>
+      {/* Mounted outside .login so it cannot affect the grid. It renders nothing
+          at all until a video URL is set in config.js. */}
+      <DemoVideo />
     </div>
   );
 }
