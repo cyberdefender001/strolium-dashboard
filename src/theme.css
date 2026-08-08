@@ -1879,3 +1879,20 @@ a { color: inherit; }
   /* The card is edge-to-edge on a phone, so there is no width left to drag. */
   .dvid__resize { display: none; }
 }
+
+/* Qo'llanma in the topbar. Sits on the amber band beside the period chip, so it
+   borrows the same treatment rather than introducing a third button style. */
+.guidebtn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 12px; border-radius: 9px;
+  border: 1px solid rgba(6, 16, 35, 0.22);
+  background: rgba(255, 255, 255, 0.62);
+  font: 600 13px var(--font-body); color: var(--navy);
+  cursor: pointer; white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.guidebtn:hover { background: #fff; border-color: var(--navy); }
+@media (max-width: 700px) {
+  /* Label off, icon only -- the topbar already wraps at this width. */
+  .guidebtn { padding: 7px 9px; font-size: 0; gap: 0; }
+}

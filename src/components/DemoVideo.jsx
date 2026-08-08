@@ -29,18 +29,29 @@ const KEY = "strolium_demo_video";
 
 const mmss = (n) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
 
-export default function DemoVideo({ title = "Strolium qanday ishlaydi" }) {
+// `controlled` distinguishes the two places this is used. On the login page it is
+// uninvited, so it starts small and can be dismissed FOREVER (localStorage). In
+// the app it is opened deliberately from Qo'llanma, so it starts enlarged, closing
+// just closes it, and the login page's dismissal must not hide it -- otherwise
+// anyone who dismissed it once could never open the guide again.
+export default function DemoVideo({
+  title = "Strolium qanday ishlaydi",
+  controlled = false,
+  onClose,
+}) {
   const hasVideo = Boolean(DEMO_VIDEO_EMBED || DEMO_VIDEO_SRC);
   const chapters = Array.isArray(DEMO_VIDEO_CHAPTERS) ? DEMO_VIDEO_CHAPTERS : [];
 
   const [dismissed, setDismissed] = useState(() => {
+    if (controlled) return false;
     try {
       return localStorage.getItem(KEY) === "off";
     } catch {
       return false;
     }
   });
-  const [big, setBig] = useState(false);
+  // Opened on purpose from the app, so start at a useful size.
+  const [big, setBig] = useState(controlled);
   const [started, setStarted] = useState(false);
   const [at, setAt] = useState(0);
   // null means "use the CSS default corner", so the card stays responsive until
@@ -140,6 +151,10 @@ export default function DemoVideo({ title = "Strolium qanday ishlaydi" }) {
   };
 
   const close = () => {
+    if (controlled) {
+      onClose && onClose();
+      return;
+    }
     setDismissed(true);
     try {
       localStorage.setItem(KEY, "off");

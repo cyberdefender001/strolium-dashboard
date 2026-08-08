@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Home from "./Home";
-import { Calendar, Scale, FileText, Calculator, FolderKanban, Users, Menu } from "lucide-react";
+import DemoVideo from "../components/DemoVideo";
+import { Calendar, Scale, FileText, Calculator, FolderKanban, Users, Menu, CircleHelp } from "lucide-react";
 import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
 import { fmtSom } from "../lib/format";
 import Sidebar from "../components/Sidebar.jsx";
@@ -72,6 +73,7 @@ export default function Dashboard({ user, onLogout }) {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [guide, setGuide] = useState(false);
   // Persisted: a boss who collapses the rail expects it collapsed next visit.
   const [mini, setMini] = useState(() => {
     try { return localStorage.getItem("strolium_rail") === "mini"; } catch { return false; }
@@ -249,6 +251,10 @@ export default function Dashboard({ user, onLogout }) {
             <h1>{TITLES[nav]}</h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* The same player as the login screen, opened deliberately here. */}
+            <button className="guidebtn" onClick={() => setGuide(true)} type="button">
+              <CircleHelp size={15} /> Qo'llanma
+            </button>
             <div className="period">
               <Calendar size={15} /> {data.org.period}
             </div>
@@ -256,6 +262,14 @@ export default function Dashboard({ user, onLogout }) {
         </div>
 
         <div className="content">
+          {guide && (
+            <DemoVideo
+              controlled
+              onClose={() => setGuide(false)}
+              title="Qo'llanma — Strolium qanday ishlaydi"
+            />
+          )}
+
           {nav === "home" && <Home user={user} data={data} onNav={setNav} />}
 
           {nav === "alerts" && (
