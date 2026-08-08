@@ -1,4 +1,5 @@
 import {
+  LifeBuoy,
   House,
   Flag,
   Wallet,
@@ -30,7 +31,7 @@ const NAV = [
 // company, it is running the PRODUCT. The check here is convenience -- every
 // /api/owner/* endpoint enforces _require_owner server-side, so hiding the item
 // is not what keeps a manager out.
-export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout, open, onClose, mini, onToggleMini }) {
+export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout, open, onClose, mini, onToggleMini, onSupport }) {
   // On phones .side is a slide-out drawer (it used to be display:none, which
   // left the whole app with no navigation at all below 920px). The scrim sits
   // behind it and closes on tap.
@@ -110,6 +111,13 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
             <div className="side__user-mail">{user.email || "Profil"}</div>
           </div>
         </button>
+        {/* Above Chiqish, because someone hunting for help should not have to pass
+            the logout button to find it. */}
+        {onSupport && (
+          <button className="logout side__support" onClick={onSupport} title="Yordam" type="button">
+            <LifeBuoy size={15} /> <span>Yordam</span>
+          </button>
+        )}
         <button className="logout" onClick={onLogout} title="Chiqish">
           <LogOut size={15} /> <span>Chiqish</span>
         </button>

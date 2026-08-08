@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Home from "./Home";
 import DemoVideo from "../components/DemoVideo";
+import Support from "../components/Support";
 import { Scale, FileText, Calculator, FolderKanban, Users, Menu, CircleHelp } from "lucide-react";
 import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
 import { fmtSom } from "../lib/format";
@@ -74,6 +75,7 @@ export default function Dashboard({ user, onLogout }) {
   }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [guide, setGuide] = useState(false);
+  const [support, setSupport] = useState(false);
   // Persisted: a boss who collapses the rail expects it collapsed next visit.
   const [mini, setMini] = useState(() => {
     try { return localStorage.getItem("strolium_rail") === "mini"; } catch { return false; }
@@ -236,6 +238,7 @@ export default function Dashboard({ user, onLogout }) {
         onClose={() => setMenuOpen(false)}
         active={nav}
         onNav={setNav}
+        onSupport={() => setSupport(true)}
         user={user}
         openFlags={data.audit.flags.length}
         isOwner={isOwner}
@@ -263,6 +266,8 @@ export default function Dashboard({ user, onLogout }) {
         </div>
 
         <div className="content">
+          {support && <Support onClose={() => setSupport(false)} />}
+
           {guide && (
             <DemoVideo
               controlled

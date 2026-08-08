@@ -1896,3 +1896,77 @@ a { color: inherit; }
   /* Label off, icon only -- the topbar already wraps at this width. */
   .guidebtn { padding: 7px 9px; font-size: 0; gap: 0; }
 }
+
+/* ── Yordam (support ticket) ────────────────────────────────────────────
+   A modal rather than a page: someone reporting a problem is mid-task, and
+   navigating away loses the screen they were trying to describe. */
+.sup__scrim {
+  position: fixed; inset: 0; z-index: 70;
+  display: grid; place-items: center; padding: 20px;
+  background: rgba(6, 16, 35, 0.42);
+}
+.sup { width: 100%; max-width: 460px; padding: 0; overflow: hidden; }
+.sup__head {
+  display: flex; align-items: center; gap: 9px;
+  padding: 15px 18px; border-bottom: 1px solid var(--line);
+  color: var(--text);
+}
+.sup__head h3 { flex: 1; margin: 0; font: 600 15px var(--font-display); }
+.sup__x {
+  display: grid; place-items: center; width: 28px; height: 28px;
+  padding: 0; border: 0; border-radius: 8px;
+  background: transparent; color: var(--dim); cursor: pointer;
+}
+.sup__x:hover { background: var(--panel-3); color: var(--text); }
+
+.sup__body { padding: 16px 18px 18px; }
+.sup__label {
+  display: block; margin: 0 0 7px;
+  font: 600 12px var(--font-body); color: var(--dim);
+}
+.sup__cats { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+.sup__cat {
+  flex: 1 1 auto; padding: 9px 12px; border-radius: 9px;
+  border: 1px solid var(--line); background: var(--panel);
+  font: 600 13px var(--font-body); color: var(--dim); cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.sup__cat:hover { border-color: var(--brand-dim); }
+.sup__cat.on { background: rgba(6,16,35,.14); border-color: var(--brand-dim); color: var(--brand); }
+
+.sup__ta {
+  width: 100%; box-sizing: border-box; resize: vertical;
+  padding: 11px 12px; margin-bottom: 14px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--panel); color: var(--text);
+  font: 400 14px/1.5 var(--font-body);
+}
+.sup__ta:focus { outline: none; border-color: var(--brand-dim); box-shadow: 0 0 0 3px rgba(6,16,35,.08); }
+.sup__ta::placeholder { color: var(--faint); }
+
+.sup__file {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 12px; border-radius: 9px; cursor: pointer;
+  border: 1px dashed var(--line); background: var(--panel);
+  font: 600 12.5px var(--font-body); color: var(--dim);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sup__file:hover { border-color: var(--brand-dim); color: var(--text); }
+.sup__file input { display: none; }
+
+.sup__preview { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.sup__preview img {
+  width: 76px; height: 52px; object-fit: cover;
+  border: 1px solid var(--line); border-radius: 8px;
+}
+.sup__preview button {
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font: 600 12.5px var(--font-body); color: var(--danger);
+}
+
+.sup__acts { display: flex; align-items: center; justify-content: flex-end; gap: 9px; margin-top: 16px; }
+.sup__acts .btn-primary, .sup__acts .btn-ghost {
+  width: auto; flex: none; height: 40px; margin: 0; padding: 0 18px;
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+}
+.sup__ok { font: 600 14px var(--font-body); color: var(--good); margin: 0 0 6px; }
