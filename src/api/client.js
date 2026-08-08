@@ -262,12 +262,23 @@ export async function getTeam() {
   return call("/api/manager/team");
 }
 
+// One screenshot, uploaded on its own before the ticket is submitted. Five images
+// inline in the ticket request would be 2 MB+ of base64 in a single POST -- slow on
+// mobile and liable to be dropped by a proxy body limit, which surfaces as the
+// unhelpful "Failed to fetch".
+export async function uploadSupportShot(image_b64) {
+  return call("/api/web/support/upload", {
+    method: "POST",
+    body: JSON.stringify({ image_b64 }),
+  });
+}
+
 // Support ticket from the website. The reply comes by EMAIL -- a website account
 // has a synthetic negative telegram_id, so the bot cannot DM it.
-export async function sendSupport({ message, category, screenshot_b64 }) {
+export async function sendSupport({ message, category, screenshots }) {
   return call("/api/web/support", {
     method: "POST",
-    body: JSON.stringify({ message, category, screenshot_b64: screenshot_b64 || null }),
+    body: JSON.stringify({ message, category, screenshots: screenshots || [] }),
   });
 }
 

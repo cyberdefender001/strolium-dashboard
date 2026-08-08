@@ -1976,3 +1976,40 @@ a { color: inherit; }
   box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
 }
 .sup__ok { font: 600 14px var(--font-body); color: var(--good); margin: 0 0 6px; }
+
+/* Up to five screenshot thumbnails. A grid rather than a row so five never push
+   the modal wider than the viewport. */
+.sup__shots {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 8px; margin-top: 10px;
+}
+.sup__shot {
+  position: relative; aspect-ratio: 1;
+  border: 1px solid var(--line); border-radius: 9px;
+  overflow: hidden; background: var(--panel-3);
+}
+.sup__shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sup__shot-none { display: block; width: 100%; height: 100%; }
+/* Still uploading: dimmed, so it is obvious it is not ready to send yet. */
+.sup__shot.is-busy img { opacity: .45; }
+.sup__shot.is-bad { border-color: var(--danger); }
+.sup__shot.is-bad img { opacity: .35; }
+.sup__shot-x {
+  position: absolute; top: 3px; right: 3px;
+  display: grid; place-items: center; width: 20px; height: 20px;
+  padding: 0; border: 0; border-radius: 6px; cursor: pointer;
+  background: rgba(6, 16, 35, .68); color: #fff;
+}
+.sup__shot-x:hover { background: var(--danger); }
+.sup__shot-tag {
+  position: absolute; left: 3px; bottom: 3px;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  display: grid; place-items: center; border-radius: 5px;
+  background: rgba(6, 16, 35, .72); color: #fff;
+  font: 700 11px var(--font-mono);
+}
+.sup__shot.is-bad .sup__shot-tag { background: var(--danger); }
+@media (max-width: 700px) {
+  /* Five across on a phone is a 55px thumbnail; three is legible. */
+  .sup__shots { grid-template-columns: repeat(3, 1fr); }
+}

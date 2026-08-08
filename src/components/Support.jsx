@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, LifeBuoy, Image as ImageIcon } from "lucide-react";
-import { sendSupport } from "../api/client";
+import { sendSupport, uploadSupportShot } from "../api/client";
 
 // "Yordam" from the sidebar. Message, category, and an optional screenshot.
 //
@@ -17,7 +17,8 @@ const CATEGORIES = [
 // Screenshots off a 4K display can be several megabytes of PNG. Downscaling in
 // the browser keeps the request small and the upload quick on a phone; the
 // backend refuses anything over 6 MB anyway.
-const MAX_EDGE = 1600;
+const MAX_EDGE = 1400;
+const MAX_SHOTS = 5;
 
 function shrink(file) {
   return new Promise((resolve, reject) => {
@@ -45,34 +46,57 @@ function shrink(file) {
 export default function Support({ onClose }) {
   const [category, setCategory] = useState("xatolik");
   const [message, setMessage] = useState("");
-  const [shot, setShot] = useState(null);
-  const [shotName, setShotName] = useState("");
+  // One entry per chosen file: { id, name, preview, path, error }.
+  // `path` arrives from the server once that image has uploaded; the ticket is
+  // submitted with the paths, never the images, so the final POST stays tiny.
+  const [shots, setShots] = useState([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [done, setDone] = useState(false);
 
   const pick = async (e) => {
     const input = e.target;
-    const f = input.files && input.files[0];
-    if (!f) return;
+    const files = Array.from(input.files || []);
+    // A file input only fires onChange when its value CHANGES. Without clearing
+    // it, removing a preview then picking the SAME file again is not a change, no
+    // event fires, and nothing appears -- which looks exactly like a broken
+    // upload. Cleared immediately so it also holds for the early returns below.
+    input.value = "";
+    if (!files.length) return;
     setErr("");
-    try {
-      setShot(await shrink(f));
-      setShotName(f.name);
-    } catch (ex) {
-      setErr(ex.message || "Rasmni qo'shib bo'lmadi.");
-    } finally {
-      // A file input only fires onChange when its value CHANGES. Without this,
-      // removing the preview and then picking the SAME file again is not a
-      // change, no event fires, and nothing appears -- which looks exactly like
-      // a broken upload.
-      input.value = "";
+
+    const room = MAX_SHOTS - shots.length;
+    if (room <= 0) {
+      setErr(`Ko'pi bilan ${MAX_SHOTS} ta rasm.`);
+      return;
+    }
+    if (files.length > room) setErr(`Ko'pi bilan ${MAX_SHOTS} ta rasm.`);
+
+    for (const f of files.slice(0, room)) {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      let preview;
+      try {
+        preview = await shrink(f);
+      } catch (ex) {
+        setShots((v) => [...v, { id, name: f.name, preview: null, path: null,
+                                 error: ex.message || "Rasm formati noto'g'ri." }]);
+        continue;
+      }
+      // Shown straight away, uploading in the background: waiting on the network
+      // before anything appears feels broken on a slow connection.
+      setShots((v) => [...v, { id, name: f.name, preview, path: null, error: null }]);
+      try {
+        const r = await uploadSupportShot(preview);
+        setShots((v) => v.map((x) => (x.id === id ? { ...x, path: r.path } : x)));
+      } catch (ex) {
+        setShots((v) => v.map((x) => (x.id === id
+          ? { ...x, error: ex.message || "Yuklab bo'lmadi." } : x)));
+      }
     }
   };
 
-  const dropShot = () => {
-    setShot(null);
-    setShotName("");
+  const dropShot = (id) => {
+    setShots((v) => v.filter((x) => x.id !== id));
     setErr("");
   };
 
@@ -82,9 +106,17 @@ export default function Support({ onClose }) {
       setErr("Muammoni qisqacha yozib bering.");
       return;
     }
+    // Only uploaded images can be attached. A still-uploading or failed one is
+    // skipped rather than blocking the report, which is the point of the ticket.
+    const paths = shots.filter((x) => x.path).map((x) => x.path);
+    const pending = shots.some((x) => !x.path && !x.error);
+    if (pending) {
+      setErr("Rasmlar yuklanmoqda, bir soniya.");
+      return;
+    }
     setBusy(true);
     try {
-      await sendSupport({ message: message.trim(), category, screenshot_b64: shot });
+      await sendSupport({ message: message.trim(), category, screenshots: paths });
       setDone(true);
     } catch (e) {
       setErr(e.message || "Yuborib bo'lmadi.");
@@ -137,18 +169,44 @@ export default function Support({ onClose }) {
               placeholder="Qaysi ekranda, nima qilganingizda yuz berdi?"
             />
 
-            <label className="sup__label">Rasm (ixtiyoriy)</label>
-            <label className="sup__file">
-              <ImageIcon size={14} />
-              {shotName || "Rasm tanlash"}
-              <input type="file" accept="image/*" onChange={pick} />
+            <label className="sup__label">
+              Rasm (ixtiyoriy) — {shots.length}/{MAX_SHOTS}
             </label>
-            {shot && (
-              <div className="sup__preview">
-                <img src={shot} alt="" />
-                <button type="button" className="sup__drop" onClick={dropShot}>
-                  <X size={13} /> O'chirish
-                </button>
+            {shots.length < MAX_SHOTS && (
+              <label className="sup__file">
+                <ImageIcon size={14} />
+                {shots.length ? "Yana rasm qo'shish" : "Rasm tanlash"}
+                {/* multiple: several can be picked in one go, and the loop uploads
+                    them one at a time. */}
+                <input type="file" accept="image/*" multiple onChange={pick} />
+              </label>
+            )}
+
+            {shots.length > 0 && (
+              <div className="sup__shots">
+                {shots.map((x) => (
+                  <div
+                    key={x.id}
+                    className={
+                      "sup__shot" +
+                      (x.error ? " is-bad" : x.path ? "" : " is-busy")
+                    }
+                  >
+                    {x.preview ? <img src={x.preview} alt="" /> : <span className="sup__shot-none" />}
+                    <button
+                      type="button"
+                      className="sup__shot-x"
+                      onClick={() => dropShot(x.id)}
+                      aria-label="O'chirish"
+                    >
+                      <X size={12} />
+                    </button>
+                    {/* State is on the thumbnail itself: a separate list of
+                        statuses beside five images is unreadable. */}
+                    {!x.path && !x.error && <span className="sup__shot-tag">…</span>}
+                    {x.error && <span className="sup__shot-tag">!</span>}
+                  </div>
+                ))}
               </div>
             )}
 
