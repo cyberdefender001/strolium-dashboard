@@ -107,9 +107,7 @@ export default function Support({ onClose }) {
         {done ? (
           <div className="sup__body">
             <p className="sup__ok">Xabaringiz yuborildi.</p>
-            <p className="hint">
-              Javobni emailingizga yuboramiz. Odatda bir ish kuni ichida.
-            </p>
+            <p className="hint">Tez fursatda javob beramiz!</p>
             <button className="btn-primary" onClick={onClose} type="button">
               Yopish
             </button>
