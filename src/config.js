@@ -37,9 +37,8 @@ export const DEMO_VIDEO_POSTER = import.meta.env.VITE_DEMO_VIDEO_POSTER || "";
 // does not report playback position back to us without loading its full JS API,
 // which is a few hundred KB we are deliberately not pulling in.
 export const DEMO_VIDEO_CHAPTERS = [
-  { at: 0, label: "Nima bu?" },
-  { at: 55, label: "Ro'yxatdan o'tish" },
-  { at: 120, label: "Jamoani qo'shish" },
-  { at: 190, label: "Xarajat kiritish" },
-  { at: 240, label: "Pul nazorati — belgilar" },
+  { at: 0, label: "Stroliumda ro'yxatdan o'tish" },
+  { at: 85, label: "Strolium funksionalligi" },
+  { at: 131, label: "Topshiriqlar berish va qabul qilish" },
+  { at: 167, label: "Xarajatlarni boshqarish" },
 ];

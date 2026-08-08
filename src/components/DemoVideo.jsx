@@ -126,6 +126,11 @@ export default function DemoVideo({
   }, [pos]);
 
   const startDrag = (e) => {
+    // The close and resize buttons live INSIDE this bar. Without this guard,
+    // pressing one bubbles up here, setPointerCapture below retargets the
+    // pointerup to the bar, and the browser then fires `click` on the bar rather
+    // than on the button -- so neither button ever worked.
+    if (e.target.closest && e.target.closest("button")) return;
     const r = cardRef.current.getBoundingClientRect();
     drag.current = { x: e.clientX, y: e.clientY, left: r.left, top: r.top };
     setPos({ left: r.left, top: r.top });

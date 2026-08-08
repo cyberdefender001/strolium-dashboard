@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Home from "./Home";
 import DemoVideo from "../components/DemoVideo";
-import { Calendar, Scale, FileText, Calculator, FolderKanban, Users, Menu, CircleHelp } from "lucide-react";
+import { Scale, FileText, Calculator, FolderKanban, Users, Menu, CircleHelp } from "lucide-react";
 import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
 import { fmtSom } from "../lib/format";
 import Sidebar from "../components/Sidebar.jsx";
@@ -250,14 +250,15 @@ export default function Dashboard({ user, onLogout }) {
             </button>
             <h1>{TITLES[nav]}</h1>
           </div>
+          {/* The month chip used to sit here. It printed the CURRENT month next to
+              figures that are all-time totals -- total_spend sums every expense
+              with no date filter -- so it read as "August's spend" and was not.
+              Removed rather than relabelled: nothing on this bar needs to say
+              which month it is. */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* The same player as the login screen, opened deliberately here. */}
             <button className="guidebtn" onClick={() => setGuide(true)} type="button">
               <CircleHelp size={15} /> Qo'llanma
             </button>
-            <div className="period">
-              <Calendar size={15} /> {data.org.period}
-            </div>
           </div>
         </div>
 
