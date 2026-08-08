@@ -52,7 +52,8 @@ export default function Support({ onClose }) {
   const [done, setDone] = useState(false);
 
   const pick = async (e) => {
-    const f = e.target.files && e.target.files[0];
+    const input = e.target;
+    const f = input.files && input.files[0];
     if (!f) return;
     setErr("");
     try {
@@ -60,7 +61,19 @@ export default function Support({ onClose }) {
       setShotName(f.name);
     } catch (ex) {
       setErr(ex.message || "Rasmni qo'shib bo'lmadi.");
+    } finally {
+      // A file input only fires onChange when its value CHANGES. Without this,
+      // removing the preview and then picking the SAME file again is not a
+      // change, no event fires, and nothing appears -- which looks exactly like
+      // a broken upload.
+      input.value = "";
     }
+  };
+
+  const dropShot = () => {
+    setShot(null);
+    setShotName("");
+    setErr("");
   };
 
   const submit = async () => {
@@ -135,14 +148,8 @@ export default function Support({ onClose }) {
             {shot && (
               <div className="sup__preview">
                 <img src={shot} alt="" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShot(null);
-                    setShotName("");
-                  }}
-                >
-                  O'chirish
+                <button type="button" className="sup__drop" onClick={dropShot}>
+                  <X size={13} /> O'chirish
                 </button>
               </div>
             )}
