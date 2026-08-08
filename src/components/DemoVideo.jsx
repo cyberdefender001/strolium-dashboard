@@ -46,17 +46,31 @@ export default function DemoVideo({ title = "Strolium qanday ishlaydi" }) {
   // null means "use the CSS default corner", so the card stays responsive until
   // it is deliberately moved.
   const [pos, setPos] = useState(null);
+  // Freely dragged width. null means "use whatever the CSS says", so the two-state
+  // toggle keeps working until someone grabs the corner. Height follows from the
+  // 16:9 aspect-ratio on the stage, so width is the only thing to track.
+  const [size, setSize] = useState(null);
 
   const cardRef = useRef(null);
   const videoRef = useRef(null);
   const frameRef = useRef(null);
   const drag = useRef(null);
+  const resz = useRef(null);
 
   // Pointer events rather than mouse events: one code path for trackpad, mouse
   // and touch, and pointer capture means a fast drag leaving the handle does not
   // strand the card mid-move.
   useEffect(() => {
     const onMove = (e) => {
+      // Resizing takes precedence: the handle sits inside the card, so a drag
+      // starting there must not also move it.
+      const r = resz.current;
+      if (r) {
+        const min = 240;
+        const max = Math.min(1100, window.innerWidth - 24);
+        setSize(Math.min(Math.max(min, r.w + (e.clientX - r.x)), max));
+        return;
+      }
       const d = drag.current;
       if (!d) return;
       const w = cardRef.current ? cardRef.current.offsetWidth : 300;
@@ -68,6 +82,7 @@ export default function DemoVideo({ title = "Strolium qanday ishlaydi" }) {
     };
     const onUp = () => {
       drag.current = null;
+      resz.current = null;
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -110,6 +125,20 @@ export default function DemoVideo({ title = "Strolium qanday ishlaydi" }) {
     }
   };
 
+  const startResize = (e) => {
+    e.stopPropagation();
+    const r = cardRef.current.getBoundingClientRect();
+    resz.current = { x: e.clientX, w: r.width };
+    // Pin the corner it grew from, or a card in the default bottom-right corner
+    // would appear to slide as it widens.
+    if (!pos) setPos({ left: r.left, top: r.top });
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* older browsers: the window listeners still cover it */
+    }
+  };
+
   const close = () => {
     setDismissed(true);
     try {
@@ -145,7 +174,11 @@ export default function DemoVideo({ title = "Strolium qanday ishlaydi" }) {
 
   if (!hasVideo || dismissed) return null;
 
-  const style = pos ? { left: pos.left, top: pos.top, right: "auto", bottom: "auto" } : undefined;
+  const style = {
+    ...(pos ? { left: pos.left, top: pos.top, right: "auto", bottom: "auto" } : null),
+    // A hand-set width wins over both the default and the --big class.
+    ...(size ? { width: size } : null),
+  };
 
   // Which chapter are we in? Only meaningful for a local file, since YouTube does
   // not report position back without its full API.
@@ -167,7 +200,12 @@ export default function DemoVideo({ title = "Strolium qanday ishlaydi" }) {
         <span className="dvid__title">{title}</span>
         <button
           className="dvid__icon"
-          onClick={() => setBig((v) => !v)}
+          onClick={() => {
+            // The toggle is a shortcut, so it has to drop any dragged width or
+            // pressing it would appear to do nothing.
+            setSize(null);
+            setBig((v) => !v);
+          }}
           type="button"
           aria-label={big ? "Kichraytirish" : "Kattalashtirish"}
         >
@@ -228,6 +266,15 @@ export default function DemoVideo({ title = "Strolium qanday ishlaydi" }) {
           ))}
         </div>
       )}
+
+      {/* Drag to resize. Sized generously because it sits over video: a 6px
+          hotspot on a moving image is a fight. */}
+      <span
+        className="dvid__resize"
+        onPointerDown={startResize}
+        role="separator"
+        aria-label="O'lchamni o'zgartirish"
+      />
     </div>
   );
 }
