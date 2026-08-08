@@ -42,14 +42,12 @@ export default function DemoVideo({
   const hasVideo = Boolean(DEMO_VIDEO_EMBED || DEMO_VIDEO_SRC);
   const chapters = Array.isArray(DEMO_VIDEO_CHAPTERS) ? DEMO_VIDEO_CHAPTERS : [];
 
-  const [dismissed, setDismissed] = useState(() => {
-    if (controlled) return false;
-    try {
-      return localStorage.getItem(KEY) === "off";
-    } catch {
-      return false;
-    }
-  });
+  // Closing hides it for THIS page view only. It used to persist in localStorage,
+  // which meant a prospect who closed it once never saw the demo again -- not even
+  // after a hard refresh, since a reload does not clear storage. On a login page
+  // that is the wrong trade: the video is the pitch, and closing it is "not now",
+  // not "never".
+  const [dismissed, setDismissed] = useState(false);
   // Opened on purpose from the app, so start at a useful size.
   const [big, setBig] = useState(controlled);
   const [started, setStarted] = useState(false);
@@ -61,6 +59,17 @@ export default function DemoVideo({
   // toggle keeps working until someone grabs the corner. Height follows from the
   // 16:9 aspect-ratio on the stage, so width is the only thing to track.
   const [size, setSize] = useState(null);
+
+  // One-time cleanup. Browsers that dismissed the old version still hold
+  // strolium_demo_video="off"; without removing it those visitors would keep the
+  // old permanent behaviour even though the code no longer writes the key.
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(KEY) !== null) localStorage.removeItem(KEY);
+    } catch {
+      /* private mode: nothing stored, nothing to clear */
+    }
+  }, []);
 
   const cardRef = useRef(null);
   const videoRef = useRef(null);
@@ -161,11 +170,6 @@ export default function DemoVideo({
       return;
     }
     setDismissed(true);
-    try {
-      localStorage.setItem(KEY, "off");
-    } catch {
-      /* private mode: it reappears next visit, which is acceptable */
-    }
   };
 
   // Seeking. A local file is direct. A YouTube embed is driven by postMessage,
