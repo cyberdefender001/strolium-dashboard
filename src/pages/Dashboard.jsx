@@ -301,7 +301,7 @@ export default function Dashboard({ user, onLogout }) {
           )}
           {nav === "company" && <Company data={data} />}
           {nav === "admin" && isOwner && <Admin />}
-          {nav === "profile" && <Profile />}
+          {nav === "profile" && <Profile onLogout={onLogout} />}
         </div>
       </main>
 

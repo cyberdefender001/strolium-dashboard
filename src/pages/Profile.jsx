@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { User, Mail, KeyRound, Send, Check } from "lucide-react";
+import { User, Mail, KeyRound, Send, Check, LogOut } from "lucide-react";
 import {
   getProfile,
   setProfileName,
@@ -7,6 +7,7 @@ import {
   changePassword,
   requestEmailCode,
   startTelegramLink,
+  logoutEverywhere,
 } from "../api/emailauth";
 
 // The cabinet. Every user has one, whichever door they came through.
@@ -44,6 +45,10 @@ const T = {
     tgYes: "Telegram ulangan — bot xabar yuborishi mumkin",
     tgNo: "Telegram ulanmagan. Bot sizga vazifa va eslatma yubora olmaydi.",
     tgLink: "Telegramni ulash",
+    secTitle: "Xavfsizlik",
+    secBody: "Telefoningiz yo'qolgan yoki birga ishlatilgan kompyuterda kirgan bo'lsangiz — barcha qurilmalardan chiqing.",
+    secBtn: "Barcha qurilmalardan chiqish",
+    secDone: "Barcha sessiyalar bekor qilindi. Qaytadan kiring.",
     tgOpen: "Telegram ochildi — botda Start bosing, keyin bu sahifani yangilang.",
     codeSent: "Kod yuborildi",
     done: "Bajarildi",
@@ -74,6 +79,10 @@ const T = {
     tgYes: "Telegram подключён — бот может присылать сообщения",
     tgNo: "Telegram не подключён. Бот не сможет присылать задачи и напоминания.",
     tgLink: "Подключить Telegram",
+    secTitle: "Безопасность",
+    secBody: "Если телефон потерян или вы входили на общем компьютере — выйдите на всех устройствах.",
+    secBtn: "Выйти на всех устройствах",
+    secDone: "Все сессии отменены. Войдите снова.",
     tgOpen: "Telegram открыт — нажмите Start в боте, затем обновите страницу.",
     codeSent: "Код отправлен",
     done: "Готово",
@@ -104,13 +113,17 @@ const T = {
     tgYes: "Telegram connected — the bot can message you",
     tgNo: "Telegram not connected. The bot cannot send you tasks or reminders.",
     tgLink: "Connect Telegram",
+    secTitle: "Security",
+    secBody: "If your phone is lost, or you signed in on a shared computer — sign out everywhere.",
+    secBtn: "Sign out on all devices",
+    secDone: "All sessions revoked. Please sign in again.",
     tgOpen: "Telegram opened — press Start in the bot, then refresh this page.",
     codeSent: "Code sent",
     done: "Done",
   },
 };
 
-export default function Profile({ lang = "uz" }) {
+export default function Profile({ lang = "uz", onLogout }) {
   const t = T[lang] || T.uz;
   const [p, setP] = useState(null);
   const [err, setErr] = useState("");
@@ -321,6 +334,30 @@ export default function Profile({ lang = "uz" }) {
             <Send size={15} /> {t.tgLink}
           </button>
         )}
+      </section>
+
+      {/* Sessions last 30 days. Before this there was no way to end one early
+          except disabling the member, which also removes their access to the
+          company -- so a lost phone meant choosing between a live session and
+          locking someone out of their job. */}
+      <section className="prof__card prof__card--quiet">
+        <h3 className="prof__cardtitle">{t.secTitle}</h3>
+        <p className="prof__sub">{t.secBody}</p>
+        <button
+          className="prof__btn"
+          disabled={busy}
+          onClick={() =>
+            run(async () => {
+              await logoutEverywhere();
+              // The current session is revoked too, so staying on the page would
+              // 401 on the next request. Send them to a clean login.
+              onLogout && onLogout();
+            }, t.secDone)
+          }
+          type="button"
+        >
+          <LogOut size={15} /> {t.secBtn}
+        </button>
       </section>
 
       {ok && <p className="eauth__note">{ok}</p>}

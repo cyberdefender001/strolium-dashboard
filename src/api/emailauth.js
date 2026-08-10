@@ -216,6 +216,12 @@ export function changePassword(old_password, new_password) {
 
 // Web -> bot: mint a one-time deep link the user opens in Telegram, which is
 // what proves they own that Telegram account.
+// Revoke every session for this account, on every device. The current session
+// goes with them, so the caller must send the user back to the login screen.
+export function logoutEverywhere() {
+  return postAuthed("/api/web/account/logout-all", {});
+}
+
 export function startTelegramLink() {
   return postAuthed("/api/web/account/profile/telegram-link", {});
 }
