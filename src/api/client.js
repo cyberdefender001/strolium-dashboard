@@ -224,17 +224,15 @@ export async function createTask(tasks) {
   });
 }
 
-// <img> and download links cannot send an Authorization header, so the session
-// rides along as ?tg= -- the backend accepts it there.
-export function fileUrl(id) {
-  return `${API_BASE}/api/file/${id}?tg=${encodeURIComponent(authToken() || "")}`;
-}
-
-export function reportUrl(taskId, fmt) {
-  return `${API_BASE}/api/manager/task/${taskId}/report?fmt=${fmt}&tg=${encodeURIComponent(
-    authToken() || ""
-  )}`;
-}
+// fileUrl() and reportUrl() lived here and put the 30-DAY session token into a
+// query string: /api/file/<id>?tg=<session>. Nothing ever called them, so no
+// session was actually leaked -- but a URL like that lands in server access logs
+// and browser history, and anyone forwarding a photo link would have handed over
+// their whole account for a month. Removed rather than left as a trap for the
+// next person who needs an <img src>.
+//
+// If the website ever needs to render a protected image, mint a short-lived,
+// file-scoped token server-side and put THAT in the URL -- never the session.
 
 // ---- Loyihalar (projects + budgets) ---------------------------------------
 // Same endpoints the Mini App uses. Budgets are what Pul nazorati compares
