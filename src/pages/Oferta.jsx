@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FileText, Check, AlertCircle, Download } from "lucide-react";
 import { getLegalDoc, acceptLegalDoc } from "../api/client";
 
@@ -85,6 +85,14 @@ function renderDoc(text) {
 }
 
 
+// Declared at module scope on purpose. Defined inside the component it was a new
+// component type on every render, so React unmounted and remounted the whole
+// subtree on each keystroke and the focused input lost focus after one character.
+function Wrap({ inline, children }) {
+  return <div className={inline ? "ofr__inline" : "ofr__scrim"}>{children}</div>;
+}
+
+
 export default function Oferta({ user, onAccepted, inline = false }) {
   const [doc, setDoc] = useState(null);
   const [agree, setAgree] = useState(false);
@@ -102,6 +110,16 @@ export default function Oferta({ user, onAccepted, inline = false }) {
   // looked like nothing had happened, and people clicked again. Two rows in
   // legal_acceptances is harmless but the confusion is not.
   const [justSigned, setJustSigned] = useState(false);
+
+  // The contract is ~9000 characters and renderDoc rebuilds its entire element
+  // tree. Without memoising, every keystroke in a form field re-ran it.
+  const rendered = useMemo(() => (doc ? renderDoc(doc.text) : null), [doc]);
+
+  // createObjectURL was called on every render, leaking a blob per keystroke.
+  const dlHref = useMemo(
+    () => (doc ? URL.createObjectURL(new Blob([doc.text], { type: "text/plain;charset=utf-8" })) : ""),
+    [doc]
+  );
 
   useEffect(() => {
     let alive = true;
@@ -141,15 +159,9 @@ export default function Oferta({ user, onAccepted, inline = false }) {
     }
   };
 
-  // In inline mode the scrim is a plain wrapper: no fixed positioning, no
-  // z-index, nothing that can be clipped or mis-stacked.
-  const Wrap = ({ children }) => (
-    <div className={inline ? "ofr__inline" : "ofr__scrim"}>{children}</div>
-  );
-
   if (err && !doc) {
     return (
-      <Wrap>
+      <Wrap inline={inline}>
         <div className="card ofr">
           <p className="login__err">{err}</p>
         </div>
@@ -158,7 +170,7 @@ export default function Oferta({ user, onAccepted, inline = false }) {
   }
   if (!doc) {
     return (
-      <Wrap>
+      <Wrap inline={inline}>
         <div className="card ofr">
           <p className="hint">Yuklanmoqda…</p>
         </div>
@@ -167,7 +179,7 @@ export default function Oferta({ user, onAccepted, inline = false }) {
   }
 
   return (
-    <Wrap>
+    <Wrap inline={inline}>
       <div className="card ofr">
         <div className="ofr__head">
           <FileText size={17} />
@@ -181,7 +193,7 @@ export default function Oferta({ user, onAccepted, inline = false }) {
         </div>
 
         <div className="ofr__body">
-          <div className="ofr__text">{renderDoc(doc.text)}</div>
+          <div className="ofr__text">{rendered}</div>
         </div>
 
         <div className="ofr__foot">
@@ -276,7 +288,7 @@ export default function Oferta({ user, onAccepted, inline = false }) {
             <a
               className="ofr__dl"
               download={`Strolium-shartnoma-v${doc.version}.txt`}
-              href={URL.createObjectURL(new Blob([doc.text], { type: "text/plain;charset=utf-8" }))}
+              href={dlHref}
             >
               <Download size={13} /> Yuklab olish
             </a>
