@@ -2102,3 +2102,15 @@ a { color: inherit; }
 }
 .ofr__inline .ofr__head { display: none; }
 .ofr__inline .ofr__body { max-height: 440px; }
+
+/* Confirmation shown in the card itself. Previously the only feedback was a line
+   at the bottom of the page, so it looked like the click had done nothing and
+   people pressed again. */
+.ofr__signed {
+  display: flex; align-items: center; gap: 11px;
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--good-bg, #E9F7F1); border: 1px solid var(--good);
+  color: var(--good);
+}
+.ofr__signed b { display: block; font: 700 13.5px var(--font-body); }
+.ofr__signed span { font: 400 12px var(--font-body); color: var(--dim); }

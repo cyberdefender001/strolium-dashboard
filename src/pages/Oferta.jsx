@@ -90,6 +90,11 @@ export default function Oferta({ user, onAccepted, inline = false }) {
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  // Set the moment acceptance succeeds. Without it the card kept showing the form
+  // and the only feedback was a line at the very bottom of the page -- so it
+  // looked like nothing had happened, and people clicked again. Two rows in
+  // legal_acceptances is harmless but the confusion is not.
+  const [justSigned, setJustSigned] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -116,6 +121,7 @@ export default function Oferta({ user, onAccepted, inline = false }) {
         version: doc.version,
         doc_hash: doc.hash,
       });
+      setJustSigned(true);
       onAccepted && onAccepted();
     } catch (e) {
       setErr(e.message || "Tasdiqlab bo'lmadi.");
@@ -168,27 +174,54 @@ export default function Oferta({ user, onAccepted, inline = false }) {
         </div>
 
         <div className="ofr__foot">
-          {doc.accepted && doc.accepted.current && (
-            <p className="prof__good">
-              Tasdiqlangan — {doc.accepted.full_name || ""} · v{doc.accepted.version}
-            </p>
-          )}
-          <label className="ofr__check">
-            <input
-              type="checkbox"
-              checked={agree}
-              onChange={(e) => setAgree(e.target.checked)}
-            />
-            <span>
-              Shartnomani to'liq o'qidim va kompaniya nomidan roziman. Men
-              kompaniya nomidan shartnoma tuzish vakolatiga egaman.
-            </span>
-          </label>
+          {justSigned || (doc.accepted && doc.accepted.current) ? (
+            <div className="ofr__signed">
+              <Check size={16} />
+              <div>
+                <b>Shartnoma tasdiqlandi</b>
+                <span>
+                  Versiya {doc.version}
+                  {(doc.accepted && doc.accepted.full_name)
+                    ? " \u00b7 " + doc.accepted.full_name
+                    : (user && user.name ? " \u00b7 " + user.name : "")}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <label className="ofr__check">
+                <input
+                  type="checkbox"
+                  checked={agree}
+                  onChange={(e) => setAgree(e.target.checked)}
+                />
+                <span>
+                  Shartnomani to'liq o'qidim va kompaniya nomidan roziman. Men
+                  kompaniya nomidan shartnoma tuzish vakolatiga egaman.
+                </span>
+              </label>
 
+              {err && (
+                <p className="login__err ofr__err">
+                  <AlertCircle size={14} /> {err}
+                </p>
+              )}
+
+              <button
+                className="btn-primary ofr__btn"
+                onClick={submit}
+                disabled={!agree || busy}
+                type="button"
+              >
+                <Check size={15} /> {busy ? "Saqlanmoqda\u2026" : "Shartnomani tasdiqlash"}
+              </button>
+            </>
+          )}
+
+          {/* Version, source download and hash stay visible in both states: after
+              signing, this is the record of WHAT was signed. */}
           <div className="ofr__meta">
             <span>Versiya {doc.version}</span>
-            {/* The download is the SOURCE text, not the rendered version, so the
-                copy they keep hashes to the value recorded against them. */}
             <a
               className="ofr__dl"
               download={`Strolium-shartnoma-v${doc.version}.txt`}
@@ -197,25 +230,9 @@ export default function Oferta({ user, onAccepted, inline = false }) {
               <Download size={13} /> Yuklab olish
             </a>
             <span className="ofr__hash" title={doc.hash}>
-              SHA-256: {doc.hash.slice(0, 16)}…
+              SHA-256: {doc.hash.slice(0, 16)}\u2026
             </span>
-            {user && user.name && <span>{user.name}</span>}
           </div>
-
-          {err && (
-            <p className="login__err ofr__err">
-              <AlertCircle size={14} /> {err}
-            </p>
-          )}
-
-          <button
-            className="btn-primary ofr__btn"
-            onClick={submit}
-            disabled={!agree || busy}
-            type="button"
-          >
-            <Check size={15} /> {busy ? "Saqlanmoqda…" : "Shartnomani tasdiqlash"}
-          </button>
         </div>
       </div>
     </Wrap>
