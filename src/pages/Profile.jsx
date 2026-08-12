@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { User, Mail, KeyRound, Send, Check, LogOut, ChevronDown } from "lucide-react";
+import { User, Mail, KeyRound, Send, Check, LogOut, ChevronDown, Pencil } from "lucide-react";
 import {
   getProfile,
   setProfileName,
@@ -155,6 +155,7 @@ export default function Profile({ lang = "uz", onLogout }) {
   const [ofertaDue, setOfertaDue] = useState(null);
   // Accordion: one open at a time. Starts on the contract, since an unsigned
   // contract is the only thing here that blocks anything.
+  const [editName, setEditName] = useState(false);
   const [openKey, setOpenKey] = useState("oferta");
   const fold = (k) => ({
     open: openKey === k,
@@ -223,30 +224,51 @@ export default function Profile({ lang = "uz", onLogout }) {
           <div className="prof__avatar">
             <User size={18} />
           </div>
-          <div>
-            <div className="prof__name">{p.name || t.you}</div>
+          <div className="prof__who">
+            {editName ? (
+              // The field appears only when asked for. Showing a permanently
+              // filled input plus a Saqlash button next to the name it already
+              // displays asked the user to re-enter something they had set.
+              <div className="prof__row">
+                <input
+                  className="eauth__input"
+                  value={name}
+                  autoFocus
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <button
+                  className="prof__btn"
+                  disabled={busy || name.trim().length < 2}
+                  onClick={() =>
+                    run(async () => {
+                      await setProfileName(name.trim());
+                      setEditName(false);
+                    }, t.saved)
+                  }
+                  type="button"
+                >
+                  {t.save}
+                </button>
+              </div>
+            ) : (
+              <div className="prof__namerow">
+                <div className="prof__name">{p.name || t.you}</div>
+                <button
+                  className="prof__edit"
+                  onClick={() => { setName(p.name || ""); setEditName(true); }}
+                  type="button"
+                  aria-label={t.name}
+                  title={t.name}
+                >
+                  <Pencil size={14} />
+                </button>
+              </div>
+            )}
             <div className="prof__meta">
               {p.role || "—"}
               {p.company ? ` · ${p.company}` : ` · ${t.noCompany}`}
             </div>
           </div>
-        </div>
-
-        <label className="eauth__label">{t.name}</label>
-        <div className="prof__row">
-          <input
-            className="eauth__input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <button
-            className="prof__btn"
-            disabled={busy || name.trim().length < 2}
-            onClick={() => run(() => setProfileName(name.trim()), t.saved)}
-            type="button"
-          >
-            {t.save}
-          </button>
         </div>
       </section>
 

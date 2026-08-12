@@ -2141,13 +2141,30 @@ a { color: inherit; }
 }
 .prof__foldhead:hover { background: var(--panel-3); }
 .prof__foldtitle { flex: 0 0 auto; font: 600 14.5px var(--font-display); color: var(--text); }
+/* margin-left:auto pushes the note AND the chevron to the right-hand end, so the
+   chevron sits at the edge of the bar rather than hugging the title. */
 .prof__foldnote {
-  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font: 400 12.5px var(--font-body); color: var(--dim);
+  margin-left: auto; min-width: 0; max-width: 55%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 400 12.5px var(--font-body); color: var(--dim); text-align: right;
 }
-.prof__foldchev { flex: 0 0 auto; color: var(--dim); transition: transform .16s ease; }
+/* When a section has no note there is nothing to push the chevron over, so it
+   needs its own auto margin too. */
+.prof__foldchev { flex: 0 0 auto; margin-left: auto; color: var(--dim); transition: transform .16s ease; }
+.prof__foldnote + .prof__foldchev { margin-left: 10px; }
 .prof__fold.is-open .prof__foldchev { transform: rotate(180deg); }
 .prof__fold.is-open .prof__foldhead { border-bottom: 1px solid var(--line); }
 .prof__foldbody { padding: 16px 18px 18px; }
 /* The contract renders its own bordered card, so it must not be double-framed. */
 .prof__foldbody .ofr__inline .ofr { margin-top: 0; }
+
+
+/* Name with an inline edit button, replacing the always-visible input + Saqlash. */
+.prof__who { min-width: 0; }
+.prof__namerow { display: flex; align-items: center; gap: 8px; }
+.prof__edit {
+  display: grid; place-items: center; width: 26px; height: 26px;
+  padding: 0; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--panel); color: var(--dim); cursor: pointer;
+}
+.prof__edit:hover { border-color: var(--brand-dim); color: var(--text); }
