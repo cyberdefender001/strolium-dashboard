@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react";
-import { User, Mail, KeyRound, Send, Check, LogOut, ChevronDown, Pencil } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  User, Mail, KeyRound, Send, Check, LogOut, ChevronDown, Pencil,
+  FileText, ShieldCheck,
+} from "lucide-react";
 import {
   getProfile,
   setProfileName,
@@ -131,12 +134,21 @@ const T = {
 //
 // `note` is the point of the collapsed state: the row has to say what is inside
 // without being opened, or collapsing just hides information.
-function Fold({ title, note, open, onToggle, children }) {
+function Fold({ title, note, pill, pillKind, icon, open, onToggle, children }) {
   return (
     <section className={"prof__fold" + (open ? " is-open" : "")}>
       <button className="prof__foldhead" onClick={onToggle} type="button">
+        {icon ? <span className="prof__foldicon">{icon}</span> : null}
         <span className="prof__foldtitle">{title}</span>
-        {note ? <span className="prof__foldnote">{note}</span> : null}
+        {/* A state gets a pill; an identifier stays plain text. "Tasdiqlangan" is
+            a state and should read at a glance; an email address is not. */}
+        {pill ? (
+          <span className={"prof__pill" + (pillKind ? " prof__pill--" + pillKind : "")}>
+            {pill}
+          </span>
+        ) : note ? (
+          <span className="prof__foldnote">{note}</span>
+        ) : null}
         <ChevronDown size={16} className="prof__foldchev" />
       </button>
       {open && <div className="prof__foldbody">{children}</div>}
@@ -156,6 +168,9 @@ export default function Profile({ lang = "uz", onLogout }) {
   // Accordion: one open at a time. Starts on the contract, since an unsigned
   // contract is the only thing here that blocks anything.
   const [editName, setEditName] = useState(false);
+  const okTimer = useRef(null);
+  // Cancel a pending clear if the component unmounts first.
+  useEffect(() => () => clearTimeout(okTimer.current), []);
   const [openKey, setOpenKey] = useState("oferta");
   const fold = (k) => ({
     open: openKey === k,
@@ -205,7 +220,13 @@ export default function Profile({ lang = "uz", onLogout }) {
     setBusy(true);
     try {
       await fn();
-      if (okMsg) setOk(okMsg);
+      if (okMsg) {
+        setOk(okMsg);
+        // Clears itself. It used to sit on the page indefinitely, so after a few
+        // actions the reader could not tell which one it referred to.
+        clearTimeout(okTimer.current);
+        okTimer.current = setTimeout(() => setOk(""), 3500);
+      }
     } catch (e) {
       setErr(e.message || "Xatolik");
     } finally {
@@ -272,7 +293,7 @@ export default function Profile({ lang = "uz", onLogout }) {
         </div>
       </section>
 
-      <Fold {...fold("web")} title={t.webTitle} note={p.email || ""}>
+      <Fold {...fold("web")} title={t.webTitle} icon={<Mail size={16} />} note={p.email || ""}>
         {p.has_email_login ? (
           <p className="prof__good">
             <Check size={15} /> {t.webHave}
@@ -347,7 +368,7 @@ export default function Profile({ lang = "uz", onLogout }) {
       </Fold>
 
       {p.has_email_login && (
-        <Fold {...fold("pw")} title={t.pwTitle} note={null}>
+        <Fold {...fold("pw")} title={t.pwTitle} icon={<KeyRound size={16} />}>
           <label className="eauth__label">{t.oldPw}</label>
           <input
             className="eauth__input"
@@ -381,7 +402,9 @@ export default function Profile({ lang = "uz", onLogout }) {
         </Fold>
       )}
 
-      <Fold {...fold("tg")} title={t.tgTitle} note={p.has_telegram ? "Ulangan" : "Ulanmagan"}>
+      <Fold {...fold("tg")} title={t.tgTitle} icon={<Send size={16} />}
+        pill={p.has_telegram ? "Ulangan" : "Ulanmagan"}
+        pillKind={p.has_telegram ? "ok" : "warn"}>
         <p className={p.has_telegram ? "prof__good" : "prof__sub"}>
           {p.has_telegram ? <Check size={15} /> : null} {p.has_telegram ? t.tgYes : t.tgNo}
         </p>
@@ -407,7 +430,9 @@ export default function Profile({ lang = "uz", onLogout }) {
           result was nothing on screen at all -- no card, no error, no clue. The
           Oferta component reports its own state (loading, loaded, failed), so
           there is always something visible to act on or to diagnose. */}
-      <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} note={ofertaDue === false ? "Tasdiqlangan" : (ofertaDue === true ? "Tasdiqlanmagan" : "")}>
+      <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} icon={<FileText size={16} />}
+        pill={ofertaDue === false ? "Tasdiqlangan" : (ofertaDue === true ? "Tasdiqlanmagan" : null)}
+        pillKind={ofertaDue === false ? "ok" : "warn"}>
         <Oferta inline onAccepted={() => setOk(t.secDone ? "Shartnoma tasdiqlandi." : "")} />
       </Fold>
 
@@ -415,7 +440,7 @@ export default function Profile({ lang = "uz", onLogout }) {
           except disabling the member, which also removes their access to the
           company -- so a lost phone meant choosing between a live session and
           locking someone out of their job. */}
-      <Fold {...fold("sec")} title={t.secTitle} note={null}>
+      <Fold {...fold("sec")} title={t.secTitle} icon={<ShieldCheck size={16} />}>
         <p className="prof__sub">{t.secBody}</p>
         <button
           className="prof__btn"
@@ -434,7 +459,11 @@ export default function Profile({ lang = "uz", onLogout }) {
         </button>
       </Fold>
 
-      {ok && <p className="eauth__note">{ok}</p>}
+      {ok && (
+        <div className="prof__toast" role="status">
+          <Check size={15} /> {ok}
+        </div>
+      )}
       {err && <p className="login__err">{err}</p>}
     </div>
   );
