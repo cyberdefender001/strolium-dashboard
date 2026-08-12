@@ -2036,12 +2036,41 @@ a { color: inherit; }
 /* The scrolling region. Fixed height rather than auto, so the document is
    visibly a document and the accept control stays on screen beneath it. */
 .ofr__body { flex: 1; min-height: 200px; overflow-y: auto; background: var(--panel-3); }
-.ofr__text {
-  margin: 0; padding: 20px 22px;
-  font: 400 12.5px/1.65 var(--font-body);
-  color: var(--text);
-  white-space: pre-wrap; word-break: break-word;
+/* Was a <pre> showing raw Markdown, which put "#" and "|---|" on screen and made
+   a signed contract look like an unfinished draft. */
+.ofr__text { padding: 20px 22px; color: var(--text); }
+.ofr__h1 {
+  margin: 0 0 14px; font: 700 15px var(--font-display);
+  color: var(--text); letter-spacing: -.01em;
 }
+.ofr__h2 {
+  margin: 20px 0 8px; font: 700 13px var(--font-body);
+  color: var(--text); text-transform: none;
+}
+.ofr__p { margin: 0 0 9px; font: 400 12.8px/1.65 var(--font-body); color: var(--text); }
+.ofr__ul { margin: 0 0 10px; padding-left: 20px; }
+.ofr__ul li { font: 400 12.8px/1.6 var(--font-body); color: var(--text); margin-bottom: 4px; }
+
+/* The tariff table. Rendered as a real table -- as pipes and dashes it was the
+   single worst-looking thing on the page. */
+.ofr__table {
+  width: 100%; border-collapse: collapse; margin: 4px 0 14px;
+  font: 400 12.5px var(--font-body);
+}
+.ofr__table th {
+  text-align: left; padding: 8px 10px;
+  background: var(--panel-3); border: 1px solid var(--line);
+  font-weight: 700; color: var(--text); white-space: nowrap;
+}
+.ofr__table td {
+  padding: 8px 10px; border: 1px solid var(--line); color: var(--text);
+}
+
+.ofr__dl {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--brand); font-weight: 600; text-decoration: none;
+}
+.ofr__dl:hover { text-decoration: underline; }
 
 .ofr__foot { padding: 16px 22px 20px; border-top: 1px solid var(--line); background: var(--panel); }
 .ofr__check {
@@ -2072,4 +2101,4 @@ a { color: inherit; }
   border: 1px solid var(--line); box-shadow: none;
 }
 .ofr__inline .ofr__head { display: none; }
-.ofr__inline .ofr__body { max-height: 320px; }
+.ofr__inline .ofr__body { max-height: 440px; }

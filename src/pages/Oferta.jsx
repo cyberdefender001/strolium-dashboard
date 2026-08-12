@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, Check, AlertCircle } from "lucide-react";
+import { FileText, Check, AlertCircle, Download } from "lucide-react";
 import { getLegalDoc, acceptLegalDoc } from "../api/client";
 
 // The oferta gate.
@@ -16,6 +16,75 @@ import { getLegalDoc, acceptLegalDoc } from "../api/client";
 //     "it was on screen";
 //   * the hash is shown. It looks technical, and that is the point -- it is the
 //     thing that ties the record to the words.
+// The document is stored as Markdown because that is what gets hashed and what
+// lives in git. Showing it raw put "#" and "|---|" on screen, which reads like an
+// unfinished draft. This renders the handful of constructs the contract actually
+// uses -- headings, paragraphs, one table, one bullet list -- rather than adding a
+// Markdown dependency for four cases.
+//
+// IMPORTANT: this changes only the DISPLAY. The hash is computed server-side over
+// the source text, so rendering cannot affect the proof.
+function renderDoc(text) {
+  const lines = String(text || "").split("\n");
+  const out = [];
+  let i = 0;
+  let key = 0;
+
+  const isTableRow = (l) => l.trim().startsWith("|") && l.trim().endsWith("|");
+  const cells = (l) =>
+    l.trim().slice(1, -1).split("|").map((c) => c.trim());
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (!line.trim()) { i++; continue; }
+
+    // Table: a header row, a separator of dashes, then body rows.
+    if (isTableRow(line) && i + 1 < lines.length && /^\|[\s\-|]+\|$/.test(lines[i + 1].trim())) {
+      const head = cells(line);
+      i += 2;
+      const body = [];
+      while (i < lines.length && isTableRow(lines[i])) { body.push(cells(lines[i])); i++; }
+      out.push(
+        <table className="ofr__table" key={key++}>
+          <thead>
+            <tr>{head.map((c, n) => <th key={n}>{c}</th>)}</tr>
+          </thead>
+          <tbody>
+            {body.map((row, n) => (
+              <tr key={n}>{row.map((c, m) => <td key={m}>{c}</td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+      );
+      continue;
+    }
+
+    if (line.startsWith("## ")) {
+      out.push(<h4 className="ofr__h2" key={key++}>{line.slice(3)}</h4>);
+      i++; continue;
+    }
+    if (line.startsWith("# ")) {
+      out.push(<h3 className="ofr__h1" key={key++}>{line.slice(2)}</h3>);
+      i++; continue;
+    }
+    if (line.startsWith("- ")) {
+      const items = [];
+      while (i < lines.length && lines[i].startsWith("- ")) { items.push(lines[i].slice(2)); i++; }
+      out.push(
+        <ul className="ofr__ul" key={key++}>
+          {items.map((t, n) => <li key={n}>{t}</li>)}
+        </ul>
+      );
+      continue;
+    }
+    out.push(<p className="ofr__p" key={key++}>{line}</p>);
+    i++;
+  }
+  return out;
+}
+
+
 export default function Oferta({ user, onAccepted, inline = false }) {
   const [doc, setDoc] = useState(null);
   const [agree, setAgree] = useState(false);
@@ -95,9 +164,7 @@ export default function Oferta({ user, onAccepted, inline = false }) {
         </div>
 
         <div className="ofr__body">
-          {/* Plain text in a <pre>: the document is stored as text and shown as
-              text, so what is displayed is byte-for-byte what was hashed. */}
-          <pre className="ofr__text">{doc.text}</pre>
+          <div className="ofr__text">{renderDoc(doc.text)}</div>
         </div>
 
         <div className="ofr__foot">
@@ -120,6 +187,15 @@ export default function Oferta({ user, onAccepted, inline = false }) {
 
           <div className="ofr__meta">
             <span>Versiya {doc.version}</span>
+            {/* The download is the SOURCE text, not the rendered version, so the
+                copy they keep hashes to the value recorded against them. */}
+            <a
+              className="ofr__dl"
+              download={`Strolium-shartnoma-v${doc.version}.txt`}
+              href={URL.createObjectURL(new Blob([doc.text], { type: "text/plain;charset=utf-8" }))}
+            >
+              <Download size={13} /> Yuklab olish
+            </a>
             <span className="ofr__hash" title={doc.hash}>
               SHA-256: {doc.hash.slice(0, 16)}…
             </span>
@@ -138,7 +214,7 @@ export default function Oferta({ user, onAccepted, inline = false }) {
             disabled={!agree || busy}
             type="button"
           >
-            <Check size={15} /> {busy ? "Saqlanmoqda…" : "Roziman va davom etaman"}
+            <Check size={15} /> {busy ? "Saqlanmoqda…" : "Shartnomani tasdiqlash"}
           </button>
         </div>
       </div>
