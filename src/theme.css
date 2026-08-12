@@ -2114,3 +2114,14 @@ a { color: inherit; }
 }
 .ofr__signed b { display: block; font: 700 13.5px var(--font-body); }
 .ofr__signed span { font: 400 12px var(--font-body); color: var(--dim); }
+
+/* Company details on the acceptance form. Two columns on desktop so the block
+   does not push the contract text off screen. */
+.ofr__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-bottom: 16px; }
+.ofr__fields label { display: block; }
+.ofr__fields label span {
+  display: block; margin-bottom: 5px;
+  font: 600 11.5px var(--font-body); color: var(--dim);
+}
+.ofr__fields .eauth__input { font-size: 13.5px; padding: 9px 11px; }
+@media (max-width: 700px) { .ofr__fields { grid-template-columns: 1fr; } }

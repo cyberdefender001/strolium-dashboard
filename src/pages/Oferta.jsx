@@ -88,6 +88,13 @@ function renderDoc(text) {
 export default function Oferta({ user, onAccepted, inline = false }) {
   const [doc, setDoc] = useState(null);
   const [agree, setAgree] = useState(false);
+  // Typed by the signer. Not verified against a registry -- that data is not
+  // reliably public in Uzbekistan -- but details only the company knows make a
+  // later "someone else clicked" much harder to sustain.
+  const [stir, setStir] = useState("");
+  const [legalName, setLegalName] = useState("");
+  const [signerName, setSignerName] = useState("");
+  const [signerPos, setSignerPos] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   // Set the moment acceptance succeeds. Without it the card kept showing the form
@@ -120,6 +127,10 @@ export default function Oferta({ user, onAccepted, inline = false }) {
         kind: "oferta",
         version: doc.version,
         doc_hash: doc.hash,
+        stir,
+        legal_name: legalName,
+        signer_name: signerName,
+        signer_position: signerPos,
       });
       setJustSigned(true);
       onAccepted && onAccepted();
@@ -189,6 +200,46 @@ export default function Oferta({ user, onAccepted, inline = false }) {
             </div>
           ) : (
             <>
+              <div className="ofr__fields">
+                <label>
+                  <span>Kompaniya STIR *</span>
+                  <input
+                    className="eauth__input"
+                    inputMode="numeric"
+                    maxLength={9}
+                    value={stir}
+                    onChange={(e) => setStir(e.target.value.replace(/\D/g, ""))}
+                    placeholder="123456789"
+                  />
+                </label>
+                <label>
+                  <span>Kompaniyaning to'liq nomi *</span>
+                  <input
+                    className="eauth__input"
+                    value={legalName}
+                    onChange={(e) => setLegalName(e.target.value)}
+                    placeholder='"Optimal Qurilish" MChJ'
+                  />
+                </label>
+                <label>
+                  <span>Ism-familiya *</span>
+                  <input
+                    className="eauth__input"
+                    value={signerName}
+                    onChange={(e) => setSignerName(e.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>Lavozim</span>
+                  <input
+                    className="eauth__input"
+                    value={signerPos}
+                    onChange={(e) => setSignerPos(e.target.value)}
+                    placeholder="Direktor"
+                  />
+                </label>
+              </div>
+
               <label className="ofr__check">
                 <input
                   type="checkbox"
@@ -210,7 +261,7 @@ export default function Oferta({ user, onAccepted, inline = false }) {
               <button
                 className="btn-primary ofr__btn"
                 onClick={submit}
-                disabled={!agree || busy}
+                disabled={!agree || busy || stir.length !== 9 || !legalName.trim() || !signerName.trim()}
                 type="button"
               >
                 <Check size={15} /> {busy ? "Saqlanmoqda\u2026" : "Shartnomani tasdiqlash"}

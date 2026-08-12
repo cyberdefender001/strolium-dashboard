@@ -296,10 +296,18 @@ export async function getLegalDoc(kind = "oferta") {
   return call(`/api/web/legal/${kind}`);
 }
 
-export async function acceptLegalDoc({ kind, version, doc_hash }) {
+export async function acceptLegalDoc({
+  kind, version, doc_hash, stir, legal_name, signer_name, signer_position,
+}) {
   return call("/api/web/legal/accept", {
     method: "POST",
-    body: JSON.stringify({ kind, version, doc_hash }),
+    body: JSON.stringify({
+      kind, version, doc_hash,
+      stir: stir || null,
+      legal_name: legal_name || null,
+      signer_name: signer_name || null,
+      signer_position: signer_position || null,
+    }),
   });
 }
 
