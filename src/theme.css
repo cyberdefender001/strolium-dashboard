@@ -2062,3 +2062,14 @@ a { color: inherit; }
   .ofr { max-width: none; max-height: 100vh; height: 100vh; border-radius: 0; }
   .ofr__text { font-size: 12px; padding: 16px; }
 }
+
+/* Inline oferta: ordinary page content, no fixed positioning. The overlay version
+   never appeared because it depended on state that did not arrive; this shares
+   nothing with it. */
+.ofr__inline { display: block; }
+.ofr__inline .ofr {
+  max-width: none; max-height: none; margin-top: 12px;
+  border: 1px solid var(--line); box-shadow: none;
+}
+.ofr__inline .ofr__head { display: none; }
+.ofr__inline .ofr__body { max-height: 320px; }

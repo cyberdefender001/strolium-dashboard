@@ -16,7 +16,7 @@ import { getLegalDoc, acceptLegalDoc } from "../api/client";
 //     "it was on screen";
 //   * the hash is shown. It looks technical, and that is the point -- it is the
 //     thing that ties the record to the words.
-export default function Oferta({ user, onAccepted }) {
+export default function Oferta({ user, onAccepted, inline = false }) {
   const [doc, setDoc] = useState(null);
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -55,27 +55,33 @@ export default function Oferta({ user, onAccepted }) {
     }
   };
 
+  // In inline mode the scrim is a plain wrapper: no fixed positioning, no
+  // z-index, nothing that can be clipped or mis-stacked.
+  const Wrap = ({ children }) => (
+    <div className={inline ? "ofr__inline" : "ofr__scrim"}>{children}</div>
+  );
+
   if (err && !doc) {
     return (
-      <div className="ofr__scrim">
+      <Wrap>
         <div className="card ofr">
           <p className="login__err">{err}</p>
         </div>
-      </div>
+      </Wrap>
     );
   }
   if (!doc) {
     return (
-      <div className="ofr__scrim">
+      <Wrap>
         <div className="card ofr">
           <p className="hint">Yuklanmoqda…</p>
         </div>
-      </div>
+      </Wrap>
     );
   }
 
   return (
-    <div className="ofr__scrim">
+    <Wrap>
       <div className="card ofr">
         <div className="ofr__head">
           <FileText size={17} />
@@ -131,6 +137,6 @@ export default function Oferta({ user, onAccepted }) {
           </button>
         </div>
       </div>
-    </div>
+    </Wrap>
   );
 }

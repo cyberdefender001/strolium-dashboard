@@ -9,6 +9,8 @@ import {
   startTelegramLink,
   logoutEverywhere,
 } from "../api/emailauth";
+import { getLegalDoc } from "../api/client";
+import Oferta from "./Oferta";
 
 // The cabinet. Every user has one, whichever door they came through.
 //
@@ -129,6 +131,8 @@ export default function Profile({ lang = "uz", onLogout }) {
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
   const [busy, setBusy] = useState(false);
+  // null = still loading, true/false = whether the current oferta needs signing.
+  const [ofertaDue, setOfertaDue] = useState(null);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -147,6 +151,22 @@ export default function Profile({ lang = "uz", onLogout }) {
       setErr(e.message || "Xatolik");
     }
   };
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const d = await getLegalDoc("oferta");
+        // `accepted.current` is true only when the stored hash matches the text
+        // published now, so an edited or bumped document asks again.
+        if (alive) setOfertaDue(!(d.accepted && d.accepted.current));
+      } catch {
+        // Never block the profile page over this.
+        if (alive) setOfertaDue(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
   useEffect(() => {
     load();
   }, []);
@@ -335,6 +355,26 @@ export default function Profile({ lang = "uz", onLogout }) {
           </button>
         )}
       </section>
+
+      {ofertaDue === true && (
+        <section className="prof__card">
+          <h3 className="prof__cardtitle">Foydalanish shartnomasi</h3>
+          <p className="prof__sub">
+            Shartnoma hali tasdiqlanmagan. O'qib chiqing va kompaniya nomidan
+            tasdiqlang.
+          </p>
+          <Oferta inline onAccepted={() => setOfertaDue(false)} />
+        </section>
+      )}
+
+      {ofertaDue === false && (
+        <section className="prof__card prof__card--quiet">
+          <h3 className="prof__cardtitle">Foydalanish shartnomasi</h3>
+          <p className="prof__good">
+            <Check size={15} /> Tasdiqlangan
+          </p>
+        </section>
+      )}
 
       {/* Sessions last 30 days. Before this there was no way to end one early
           except disabling the member, which also removes their access to the
