@@ -273,6 +273,20 @@ export async function uploadSupportShot(image_b64) {
 
 // Support ticket from the website. The reply comes by EMAIL -- a website account
 // has a synthetic negative telegram_id, so the bot cannot DM it.
+// The current text of a legal document, with its version and SHA-256. The hash
+// is echoed back on acceptance and verified server-side, so a stale tab cannot
+// record agreement to a document that has since changed.
+export async function getLegalDoc(kind = "oferta") {
+  return call(`/api/web/legal/${kind}`);
+}
+
+export async function acceptLegalDoc({ kind, version, doc_hash }) {
+  return call("/api/web/legal/accept", {
+    method: "POST",
+    body: JSON.stringify({ kind, version, doc_hash }),
+  });
+}
+
 export async function sendSupport({ message, category, screenshots }) {
   return call("/api/web/support", {
     method: "POST",

@@ -2013,3 +2013,52 @@ a { color: inherit; }
   /* Five across on a phone is a 55px thumbnail; three is legible. */
   .sup__shots { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ── Oferta acceptance gate ─────────────────────────────────────────────
+   Covers the app until accepted. A commercial contract that can be scrolled past
+   is not much of a contract, so this is a gate rather than a banner. */
+.ofr__scrim {
+  position: fixed; inset: 0; z-index: 90;
+  display: grid; place-items: center; padding: 24px;
+  background: rgba(6, 16, 35, .55);
+}
+.ofr {
+  width: 100%; max-width: 760px; max-height: calc(100vh - 48px);
+  display: flex; flex-direction: column; padding: 0; overflow: hidden;
+}
+.ofr__head {
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 18px 22px; border-bottom: 1px solid var(--line); color: var(--text);
+}
+.ofr__title { margin: 0 0 4px; font: 600 17px var(--font-display); color: var(--text); }
+.ofr__sub { margin: 0; font-size: 12.5px; color: var(--dim); line-height: 1.5; }
+
+/* The scrolling region. Fixed height rather than auto, so the document is
+   visibly a document and the accept control stays on screen beneath it. */
+.ofr__body { flex: 1; min-height: 200px; overflow-y: auto; background: var(--panel-3); }
+.ofr__text {
+  margin: 0; padding: 20px 22px;
+  font: 400 12.5px/1.65 var(--font-body);
+  color: var(--text);
+  white-space: pre-wrap; word-break: break-word;
+}
+
+.ofr__foot { padding: 16px 22px 20px; border-top: 1px solid var(--line); background: var(--panel); }
+.ofr__check {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  font-size: 13px; color: var(--text); line-height: 1.5;
+}
+.ofr__check input { margin-top: 2px; width: 17px; height: 17px; flex: 0 0 auto; cursor: pointer; }
+.ofr__meta {
+  display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 4px;
+  font: 400 11.5px var(--font-mono); color: var(--faint);
+}
+.ofr__hash { overflow-wrap: anywhere; }
+.ofr__err { display: flex; align-items: center; gap: 6px; }
+.ofr__btn { width: 100%; margin-top: 12px; justify-content: center; }
+
+@media (max-width: 700px) {
+  .ofr__scrim { padding: 0; }
+  .ofr { max-width: none; max-height: 100vh; height: 100vh; border-radius: 0; }
+  .ofr__text { font-size: 12px; padding: 16px; }
+}

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Home from "./Home";
 import DemoVideo from "../components/DemoVideo";
 import Support from "../components/Support";
+import Oferta from "./Oferta";
 import { Scale, FileText, Calculator, FolderKanban, Users, Menu, CircleHelp } from "lucide-react";
 import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
 import { fmtSom } from "../lib/format";
@@ -76,6 +77,10 @@ export default function Dashboard({ user, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [guide, setGuide] = useState(false);
   const [support, setSupport] = useState(false);
+  // Whether this company still has to accept the oferta. Server-decided: the
+  // dashboard payload says so, and the accept endpoint enforces it again, so
+  // hiding the gate client-side gains nothing.
+  const [needsOferta, setNeedsOferta] = useState(false);
   // Persisted: a boss who collapses the rail expects it collapsed next visit.
   const [mini, setMini] = useState(() => {
     try { return localStorage.getItem("strolium_rail") === "mini"; } catch { return false; }
@@ -101,7 +106,13 @@ export default function Dashboard({ user, onLogout }) {
   const load = useCallback(() => {
     setErr("");
     getDashboard()
-      .then(setData)
+      .then((d) => {
+        setData(d);
+        // The backend decides; the client only renders. `needs_oferta` absent
+        // (an older backend) means no gate, so a deploy-order mismatch cannot
+        // lock everyone out of the app.
+        setNeedsOferta(Boolean(d && d.needs_oferta));
+      })
       .catch((e) => {
         if (e instanceof AuthExpired) {
           onLogout();
@@ -246,6 +257,12 @@ export default function Dashboard({ user, onLogout }) {
       />
 
       <main className="main">
+        {/* Rendered before anything else and covering the app: a commercial
+            contract that can be scrolled past is not much of a contract. */}
+        {needsOferta && (
+          <Oferta user={user} onAccepted={() => { setNeedsOferta(false); load(); }} />
+        )}
+
         <div className="topbar">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button className="burger" onClick={() => setMenuOpen(true)} aria-label="Menyu" type="button">
