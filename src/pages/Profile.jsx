@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { User, Mail, KeyRound, Send, Check, LogOut } from "lucide-react";
+import { User, Mail, KeyRound, Send, Check, LogOut, ChevronDown } from "lucide-react";
 import {
   getProfile,
   setProfileName,
@@ -125,6 +125,26 @@ const T = {
   },
 };
 
+// One collapsible section. The page previously showed six fully-expanded cards,
+// so finding anything meant scrolling past everything else, and the contract --
+// the only item that gates anything -- sat at the very bottom.
+//
+// `note` is the point of the collapsed state: the row has to say what is inside
+// without being opened, or collapsing just hides information.
+function Fold({ title, note, open, onToggle, children }) {
+  return (
+    <section className={"prof__fold" + (open ? " is-open" : "")}>
+      <button className="prof__foldhead" onClick={onToggle} type="button">
+        <span className="prof__foldtitle">{title}</span>
+        {note ? <span className="prof__foldnote">{note}</span> : null}
+        <ChevronDown size={16} className="prof__foldchev" />
+      </button>
+      {open && <div className="prof__foldbody">{children}</div>}
+    </section>
+  );
+}
+
+
 export default function Profile({ lang = "uz", onLogout }) {
   const t = T[lang] || T.uz;
   const [p, setP] = useState(null);
@@ -133,6 +153,13 @@ export default function Profile({ lang = "uz", onLogout }) {
   const [busy, setBusy] = useState(false);
   // null = still loading, true/false = whether the current oferta needs signing.
   const [ofertaDue, setOfertaDue] = useState(null);
+  // Accordion: one open at a time. Starts on the contract, since an unsigned
+  // contract is the only thing here that blocks anything.
+  const [openKey, setOpenKey] = useState("oferta");
+  const fold = (k) => ({
+    open: openKey === k,
+    onToggle: () => setOpenKey(openKey === k ? "" : k),
+  });
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -223,8 +250,7 @@ export default function Profile({ lang = "uz", onLogout }) {
         </div>
       </section>
 
-      <section className="prof__card">
-        <h3 className="prof__cardtitle">{t.webTitle}</h3>
+      <Fold {...fold("web")} title={t.webTitle} note={p.email || ""}>
         {p.has_email_login ? (
           <p className="prof__good">
             <Check size={15} /> {t.webHave}
@@ -296,11 +322,10 @@ export default function Profile({ lang = "uz", onLogout }) {
             )}
           </>
         )}
-      </section>
+      </Fold>
 
       {p.has_email_login && (
-        <section className="prof__card">
-          <h3 className="prof__cardtitle">{t.pwTitle}</h3>
+        <Fold {...fold("pw")} title={t.pwTitle} note={null}>
           <label className="eauth__label">{t.oldPw}</label>
           <input
             className="eauth__input"
@@ -331,11 +356,10 @@ export default function Profile({ lang = "uz", onLogout }) {
           >
             <KeyRound size={15} /> {t.change}
           </button>
-        </section>
+        </Fold>
       )}
 
-      <section className="prof__card prof__card--quiet">
-        <h3 className="prof__cardtitle">{t.tgTitle}</h3>
+      <Fold {...fold("tg")} title={t.tgTitle} note={p.has_telegram ? "Ulangan" : "Ulanmagan"}>
         <p className={p.has_telegram ? "prof__good" : "prof__sub"}>
           {p.has_telegram ? <Check size={15} /> : null} {p.has_telegram ? t.tgYes : t.tgNo}
         </p>
@@ -354,24 +378,22 @@ export default function Profile({ lang = "uz", onLogout }) {
             <Send size={15} /> {t.tgLink}
           </button>
         )}
-      </section>
+      </Fold>
 
       {/* Rendered UNCONDITIONALLY. The previous version only appeared once a
           separate fetch had resolved, and when that fetch never settled the
           result was nothing on screen at all -- no card, no error, no clue. The
           Oferta component reports its own state (loading, loaded, failed), so
           there is always something visible to act on or to diagnose. */}
-      <section className="prof__card">
-        <h3 className="prof__cardtitle">Foydalanish shartnomasi</h3>
+      <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} note={ofertaDue === false ? "Tasdiqlangan" : (ofertaDue === true ? "Tasdiqlanmagan" : "")}>
         <Oferta inline onAccepted={() => setOk(t.secDone ? "Shartnoma tasdiqlandi." : "")} />
-      </section>
+      </Fold>
 
       {/* Sessions last 30 days. Before this there was no way to end one early
           except disabling the member, which also removes their access to the
           company -- so a lost phone meant choosing between a live session and
           locking someone out of their job. */}
-      <section className="prof__card prof__card--quiet">
-        <h3 className="prof__cardtitle">{t.secTitle}</h3>
+      <Fold {...fold("sec")} title={t.secTitle} note={null}>
         <p className="prof__sub">{t.secBody}</p>
         <button
           className="prof__btn"
@@ -388,7 +410,7 @@ export default function Profile({ lang = "uz", onLogout }) {
         >
           <LogOut size={15} /> {t.secBtn}
         </button>
-      </section>
+      </Fold>
 
       {ok && <p className="eauth__note">{ok}</p>}
       {err && <p className="login__err">{err}</p>}

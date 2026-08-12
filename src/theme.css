@@ -2125,3 +2125,29 @@ a { color: inherit; }
 }
 .ofr__fields .eauth__input { font-size: 13.5px; padding: 9px 11px; }
 @media (max-width: 700px) { .ofr__fields { grid-template-columns: 1fr; } }
+
+/* ── Profil: collapsible sections ───────────────────────────────────────
+   Six expanded cards made the page a wall of text. Each is now a row you tap,
+   with a note on the right so the collapsed state still tells you what is
+   inside -- collapsing without that just hides information. */
+.prof__fold {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel); margin-bottom: 10px; overflow: hidden;
+}
+.prof__foldhead {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 15px 18px; border: 0; background: transparent;
+  cursor: pointer; text-align: left;
+}
+.prof__foldhead:hover { background: var(--panel-3); }
+.prof__foldtitle { flex: 0 0 auto; font: 600 14.5px var(--font-display); color: var(--text); }
+.prof__foldnote {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 400 12.5px var(--font-body); color: var(--dim);
+}
+.prof__foldchev { flex: 0 0 auto; color: var(--dim); transition: transform .16s ease; }
+.prof__fold.is-open .prof__foldchev { transform: rotate(180deg); }
+.prof__fold.is-open .prof__foldhead { border-bottom: 1px solid var(--line); }
+.prof__foldbody { padding: 16px 18px 18px; }
+/* The contract renders its own bordered card, so it must not be double-framed. */
+.prof__foldbody .ofr__inline .ofr { margin-top: 0; }
