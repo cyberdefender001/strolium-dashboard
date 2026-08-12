@@ -356,25 +356,15 @@ export default function Profile({ lang = "uz", onLogout }) {
         )}
       </section>
 
-      {ofertaDue === true && (
-        <section className="prof__card">
-          <h3 className="prof__cardtitle">Foydalanish shartnomasi</h3>
-          <p className="prof__sub">
-            Shartnoma hali tasdiqlanmagan. O'qib chiqing va kompaniya nomidan
-            tasdiqlang.
-          </p>
-          <Oferta inline onAccepted={() => setOfertaDue(false)} />
-        </section>
-      )}
-
-      {ofertaDue === false && (
-        <section className="prof__card prof__card--quiet">
-          <h3 className="prof__cardtitle">Foydalanish shartnomasi</h3>
-          <p className="prof__good">
-            <Check size={15} /> Tasdiqlangan
-          </p>
-        </section>
-      )}
+      {/* Rendered UNCONDITIONALLY. The previous version only appeared once a
+          separate fetch had resolved, and when that fetch never settled the
+          result was nothing on screen at all -- no card, no error, no clue. The
+          Oferta component reports its own state (loading, loaded, failed), so
+          there is always something visible to act on or to diagnose. */}
+      <section className="prof__card">
+        <h3 className="prof__cardtitle">Foydalanish shartnomasi</h3>
+        <Oferta inline onAccepted={() => setOk(t.secDone ? "Shartnoma tasdiqlandi." : "")} />
+      </section>
 
       {/* Sessions last 30 days. Before this there was no way to end one early
           except disabling the member, which also removes their access to the

@@ -101,6 +101,11 @@ export default function Oferta({ user, onAccepted, inline = false }) {
         </div>
 
         <div className="ofr__foot">
+          {doc.accepted && doc.accepted.current && (
+            <p className="prof__good">
+              Tasdiqlangan — {doc.accepted.full_name || ""} · v{doc.accepted.version}
+            </p>
+          )}
           <label className="ofr__check">
             <input
               type="checkbox"
