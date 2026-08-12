@@ -224,15 +224,31 @@ export async function createTask(tasks) {
   });
 }
 
-// fileUrl() and reportUrl() lived here and put the 30-DAY session token into a
-// query string: /api/file/<id>?tg=<session>. Nothing ever called them, so no
-// session was actually leaked -- but a URL like that lands in server access logs
-// and browser history, and anyone forwarding a photo link would have handed over
-// their whole account for a month. Removed rather than left as a trap for the
-// next person who needs an <img src>.
+// RESTORED. These were removed on the mistaken belief that nothing called them --
+// a grep missed TaskDetail.jsx and Work.jsx, which use them in eight places for
+// task audio, evidence photos, the lightbox and both report downloads. Removing
+// them broke the Netlify build outright.
 //
-// If the website ever needs to render a protected image, mint a short-lived,
-// file-scoped token server-side and put THAT in the URL -- never the session.
+// An <img> or <a download> cannot send an Authorization header, so the credential
+// has to travel in the URL. That URL then lands in browser history and, without
+// mitigation, in server access logs -- so the session token in it is a real
+// exposure, not a theoretical one.
+//
+// Mitigated rather than eliminated: main.py now redacts query strings from the
+// access log, so the value is no longer written server-side. The proper fix is a
+// short-lived file-scoped token minted per request, which needs a backend
+// endpoint; until that exists these stay as they were, because the alternative
+// is a broken app.
+
+export function fileUrl(id) {
+  return `${API_BASE}/api/file/${id}?tg=${encodeURIComponent(authToken() || "")}`;
+}
+
+export function reportUrl(taskId, fmt) {
+  return `${API_BASE}/api/manager/task/${taskId}/report?fmt=${fmt}&tg=${encodeURIComponent(
+    authToken() || ""
+  )}`;
+}
 
 // ---- Loyihalar (projects + budgets) ---------------------------------------
 // Same endpoints the Mini App uses. Budgets are what Pul nazorati compares
