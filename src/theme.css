@@ -2287,3 +2287,21 @@ a { color: inherit; }
   .ofrgate { padding: 0; }
   .ofrgate__box { max-width: none; height: 100vh; max-height: 100vh; border-radius: 0; }
 }
+
+/* ── To'lov ─────────────────────────────────────────────────────────────
+   Payment existed only in the Mini App, so a boss working on the website could
+   not pay at all. */
+.bill { max-width: 620px; }
+.bill__row { display: flex; align-items: flex-start; gap: 20px; }
+.bill__label { font: 600 11.5px var(--font-body); color: var(--dim); text-transform: uppercase; letter-spacing: .05em; }
+.bill__tier { font: 700 22px var(--font-display); color: var(--text); margin-top: 4px; }
+.bill__seats { font: 400 13px var(--font-body); color: var(--dim); margin-top: 3px; }
+.bill__priceblk { margin-left: auto; text-align: right; }
+.bill__price { font: 700 30px var(--font-mono); color: var(--text); line-height: 1.1; }
+.bill__price--sm { font-size: 20px; }
+.bill__cur { font: 400 12.5px var(--font-body); color: var(--dim); margin-top: 2px; }
+.bill__status { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.bill__status .prof__pill { display: inline-flex; align-items: center; gap: 5px; }
+.bill__note { margin-top: 14px; display: flex; align-items: center; gap: 6px; }
+.bill__pay { width: 100%; margin-top: 18px; justify-content: center; }
+.bill__foot { margin-top: 14px; }

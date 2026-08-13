@@ -292,6 +292,19 @@ export async function uploadSupportShot(image_b64) {
 // The current text of a legal document, with its version and SHA-256. The hash
 // is echoed back on acceptance and verified server-side, so a stale tab cannot
 // record agreement to a document that has since changed.
+// Billing. The checkout endpoint lives on the miniapp router but accepts a web
+// session, so the website can call it directly -- no duplicate needed.
+export async function getBilling() {
+  return call("/api/web/billing");
+}
+
+export async function startCheckout(periodDays) {
+  return call("/api/billing/checkout", {
+    method: "POST",
+    body: JSON.stringify({ period_days: periodDays || 30 }),
+  });
+}
+
 export async function getLegalDoc(kind = "oferta") {
   return call(`/api/web/legal/${kind}`);
 }

@@ -12,7 +12,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-} from "lucide-react";
+  CreditCard,} from "lucide-react";
 import { StroliumMark } from "./StroliumMark";
 import { initials } from "../lib/format";
 
@@ -25,6 +25,7 @@ const NAV = [
   { key: "projects", label: "Loyihalar", icon: FolderKanban },
   { key: "team", label: "Jamoa", icon: Users },
   { key: "company", label: "Kompaniya", icon: Building2 },
+  { key: "billing", label: "To'lov", icon: CreditCard },
 ];
 
 // Boshqaruv is owner-only and sits below a divider: it is not part of running a

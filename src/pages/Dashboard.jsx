@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Home from "./Home";
 import DemoVideo from "../components/DemoVideo";
 import Support from "../components/Support";
+import Billing from "./Billing";
 import Oferta from "./Oferta";
 import { Scale, FileText, Calculator, FolderKanban, Users, Menu, CircleHelp } from "lucide-react";
 import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
@@ -31,6 +32,7 @@ const TITLES = {
   projects: "Loyihalar",
   team: "Jamoa",
   company: "Kompaniya",
+  billing: "To'lov",
   admin: "Boshqaruv",
   profile: "Profil",
 };
@@ -318,6 +320,7 @@ export default function Dashboard({ user, onLogout }) {
           )}
           {nav === "company" && <Company data={data} />}
           {nav === "admin" && isOwner && <Admin />}
+          {nav === "billing" && <Billing user={user} />}
           {nav === "profile" && <Profile onLogout={onLogout} />}
         </div>
       </main>
