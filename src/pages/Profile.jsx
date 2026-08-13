@@ -165,6 +165,7 @@ export default function Profile({ lang = "uz", onLogout }) {
   const [busy, setBusy] = useState(false);
   // null = still loading, true/false = whether the current oferta needs signing.
   const [ofertaDue, setOfertaDue] = useState(null);
+  const [canSign, setCanSign] = useState(true);
   // Accordion: one open at a time. Starts on the contract, since an unsigned
   // contract is the only thing here that blocks anything.
   const [editName, setEditName] = useState(false);
@@ -199,6 +200,9 @@ export default function Profile({ lang = "uz", onLogout }) {
     (async () => {
       try {
         const d = await getLegalDoc("oferta");
+        // During a trial the contract is read-only: the server refuses to record
+        // an acceptance, so the UI must not offer one.
+        setCanSign(d.can_sign !== false);
         // `accepted.current` is true only when the stored hash matches the text
         // published now, so an edited or bumped document asks again.
         if (alive) setOfertaDue(!(d.accepted && d.accepted.current));
@@ -433,7 +437,11 @@ export default function Profile({ lang = "uz", onLogout }) {
       <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} icon={<FileText size={16} />}
         pill={ofertaDue === false ? "Tasdiqlangan" : (ofertaDue === true ? "Tasdiqlanmagan" : null)}
         pillKind={ofertaDue === false ? "ok" : "warn"}>
-        <Oferta inline onAccepted={() => setOk(t.secDone ? "Shartnoma tasdiqlandi." : "")} />
+        <Oferta
+          inline
+          readOnly={canSign === false}
+          onAccepted={() => { setOfertaDue(false); setOk("Shartnoma tasdiqlandi."); }}
+        />
       </Fold>
 
       {/* Sessions last 30 days. Before this there was no way to end one early

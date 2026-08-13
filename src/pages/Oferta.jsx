@@ -93,7 +93,7 @@ function Wrap({ inline, children }) {
 }
 
 
-export default function Oferta({ user, onAccepted, inline = false }) {
+export default function Oferta({ user, onAccepted, inline = false, readOnly = false, note = "" }) {
   const [doc, setDoc] = useState(null);
   const [agree, setAgree] = useState(false);
   // Typed by the signer. Not verified against a registry -- that data is not
@@ -197,7 +197,11 @@ export default function Oferta({ user, onAccepted, inline = false }) {
         </div>
 
         <div className="ofr__foot">
-          {justSigned || (doc.accepted && doc.accepted.current) ? (
+          {readOnly ? (
+            <div className="ofr__ro">
+              {note || "Shartnomani sinov muddati tugagach tasdiqlaysiz. Hozircha faqat o'qish uchun."}
+            </div>
+          ) : justSigned || (doc.accepted && doc.accepted.current) ? (
             <div className="ofr__signed">
               <Check size={16} />
               <div>
