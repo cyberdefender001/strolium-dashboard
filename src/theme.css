@@ -2219,3 +2219,26 @@ a { color: inherit; }
    deliberate one for keyboard users. */
 .prof__edit:focus { outline: none; }
 .prof__edit:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+
+
+/* ── Belt and braces on the Profil fold rows ────────────────────────────
+   An amber ring kept appearing around a whole section after it was clicked. It
+   is not in this stylesheet -- no border, outline or shadow rule near .prof__fold
+   uses an amber value -- which leaves the browser's own focus indicator, whose
+   colour on macOS follows the system accent. The earlier fix scoped :focus on
+   the button; this covers the section and every descendant, and any property the
+   indicator might use, so it cannot reappear through a route I have not thought
+   of. Keyboard focus keeps a deliberate navy ring, added last so it wins. */
+.prof__fold,
+.prof__fold *,
+.prof__fold *:focus,
+.prof__fold *:active {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.prof__fold:focus,
+.prof__fold:focus-within { outline: none; box-shadow: none; }
+.prof__foldhead:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: -2px;
+}
