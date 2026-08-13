@@ -2167,25 +2167,32 @@ a { color: inherit; }
 /* Status pill rather than grey text: "Tasdiqlangan" and "Ulanmagan" are states,
    and states should be legible at a glance. */
 .prof__pill {
-  flex: 0 0 auto; margin-left: auto;
+  flex: 0 0 auto;
   padding: 4px 10px; border-radius: 999px;
   font: 600 11.5px var(--font-body); white-space: nowrap;
   border: 1px solid var(--line); background: var(--panel-3); color: var(--dim);
 }
 .prof__pill--ok   { background: rgba(63,168,127,.13); border-color: rgba(63,168,127,.4); color: var(--good); }
 .prof__pill--warn { background: var(--warn-bg); border-color: rgba(138,90,0,.34); color: var(--warn); }
-.prof__foldtitle { flex: 0 0 auto; font: 600 14.5px var(--font-display); color: var(--text); }
+/* The title takes the free space, so everything after it -- pill or note, then
+   chevron -- is pushed to the right-hand end of the bar, in that order. */
+.prof__foldtitle {
+  flex: 1 1 auto; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 600 14.5px var(--font-display); color: var(--text);
+}
 /* margin-left:auto pushes the note AND the chevron to the right-hand end, so the
    chevron sits at the edge of the bar rather than hugging the title. */
 .prof__foldnote {
-  margin-left: auto; min-width: 0; max-width: 50%;
+  flex: 0 1 auto; min-width: 0; max-width: 50%;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font: 400 12.5px var(--font-mono); color: var(--dim); text-align: right;
 }
 /* When a section has no note there is nothing to push the chevron over, so it
    needs its own auto margin too. */
-.prof__foldchev { flex: 0 0 auto; margin-left: auto; color: var(--dim); transition: transform .16s ease; }
-.prof__foldnote + .prof__foldchev { margin-left: 10px; }
+/* No auto margin: the title's flex-grow already pushes this to the end. With one
+   here too, it swallowed the space and left the pill beside the title. */
+.prof__foldchev { flex: 0 0 auto; margin-left: 12px; color: var(--dim); transition: transform .16s ease; }
 .prof__fold.is-open .prof__foldchev { transform: rotate(180deg); }
 .prof__fold.is-open .prof__foldhead { border-bottom: 1px solid var(--line); }
 .prof__foldbody { padding: 16px 18px 18px; }
