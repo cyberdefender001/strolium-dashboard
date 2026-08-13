@@ -2328,10 +2328,15 @@ a { color: inherit; }
 .bill__line--total span:first-child { color: var(--text); }
 .bill__line--total span:last-child { font-family: var(--font-mono); }
 
-.bill__foot { padding: 16px 20px 20px; }
+.bill__foot { padding: 16px 20px 20px; display: flex; flex-direction: column; align-items: flex-end; }
+.bill__foot .hint, .bill__foot .bill__err { align-self: stretch; }
 .bill__err { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+/* Was width:100%, so on a full-width page it stretched the entire card -- a
+   200px label in a 1700px button. Sized to its content and right-aligned, which
+   is where the eye already is after reading the total. */
 .bill__pay {
-  width: 100%; height: 46px; display: inline-flex; align-items: center;
+  min-width: 200px; height: 46px; padding: 0 28px;
+  margin-left: auto; display: inline-flex; align-items: center;
   justify-content: center; gap: 9px; cursor: pointer;
   background: var(--navy); color: #fff; border: 0; border-radius: 10px;
   font: 600 14.5px var(--font-body);
