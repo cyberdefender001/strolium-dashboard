@@ -298,10 +298,12 @@ export async function getBilling() {
   return call("/api/web/billing");
 }
 
-export async function startCheckout(periodDays) {
-  return call("/api/billing/checkout", {
+// The web checkout takes a CHOSEN tier and period. The Mini App endpoint derives
+// the tier from the seat cap and always bills 30 days, so it cannot express this.
+export async function startCheckout({ tier_id, months }) {
+  return call("/api/web/billing/checkout", {
     method: "POST",
-    body: JSON.stringify({ period_days: periodDays || 30 }),
+    body: JSON.stringify({ tier_id, months: months || 1 }),
   });
 }
 

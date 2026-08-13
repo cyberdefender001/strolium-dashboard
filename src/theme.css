@@ -2337,3 +2337,54 @@ a { color: inherit; }
 .bill__pay:hover:not(:disabled) { filter: brightness(1.15); }
 .bill__pay:disabled { opacity: .55; cursor: default; }
 .bill__hint { margin: 10px 0 0; font: 400 12px var(--font-body); color: var(--faint); text-align: center; }
+
+/* Period selector and tier tiles. The "does not fit" warning is deliberately NOT
+   printed on the tiles -- it appeared before the person had chosen anything and
+   made the list look broken. It shows once, in the summary, on selection. */
+.bill__periods { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.bill__seg {
+  display: inline-flex; gap: 2px; padding: 3px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+}
+.bill__segbtn {
+  padding: 7px 15px; border: 0; border-radius: 7px; cursor: pointer;
+  background: transparent; color: var(--dim);
+  font: 600 13px var(--font-body);
+}
+.bill__segbtn.on { background: var(--navy); color: #fff; }
+
+.bill__tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.bill__tile {
+  display: block; text-align: left; cursor: pointer;
+  padding: 14px; border-radius: 12px;
+  background: var(--panel); border: 1px solid var(--line);
+  transition: border-color .14s, box-shadow .14s;
+}
+.bill__tile:hover { border-color: var(--brand-dim); }
+.bill__tile.on { border: 2px solid var(--navy); padding: 13px; }
+/* A tier the headcount will not fit stays legible and selectable -- picking it is
+   how the person learns why, and greying it out explains nothing. */
+.bill__tile.tight { border-color: rgba(192,57,43,.35); }
+.bill__tname { display: flex; align-items: center; gap: 7px; font: 600 14px var(--font-body); color: var(--text); }
+.bill__tname em {
+  font-style: normal; font: 600 11px var(--font-body);
+  background: rgba(6,16,35,.10); color: var(--brand);
+  padding: 2px 8px; border-radius: 999px;
+}
+.bill__tseats { display: block; font: 400 12.5px var(--font-body); color: var(--dim); margin: 4px 0 11px; }
+.bill__tprice { display: block; font: 700 18px var(--font-mono); color: var(--text); }
+.bill__tcur { display: block; font: 400 11.5px var(--font-body); color: var(--dim); margin-top: 2px; }
+.bill__used { margin-left: auto; font: 400 12.5px var(--font-body); color: var(--dim); }
+
+.bill__scrim {
+  position: fixed; inset: 0; z-index: 96; display: grid; place-items: center;
+  padding: 24px; background: rgba(6,16,35,.55);
+}
+.bill__dlg { width: 100%; max-width: 420px; background: var(--panel); border-radius: 14px; padding: 20px; }
+.bill__dlghead { display: flex; gap: 12px; align-items: flex-start; color: var(--brand); }
+.bill__dlghead h3 { margin: 0; font: 600 16px var(--font-display); color: var(--text); }
+.bill__dlghead p { margin: 7px 0 0; font: 400 13.5px/1.6 var(--font-body); color: var(--dim); }
+.bill__dlgacts { display: flex; gap: 9px; margin-top: 18px; }
+.bill__dlgacts .btn-ghost { flex: 1; height: 40px; margin: 0; justify-content: center; }
+.bill__pay--sm { flex: 1; height: 40px; font-size: 14px; }
+@media (max-width: 700px) { .bill__tiers { grid-template-columns: 1fr; } }
