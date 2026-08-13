@@ -2141,6 +2141,16 @@ a { color: inherit; }
   transition: background .13s;
 }
 .prof__foldhead:hover { background: var(--panel-3); }
+/* The browser's own focus ring drew a coloured box around the ENTIRE section
+   after a click -- on macOS it follows the system accent colour, which is why it
+   came out orange. Replaced with an intentional inset ring on the button itself,
+   and only for keyboard focus, so a mouse click leaves no ring at all. */
+.prof__foldhead:focus { outline: none; }
+.prof__foldhead:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: -2px;
+  border-radius: var(--radius);
+}
 
 /* Icon tile. The rows were bare text, which is what made the page look like
    unstyled markup rather than a product. */
@@ -2203,3 +2213,9 @@ a { color: inherit; }
   font: 600 13px var(--font-body);
   box-shadow: 0 8px 22px rgba(6,16,35,.22);
 }
+
+
+/* Same fix for the other icon buttons added today: kill the default ring, keep a
+   deliberate one for keyboard users. */
+.prof__edit:focus { outline: none; }
+.prof__edit:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
