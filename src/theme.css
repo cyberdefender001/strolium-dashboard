@@ -2391,3 +2391,12 @@ a { color: inherit; }
 .bill__dlgacts .btn-ghost { flex: 1; height: 40px; margin: 0; justify-content: center; }
 .bill__pay--sm { flex: 1; height: 40px; font-size: 14px; }
 @media (max-width: 700px) { .bill__tiers { grid-template-columns: 1fr; } }
+
+/* The unsigned-contract notice is a button, not a label: it is the one thing on
+   this page that blocks payment, so it should be the way to fix it. */
+.bill__chip--btn { cursor: pointer; }
+.bill__chip--btn:hover { filter: brightness(.96); }
+.bill__chiparr { transform: rotate(45deg); opacity: .8; }
+/* The pay button carried the provider name and the verb; the note underneath
+   already says the payment happens on Payme. */
+.bill__pay { letter-spacing: .01em; }

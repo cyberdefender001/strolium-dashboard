@@ -185,9 +185,17 @@ export default function Billing({ user }) {
                 <Check size={13} /> Shartnoma tasdiqlangan
               </span>
             ) : (
-              <span className="bill__chip bill__chip--warn">
+              /* Clickable: an unsigned contract is the one thing on this page
+                 that blocks payment, so the notice should be the way to fix it
+                 rather than a label pointing somewhere else. */
+              <button
+                className="bill__chip bill__chip--warn bill__chip--btn"
+                onClick={() => setGate(true)}
+                type="button"
+              >
                 <FileText size={13} /> Shartnoma tasdiqlanmagan
-              </span>
+                <ArrowUp size={12} className="bill__chiparr" />
+              </button>
             )}
             <span className="bill__used">
               {info.seats_used} / {sel && sel.max ? sel.max : "\u221e"} a'zo band
@@ -224,7 +232,7 @@ export default function Billing({ user }) {
                 disabled={busy || !sel || !sel.fits || !price}
                 type="button"
               >
-                <CreditCard size={17} /> {busy ? "Kutilmoqda\u2026" : "Payme orqali to'lash"}
+                <CreditCard size={17} /> {busy ? "Kutilmoqda\u2026" : "To'lash"}
               </button>
             )}
           </div>
