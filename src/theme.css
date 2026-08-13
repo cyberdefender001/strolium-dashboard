@@ -2292,7 +2292,9 @@ a { color: inherit; }
    Payment existed only in the Mini App, so a boss on the website could not pay.
    Laid out as a receipt -- plan, line items, total, one action -- because that is
    what someone about to part with money expects to read. */
-.bill { max-width: 560px; }
+/* Full width: three tier tiles plus a summary need the room, and a 560px column
+   left two-thirds of the page empty. */
+.bill { max-width: 940px; }
 .bill__card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
 .bill__top { padding: 20px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; gap: 16px; }
 .bill__tierblk { flex: 1; min-width: 0; }

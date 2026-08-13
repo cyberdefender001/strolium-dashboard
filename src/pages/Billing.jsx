@@ -197,7 +197,7 @@ export default function Billing({ user }) {
           <div className="bill__lines">
             <div className="bill__line">
               <span>Tanlangan</span>
-              <span>{sel ? sel.name : "—"} \u00b7 {months} oy</span>
+              <span>{sel ? sel.name : "—"} · {months} oy</span>
             </div>
             <div className="bill__line">
               <span>Yangi muddat</span>
