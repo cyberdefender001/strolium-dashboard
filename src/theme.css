@@ -2289,19 +2289,51 @@ a { color: inherit; }
 }
 
 /* ── To'lov ─────────────────────────────────────────────────────────────
-   Payment existed only in the Mini App, so a boss working on the website could
-   not pay at all. */
-.bill { max-width: 620px; }
-.bill__row { display: flex; align-items: flex-start; gap: 20px; }
-.bill__label { font: 600 11.5px var(--font-body); color: var(--dim); text-transform: uppercase; letter-spacing: .05em; }
-.bill__tier { font: 700 22px var(--font-display); color: var(--text); margin-top: 4px; }
-.bill__seats { font: 400 13px var(--font-body); color: var(--dim); margin-top: 3px; }
-.bill__priceblk { margin-left: auto; text-align: right; }
-.bill__price { font: 700 30px var(--font-mono); color: var(--text); line-height: 1.1; }
-.bill__price--sm { font-size: 20px; }
-.bill__cur { font: 400 12.5px var(--font-body); color: var(--dim); margin-top: 2px; }
-.bill__status { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.bill__status .prof__pill { display: inline-flex; align-items: center; gap: 5px; }
-.bill__note { margin-top: 14px; display: flex; align-items: center; gap: 6px; }
-.bill__pay { width: 100%; margin-top: 18px; justify-content: center; }
-.bill__foot { margin-top: 14px; }
+   Payment existed only in the Mini App, so a boss on the website could not pay.
+   Laid out as a receipt -- plan, line items, total, one action -- because that is
+   what someone about to part with money expects to read. */
+.bill { max-width: 560px; }
+.bill__card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.bill__top { padding: 20px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; gap: 16px; }
+.bill__tierblk { flex: 1; min-width: 0; }
+.bill__label { font: 500 12.5px var(--font-body); color: var(--dim); }
+.bill__tier { font: 700 22px var(--font-display); color: var(--text); margin-top: 5px; }
+.bill__seats { font: 400 13px var(--font-body); color: var(--dim); margin-top: 4px; }
+.bill__priceblk { flex: 0 0 auto; text-align: right; }
+.bill__price { font: 700 26px var(--font-mono); color: var(--text); line-height: 1.1; }
+.bill__price--sm { font-size: 19px; }
+.bill__cur { font: 400 12.5px var(--font-body); color: var(--dim); margin-top: 3px; }
+
+.bill__status { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.bill__chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 999px;
+  font: 600 12px var(--font-body); white-space: nowrap; border: 1px solid transparent;
+}
+.bill__chip--ok   { background: rgba(63,168,127,.13); border-color: rgba(63,168,127,.38); color: var(--good); }
+.bill__chip--warn { background: var(--warn-bg); border-color: rgba(138,90,0,.34); color: var(--warn); }
+
+/* Line items. A single price in the corner does not read as something you are
+   about to be charged; a total does. */
+.bill__lines { padding: 16px 20px; display: flex; flex-direction: column; gap: 11px; }
+.bill__line { display: flex; justify-content: space-between; font: 400 14px var(--font-body); color: var(--text); }
+.bill__line span:first-child { color: var(--dim); }
+.bill__line--total {
+  padding-top: 12px; border-top: 1px solid var(--line);
+  font-weight: 700; font-size: 15px;
+}
+.bill__line--total span:first-child { color: var(--text); }
+.bill__line--total span:last-child { font-family: var(--font-mono); }
+
+.bill__foot { padding: 16px 20px 20px; }
+.bill__err { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+.bill__pay {
+  width: 100%; height: 46px; display: inline-flex; align-items: center;
+  justify-content: center; gap: 9px; cursor: pointer;
+  background: var(--navy); color: #fff; border: 0; border-radius: 10px;
+  font: 600 14.5px var(--font-body);
+  transition: filter .14s;
+}
+.bill__pay:hover:not(:disabled) { filter: brightness(1.15); }
+.bill__pay:disabled { opacity: .55; cursor: default; }
+.bill__hint { margin: 10px 0 0; font: 400 12px var(--font-body); color: var(--faint); text-align: center; }

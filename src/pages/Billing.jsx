@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
-import { CreditCard, Check, AlertCircle, FileText } from "lucide-react";
+import { CreditCard, Check, AlertCircle, FileText, Clock } from "lucide-react";
 import { getBilling, startCheckout } from "../api/client";
+import BrickLoader from "../components/BrickLoader.jsx";
 import OfertaGate from "../components/OfertaGate";
+
+// Days left on the trial. "6 kun qoldi" is actionable; "sinov muddati" is not.
+function daysLeft(iso) {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (Number.isNaN(ms)) return null;
+  return Math.max(0, Math.ceil(ms / 86400000));
+}
 
 const fmt = (n) =>
   typeof n === "number" ? n.toLocaleString("ru-RU").replace(/\u00a0/g, " ") : n;
@@ -56,9 +65,15 @@ export default function Billing({ user }) {
       </div>
     );
   }
-  if (!info) return <div className="card"><p className="hint">Yuklanmoqda…</p></div>;
+  // The app has one loading animation; a bespoke "Yuklanmoqda…" here made this
+  // page look like it belonged to a different product.
+  if (!info) return <BrickLoader label="Yuklanmoqda" />;
 
   const priced = typeof info.tier.price === "number";
+  const left = daysLeft(info.trial_ends_at);
+  // The date a payment would extend the plan to. Computed here rather than shown
+  // as "+30 kun", because a date is what a boss checks against his own calendar.
+  const nextEnd = new Date(Date.now() + 30 * 86400000).toLocaleDateString("ru-RU");
 
   return (
     <>
@@ -71,14 +86,16 @@ export default function Billing({ user }) {
       )}
 
       <div className="bill">
-        <div className="card bill__plan">
-          <div className="bill__row">
-            <div>
+        <div className="bill__card">
+          <div className="bill__top">
+            <div className="bill__tierblk">
               <div className="bill__label">Joriy tarif</div>
               <div className="bill__tier">{info.tier.name}</div>
               <div className="bill__seats">
                 {info.tier.max ? `${info.tier.max} kishigacha` : "Cheklanmagan"}
-                {info.seats ? ` · joriy limit: ${info.seats}` : ""}
+                {typeof info.seats_used === "number"
+                  ? ` \u00b7 ${info.seats_used} ta a'zo band`
+                  : ""}
               </div>
             </div>
             <div className="bill__priceblk">
@@ -95,52 +112,69 @@ export default function Billing({ user }) {
 
           <div className="bill__status">
             {info.plan_status === "active" ? (
-              <span className="prof__pill prof__pill--ok">Faol</span>
-            ) : (
-              <span className="prof__pill prof__pill--warn">Sinov muddati</span>
-            )}
-            {info.oferta_signed ? (
-              <span className="prof__pill prof__pill--ok">
-                <Check size={12} /> Shartnoma tasdiqlangan
+              <span className="bill__chip bill__chip--ok">
+                <Check size={13} /> Faol
               </span>
             ) : (
-              <span className="prof__pill prof__pill--warn">
-                <FileText size={12} /> Shartnoma tasdiqlanmagan
+              <span className="bill__chip bill__chip--warn">
+                <Clock size={13} />
+                {left != null ? ` Sinov \u00b7 ${left} kun qoldi` : " Sinov muddati"}
+              </span>
+            )}
+            {info.oferta_signed ? (
+              <span className="bill__chip bill__chip--ok">
+                <Check size={13} /> Shartnoma tasdiqlangan
+              </span>
+            ) : (
+              <span className="bill__chip bill__chip--warn">
+                <FileText size={13} /> Shartnoma tasdiqlanmagan
               </span>
             )}
           </div>
 
-          {!info.is_executive && (
-            <p className="hint bill__note">
-              To'lovni faqat rahbar amalga oshira oladi.
-            </p>
+          {priced && (
+            <div className="bill__lines">
+              <div className="bill__line">
+                <span>Tarif</span>
+                <span>{info.tier.name} \u00b7 1 oy</span>
+              </div>
+              <div className="bill__line">
+                <span>Yangi muddat</span>
+                <span>{nextEnd}</span>
+              </div>
+              <div className="bill__line bill__line--total">
+                <span>Jami</span>
+                <span>{fmt(info.tier.price)} {info.currency}</span>
+              </div>
+            </div>
           )}
 
-          {err && (
-            <p className="login__err bill__note">
-              <AlertCircle size={14} /> {err}
-            </p>
-          )}
-
-          {priced && info.is_executive && (
-            <button className="btn-primary bill__pay" onClick={pay} disabled={busy} type="button">
-              <CreditCard size={16} />{" "}
-              {busy ? "Kutilmoqda…" : `To'lash — ${fmt(info.tier.price)} ${info.currency}`}
-            </button>
-          )}
-
-          {!priced && (
-            <p className="hint bill__note">
-              Bu tarif uchun to'lov kelishilgan holda amalga oshiriladi. Biz bilan
-              bog'laning.
-            </p>
-          )}
+          <div className="bill__foot">
+            {!info.is_executive ? (
+              <p className="hint">To'lovni faqat rahbar amalga oshira oladi.</p>
+            ) : !priced ? (
+              <p className="hint">
+                Bu tarif uchun to'lov kelishilgan holda amalga oshiriladi. Biz bilan
+                bog'laning.
+              </p>
+            ) : (
+              <>
+                {err && (
+                  <p className="login__err bill__err">
+                    <AlertCircle size={14} /> {err}
+                  </p>
+                )}
+                <button className="bill__pay" onClick={pay} disabled={busy} type="button">
+                  <CreditCard size={17} />{" "}
+                  {busy ? "Kutilmoqda\u2026" : "Payme orqali to'lash"}
+                </button>
+                <p className="bill__hint">
+                  To'lov Payme sahifasida amalga oshiriladi
+                </p>
+              </>
+            )}
+          </div>
         </div>
-
-        <p className="hint bill__foot">
-          To'lov Payme orqali amalga oshiriladi. To'lovdan so'ng tarif muddati
-          30 kunga uzaytiriladi.
-        </p>
       </div>
     </>
   );
