@@ -9,7 +9,7 @@ import {
   getPricing, savePricing,
   ownerRenameMember, setMemberStatus, deleteMember,
 } from "../api/client";
-import { fmtSom } from "../lib/format";
+import { fmtSom, fmtSomExact } from "../lib/format";
 import BrickLoader from "../components/BrickLoader.jsx";
 import "./admin.css";
 
@@ -179,7 +179,7 @@ function Requests({ onCount }) {
             </div>
             <div className="adm__kv">
               <span>Tarif</span>
-              <b>{r.price != null ? `$${r.price}/oy` : "kelishilgan"}</b>
+              <b>{r.price != null ? `${fmtSomExact(r.price)}/oy` : "kelishilgan"}</b>
             </div>
             {r.phone && <div className="adm__kv"><span>Telefon</span><b>{r.phone}</b></div>}
             {r.message && <div className="adm__msg">{r.message}</div>}
