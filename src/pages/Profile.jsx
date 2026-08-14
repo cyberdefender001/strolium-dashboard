@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   User, Mail, KeyRound, Send, Check, LogOut, ChevronDown, Pencil,
   FileText, ShieldCheck,
@@ -170,6 +170,15 @@ export default function Profile({ lang = "uz", onLogout }) {
   // contract is the only thing here that blocks anything.
   const [editName, setEditName] = useState(false);
   const okTimer = useRef(null);
+
+  // Every success toast goes through here. It used to live inside run(), which
+  // meant anything setting the message directly -- the oferta callback below did
+  // -- got a toast with no timer attached and it sat on screen forever.
+  const showOk = useCallback((msg) => {
+    setOk(msg);
+    clearTimeout(okTimer.current);
+    okTimer.current = setTimeout(() => setOk(""), 3500);
+  }, []);
   // Cancel a pending clear if the component unmounts first.
   useEffect(() => () => clearTimeout(okTimer.current), []);
   const [openKey, setOpenKey] = useState("oferta");
@@ -224,13 +233,7 @@ export default function Profile({ lang = "uz", onLogout }) {
     setBusy(true);
     try {
       await fn();
-      if (okMsg) {
-        setOk(okMsg);
-        // Clears itself. It used to sit on the page indefinitely, so after a few
-        // actions the reader could not tell which one it referred to.
-        clearTimeout(okTimer.current);
-        okTimer.current = setTimeout(() => setOk(""), 3500);
-      }
+      if (okMsg) showOk(okMsg);
     } catch (e) {
       setErr(e.message || "Xatolik");
     } finally {
@@ -440,7 +443,7 @@ export default function Profile({ lang = "uz", onLogout }) {
         <Oferta
           inline
           readOnly={canSign === false}
-          onAccepted={() => { setOfertaDue(false); setOk("Shartnoma tasdiqlandi."); }}
+          onAccepted={() => { setOfertaDue(false); showOk("Shartnoma tasdiqlandi."); }}
         />
       </Fold>
 

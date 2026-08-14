@@ -297,7 +297,7 @@ export default function Oferta({ user, onAccepted, inline = false, readOnly = fa
               <Download size={13} /> Yuklab olish
             </a>
             <span className="ofr__hash" title={doc.hash}>
-              SHA-256: {doc.hash.slice(0, 16)}\u2026
+              SHA-256: {doc.hash.slice(0, 16) + "\u2026"}
             </span>
           </div>
         </div>
