@@ -205,15 +205,17 @@
 
 .nocomp {
   min-height: 100vh;
-  padding: 26px clamp(18px, 5vw, 56px) 48px;
+  padding: 24px clamp(16px, 4vw, 32px) 72px;
   box-sizing: border-box;
+  background: var(--ink);
 }
 
 .nocomp__bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: clamp(28px, 6vh, 56px);
+  max-width: 456px;
+  margin: 0 auto;
 }
 
 .nocomp__out {
@@ -221,91 +223,186 @@
   margin: 0;
 }
 
-.nocomp__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
-  gap: clamp(24px, 5vw, 64px);
-  align-items: start;
-  max-width: 1080px;
+/* One column, 456px. The old layout put a marketing panel beside the form and
+   split attention on a page with exactly one job. Everything is stacked in the
+   order the visitor needs it: request, then the two exceptions. */
+.nocomp__col {
+  max-width: 456px;
+  margin: 0 auto;
+  padding-top: clamp(28px, 5vh, 44px);
 }
 
-@media (max-width: 860px) {
-  .nocomp__grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.nocomp__hi {
-  margin: 0 0 6px;
-  font: 600 13px inherit;
-  opacity: 0.55;
+.nocomp__eyebrow {
+  margin: 0 0 10px;
+  font: 600 11px var(--font-body, inherit);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--faint);
 }
 
 .nocomp__lead {
-  margin: 0 0 24px;
-  font: 700 clamp(21px, 3vw, 28px) / 1.25 inherit;
-  letter-spacing: -0.01em;
+  margin: 0;
+  font: 700 clamp(23px, 4vw, 28px) / 1.21 var(--font-body, inherit);
+  letter-spacing: -.022em;
+}
+
+.nocomp__sub {
+  margin: 8px 0 0;
+  font: 400 15px / 1.55 var(--font-body, inherit);
+  color: var(--dim);
+}
+
+/* The trial fact, and the only amber on the page besides focus rings. Uses the
+   existing warn tokens rather than new colours. */
+.nocomp__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 5px 11px;
+  border: 1px solid rgba(240, 165, 0, .38);
+  border-radius: 999px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font: 600 12px var(--font-body, inherit);
+}
+.nocomp__badge i {
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--amber);
 }
 
 .nocomp__card {
-  margin-bottom: 16px;
-  padding: 20px;
+  margin-top: 24px;
+  padding: 22px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--panel);
+  box-shadow: 0 1px 2px rgba(6, 16, 35, .04);
 }
 
-.nocomp__card--quiet {
-  border-style: dashed;
-  opacity: 0.85;
+/* First label in a card has no field above it, so it must not carry the 14px
+   top margin .eauth__label uses for spacing between fields. */
+.nocomp__card .eauth__label:first-child { margin-top: 0; }
+
+.nocomp__seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.nocomp__seg button {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--dim);
+  font: 500 14px var(--font-body, inherit);
+  transition: border-color .15s ease, color .15s ease;
+}
+.nocomp__seg button:hover { border-color: var(--brand-dim); color: var(--text); }
+.nocomp__seg button[aria-pressed="true"] {
+  border-color: var(--st-accent);
+  background: var(--st-accent);
+  color: var(--st-on-accent);
+  font-weight: 600;
 }
 
-.nocomp__cardtitle {
-  margin: 0 0 4px;
-  font: 700 15px inherit;
+.nocomp__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-.nocomp__cardsub {
-  margin: 0 0 12px;
-  font: 500 13px / 1.45 inherit;
-  opacity: 0.6;
+.nocomp__fine {
+  margin: 12px 0 0;
+  font: 400 12.5px / 1.5 var(--font-body, inherit);
+  color: var(--faint);
+  text-align: center;
 }
 
+.nocomp__sep {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 14px;
+  font: 500 12px var(--font-body, inherit);
+  color: var(--faint);
+}
+.nocomp__sep::before,
+.nocomp__sep::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* The two exceptions -- invite code and Telegram -- are collapsed rows rather
+   than open cards. They were full cards before, which made three competing
+   forms on one screen. */
+.nocomp__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+  transition: border-color .15s ease;
+}
+.nocomp__row:hover { border-color: var(--brand-dim); }
+.nocomp__row b { display: block; font: 600 14px var(--font-body, inherit); }
+.nocomp__row span { display: block; margin-top: 1px; font: 400 12.5px / 1.45 var(--font-body, inherit); color: var(--dim); }
+.nocomp__row svg { flex: 0 0 auto; color: var(--faint); }
+.nocomp__rowar { margin-left: auto; }
+.nocomp__row--open { border-color: var(--brand-dim); }
+
+.nocomp__panel {
+  margin-top: 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.nocomp__panel .eauth__label:first-child { margin-top: 0; }
+
+.nocomp__what {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
 .nocomp__whattitle {
-  margin: 0 0 16px;
-  font: 700 13px inherit;
-  letter-spacing: 0.08em;
+  margin: 0 0 14px;
+  font: 600 11px var(--font-body, inherit);
+  letter-spacing: .09em;
   text-transform: uppercase;
-  opacity: 0.5;
+  color: var(--faint);
 }
-
 .nocomp__feat {
   display: flex;
-  gap: 13px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
-
+.nocomp__feat:last-child { margin-bottom: 0; }
 .nocomp__featicon {
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 9px;
-  background: rgba(6, 16, 35, 0.16);
-  color: var(--st-accent);
+  background: var(--panel-3);
+  color: var(--dim);
 }
-
-.nocomp__feattitle {
-  margin-bottom: 3px;
-  font: 700 14px inherit;
-}
-
-.nocomp__featbody {
-  margin: 0;
-  font: 500 13px / 1.5 inherit;
-  opacity: 0.62;
-}
+.nocomp__feattitle { margin-bottom: 2px; font: 600 13.5px var(--font-body, inherit); }
+.nocomp__featbody { margin: 0; font: 400 12.5px / 1.5 var(--font-body, inherit); color: var(--dim); }
 
 /* ---- profile / cabinet ---- */
 
@@ -442,10 +539,10 @@
   .prof__row { flex-direction: column; align-items: stretch; }
   .prof__btn { justify-content: center; min-height: 44px; padding: 12px; }
 
-  .nocomp { padding: 18px 14px 60px; }
-  .nocomp__grid { gap: 20px; }
-  .nocomp__card { padding: 16px 14px; }
-  .nocomp__lead { font-size: 20px; }
+  .nocomp { padding: 18px 14px 64px; }
+  .nocomp__card { padding: 18px 15px; }
+  .nocomp__panel { padding: 16px 15px; }
+  .nocomp__row { padding: 13px 14px; }
 
   .eauth__primary { min-height: 46px; }
   /* 16px stops iOS Safari zooming the page on focus */

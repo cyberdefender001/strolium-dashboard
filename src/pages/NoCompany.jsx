@@ -15,8 +15,39 @@ import { accountStatus, applyStatus, joinCompany, requestAccess, saveEmailSessio
 //   a boss evaluating the product                    -> the bot, where the
 //     trial request and owner approval already live
 
+// Declared at module scope on purpose: a component defined inside another is a
+// new type on every parent render, which remounts it. Harmless for an icon, but
+// the rule holds everywhere in this codebase.
+function Chev({ o }) {
+  return (
+    <svg
+      className="nocomp__rowar"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: o ? "rotate(90deg)" : "none", transition: "transform .15s ease" }}
+      aria-hidden="true"
+    >
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 const T = {
   uz: {
+    title2: "Kompaniyangizni ulang",
+    sub2: "So'rov qoldirasiz, biz bir ish kunida bog'lanamiz.",
+    trial: "14 kun bepul · karta kerak emas",
+    privacy: "Ma'lumotlaringiz uchinchi tomonga berilmaydi.",
+    haveCode: "Taklif kodim bor",
+    haveCodeSub: "Mavjud kompaniyaga qo'shilish",
+    tgShort: "Botda ishlatgan bo'lsangiz, kompaniyangiz shu yerda ochiladi",
+    botShort: "Telegram botida so'rov qoldirish",
     hi: "Xush kelibsiz",
     lead: "Hisobingiz tayyor. Endi kompaniyangizga qo'shiling.",
     joinTitle: "Kompaniyaga qo'shilish",
@@ -56,6 +87,14 @@ const T = {
     logout: "Chiqish",
   },
   ru: {
+    title2: "Подключите свою компанию",
+    sub2: "Оставьте заявку — мы свяжемся в течение рабочего дня.",
+    trial: "14 дней бесплатно · карта не нужна",
+    privacy: "Ваши данные не передаются третьим лицам.",
+    haveCode: "У меня есть код приглашения",
+    haveCodeSub: "Присоединиться к существующей компании",
+    tgShort: "Если уже работали в боте — компания откроется здесь",
+    botShort: "Оставить заявку в Telegram-боте",
     hi: "Добро пожаловать",
     lead: "Аккаунт готов. Теперь присоединитесь к своей компании.",
     joinTitle: "Присоединиться к компании",
@@ -95,6 +134,14 @@ const T = {
     logout: "Выйти",
   },
   en: {
+    title2: "Connect your company",
+    sub2: "Send a request and we'll get in touch within one working day.",
+    trial: "14 days free · no card needed",
+    privacy: "Your details are not shared with third parties.",
+    haveCode: "I have an invite code",
+    haveCodeSub: "Join an existing company",
+    tgShort: "If you already use the bot, your company opens here",
+    botShort: "Leave a request in the Telegram bot",
     hi: "Welcome",
     lead: "Your account is ready. Now join your company.",
     joinTitle: "Join a company",
@@ -279,6 +326,11 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
     { icon: Eye, title: t.f3t, body: t.f3d },
   ];
 
+  // Which exception panel is open, if any. Only one at a time: two open forms
+  // under a third was the old layout's problem.
+  const [open, setOpen] = useState(null);
+  const toggle = (k) => () => setOpen((v) => (v === k ? null : k));
+
   return (
     <div className="nocomp">
       <div className="nocomp__bar">
@@ -293,20 +345,126 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
         </button>
       </div>
 
-      <div className="nocomp__grid">
-        <div className="nocomp__join">
-          <p className="nocomp__hi">
-            {t.hi}
-            {name ? `, ${name}` : ""}
-          </p>
-          <h2 className="nocomp__lead">{t.lead}</h2>
+      <div className="nocomp__col">
+        <p className="nocomp__eyebrow">
+          {t.hi}
+          {name ? `, ${name}` : ""}
+        </p>
+        <h1 className="nocomp__lead">{t.title2}</h1>
+        <p className="nocomp__sub">{t.sub2}</p>
+        <div>
+          <span className="nocomp__badge"><i />{t.trial}</span>
+        </div>
 
-          <div className="nocomp__card">
-            <h3 className="nocomp__cardtitle">{t.joinTitle}</h3>
-            <p className="nocomp__cardsub">{t.joinSub}</p>
-            <label className="eauth__label">{t.code}</label>
+        {/* The request comes first: it is what most people landing here need. */}
+        <div className="nocomp__card">
+          {reqSent ? (
+            <>
+              <p className="eauth__note">{t.reqDone}</p>
+              <p className="eauth__note">{t.waiting}</p>
+            </>
+          ) : (
+            <>
+              <label className="eauth__label">{t.reqWho}</label>
+              <div className="nocomp__seg">
+                {[["boss", t.reqBoss], ["controller", t.reqCtrlRole]].map(([val, lbl]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    aria-pressed={role === val}
+                    onClick={() => setRole(val)}
+                  >
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+
+              <label className="eauth__label" htmlFor="nc-co">{t.reqCompany}</label>
+              <input
+                id="nc-co"
+                className="eauth__input"
+                value={req.company}
+                onChange={setField("company")}
+              />
+
+              <label className="eauth__label" htmlFor="nc-ph">{t.reqPhone}</label>
+              <input
+                id="nc-ph"
+                className="eauth__input"
+                value={req.phone}
+                onChange={setField("phone")}
+                inputMode="tel"
+                placeholder="+998"
+              />
+
+              <div className="nocomp__pair">
+                <div>
+                  <label className="eauth__label" htmlFor="nc-c">{t.reqCtrl}</label>
+                  <input
+                    id="nc-c"
+                    className="eauth__input"
+                    value={req.controllers}
+                    onChange={setField("controllers")}
+                    inputMode="numeric"
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className="eauth__label" htmlFor="nc-w">{t.reqWork}</label>
+                  <input
+                    id="nc-w"
+                    className="eauth__input"
+                    value={req.workers}
+                    onChange={setField("workers")}
+                    inputMode="numeric"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <label className="eauth__label" htmlFor="nc-m">{t.reqMsg}</label>
+              <input
+                id="nc-m"
+                className="eauth__input"
+                value={req.message}
+                onChange={setField("message")}
+              />
+
+              <button
+                className="eauth__primary"
+                onClick={sendRequest}
+                disabled={reqBusy}
+                type="button"
+              >
+                {reqBusy ? "…" : t.reqSend}
+              </button>
+              {reqErr && <p className="login__err">{reqErr}</p>}
+            </>
+          )}
+        </div>
+        {!reqSent && <p className="nocomp__fine">{t.privacy}</p>}
+
+        <div className="nocomp__sep">{t.reqOr}</div>
+
+        {/* Exception 1: they were given a code. */}
+        <button
+          type="button"
+          className={`nocomp__row${open === "code" ? " nocomp__row--open" : ""}`}
+          onClick={toggle("code")}
+          aria-expanded={open === "code"}
+        >
+          <span>
+            <b>{t.haveCode}</b>
+            <span>{t.haveCodeSub}</span>
+          </span>
+          <Chev o={open === "code"} />
+        </button>
+        {open === "code" && (
+          <div className="nocomp__panel">
+            <label className="eauth__label" htmlFor="nc-code">{t.code}</label>
             <input
-              className="eauth__input"
+              id="nc-code"
+              className="eauth__input eauth__input--code"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               onKeyDown={(e) => e.key === "Enter" && !busy && code.trim() && submit()}
@@ -322,115 +480,25 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
             </button>
             {err && <p className="login__err">{err}</p>}
           </div>
+        )}
 
-          <div className="nocomp__card nocomp__card--quiet">
-            <h3 className="nocomp__cardtitle">{t.bossTitle}</h3>
-            <p className="nocomp__cardsub">{t.bossSub}</p>
-
-            {reqSent ? (
-              <>
-                <p className="eauth__note">{t.reqDone}</p>
-                <p className="eauth__note">{t.waiting}</p>
-              </>
-            ) : (
-              <>
-                <label className="eauth__label">{t.reqWho}</label>
-                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                  {[["boss", t.reqBoss], ["controller", t.reqCtrlRole]].map(([val, lbl]) => (
-                    <button
-                      key={val}
-                      type="button"
-                      onClick={() => setRole(val)}
-                      className={role === val ? "eauth__primary" : "login__cta-btn"}
-                      style={
-                        role === val
-                          ? { flex: 1, margin: 0 }
-                          : { flex: 1, margin: 0, background: "transparent",
-                              color: "var(--text)", border: "1px solid var(--line)" }
-                      }
-                    >
-                      {lbl}
-                    </button>
-                  ))}
-                </div>
-
-                <label className="eauth__label">{t.reqCompany}</label>
-                <input
-                  className="eauth__input"
-                  value={req.company}
-                  onChange={setField("company")}
-                />
-
-                <label className="eauth__label">{t.reqPhone}</label>
-                <input
-                  className="eauth__input"
-                  value={req.phone}
-                  onChange={setField("phone")}
-                  inputMode="tel"
-                  placeholder="+998"
-                />
-
-                <div style={{ display: "flex", gap: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <label className="eauth__label">{t.reqCtrl}</label>
-                    <input
-                      className="eauth__input"
-                      value={req.controllers}
-                      onChange={setField("controllers")}
-                      inputMode="numeric"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label className="eauth__label">{t.reqWork}</label>
-                    <input
-                      className="eauth__input"
-                      value={req.workers}
-                      onChange={setField("workers")}
-                      inputMode="numeric"
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-
-                <label className="eauth__label">{t.reqMsg}</label>
-                <input
-                  className="eauth__input"
-                  value={req.message}
-                  onChange={setField("message")}
-                />
-
-                <button
-                  className="eauth__primary"
-                  onClick={sendRequest}
-                  disabled={reqBusy}
-                  type="button"
-                >
-                  {reqBusy ? "…" : t.reqSend}
-                </button>
-                {reqErr && <p className="login__err">{reqErr}</p>}
-
-                <p className="eauth__note" style={{ textAlign: "center" }}>{t.reqOr}</p>
-              </>
-            )}
-
-            <a
-              className="login__cta-btn"
-              href={`https://t.me/${botName}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Bot size={15} /> {t.bossBtn}
-            </a>
-          </div>
-
-          {/* Placed AFTER the request form on purpose: requesting a company is the
-              normal case, and this is the exception for people who already have one
-              in the bot. */}
-          <div className="nocomp__card nocomp__card--quiet">
-            <h3 className="nocomp__cardtitle">{t.tgTitle}</h3>
-            <p className="nocomp__cardsub">{t.tgSub}</p>
-
+        {/* Exception 2: they are already a member through the bot. Deliberately
+            after the code row -- it is the rarer case of the two. */}
+        <button
+          type="button"
+          className={`nocomp__row${open === "tg" ? " nocomp__row--open" : ""}`}
+          onClick={toggle("tg")}
+          aria-expanded={open === "tg"}
+        >
+          <span>
+            <b>{t.tgBtn}</b>
+            <span>{t.tgShort}</span>
+          </span>
+          <Chev o={open === "tg"} />
+        </button>
+        {open === "tg" && (
+          <div className="nocomp__panel">
+            <p className="nocomp__featbody" style={{ marginBottom: 14 }}>{t.tgSub}</p>
             {tgLink ? (
               <>
                 <a className="login__cta-btn" href={tgLink} target="_blank" rel="noreferrer">
@@ -444,20 +512,37 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
                 onClick={linkTelegram}
                 disabled={tgBusy}
                 type="button"
+                style={{ marginTop: 0 }}
               >
                 {tgBusy ? "…" : t.tgBtn}
               </button>
             )}
             {tgErr && <p className="login__err">{tgErr}</p>}
           </div>
-        </div>
+        )}
+
+        {/* Kept as a route of last resort: the bot is where trial requests
+            originally lived, and someone who cannot finish the form above should
+            still have a way through. */}
+        <a
+          className="nocomp__row"
+          href={`https://t.me/${botName}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span>
+            <b>{t.bossBtn}</b>
+            <span>{t.botShort}</span>
+          </span>
+          <Bot size={16} className="nocomp__rowar" />
+        </a>
 
         <div className="nocomp__what">
-          <h3 className="nocomp__whattitle">{t.what}</h3>
+          <h2 className="nocomp__whattitle">{t.what}</h2>
           {features.map((f) => (
             <div className="nocomp__feat" key={f.title}>
               <div className="nocomp__featicon">
-                <f.icon size={17} />
+                <f.icon size={16} />
               </div>
               <div>
                 <div className="nocomp__feattitle">{f.title}</div>
