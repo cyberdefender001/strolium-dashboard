@@ -26,24 +26,12 @@ import Oferta from "./Oferta";
 const T = {
   uz: {
     edit: "Tahrirlash",
-    setupTitle: "Hisob holati",
-    setupAllDone: "Hammasi tayyor",
-    setupLeft: "ta qadam qoldi",
-    stEmailOk: "Email ulangan",
-    stEmailNo: "Email ulanmagan",
-    stTgOk: "Telegram ulangan",
-    stTgNo: "Telegram ulanmagan",
-    stDocOk: "Shartnoma tasdiqlangan",
-    stDocNo: "Shartnoma tasdiqlanmagan",
-    actOpen: "Ochish",
     footHelp: "Savol bo'lsa, Yordam bo'limiga yozing.",
     sWeb: "Elektron pochta orqali kirish",
     sPw: "Parolni yangilash",
     sTg: "Bot xabar yuborishi uchun ulang",
     sDoc: "Ommaviy oferta · v1.2",
     sSec: "Barcha qurilmalardan chiqish",
-    grpAccount: "Hisob",
-    grpLegal: "Huquqiy",
     title: "Profil",
     you: "Siz",
     name: "Ism familiya",
@@ -79,24 +67,12 @@ const T = {
   },
   ru: {
     edit: "Изменить",
-    setupTitle: "Состояние аккаунта",
-    setupAllDone: "Всё готово",
-    setupLeft: "шага осталось",
-    stEmailOk: "Email подключён",
-    stEmailNo: "Email не подключён",
-    stTgOk: "Telegram подключён",
-    stTgNo: "Telegram не подключён",
-    stDocOk: "Договор подтверждён",
-    stDocNo: "Договор не подтверждён",
-    actOpen: "Открыть",
     footHelp: "Есть вопрос — напишите в Помощь.",
     sWeb: "Вход по электронной почте",
     sPw: "Обновить пароль",
     sTg: "Подключите, чтобы бот писал",
     sDoc: "Публичная оферта · v1.2",
     sSec: "Выйти на всех устройствах",
-    grpAccount: "Аккаунт",
-    grpLegal: "Правовое",
     title: "Профиль",
     you: "Вы",
     name: "Имя и фамилия",
@@ -132,24 +108,12 @@ const T = {
   },
   en: {
     edit: "Edit",
-    setupTitle: "Account status",
-    setupAllDone: "All set",
-    setupLeft: "steps left",
-    stEmailOk: "Email connected",
-    stEmailNo: "Email not connected",
-    stTgOk: "Telegram connected",
-    stTgNo: "Telegram not connected",
-    stDocOk: "Contract accepted",
-    stDocNo: "Contract not accepted",
-    actOpen: "Open",
     footHelp: "Any questions, write to Support.",
     sWeb: "Sign in with email",
     sPw: "Update your password",
     sTg: "Connect so the bot can message you",
     sDoc: "Public offer · v1.2",
     sSec: "Sign out on every device",
-    grpAccount: "Account",
-    grpLegal: "Legal",
     title: "Profile",
     you: "You",
     name: "Full name",
@@ -252,16 +216,6 @@ export default function Profile({ lang = "uz", onLogout }) {
   // Derived, not stored: three facts the page already loads, expressed as the
   // things still to do. ofertaDue is null while it loads, and an unknown state
   // must not be reported as incomplete, so it counts as done until it answers.
-  // p is null until the profile request answers, and this runs on the very
-  // first render -- long before the `if (!p) return` guard further down. Reading
-  // p.has_email_login there threw on every load and the page rendered nothing.
-  const pd = p || {};
-  const steps = [
-    { key: "web", done: !!pd.has_email_login, label: pd.has_email_login ? t.stEmailOk : t.stEmailNo },
-    { key: "tg", done: !!pd.has_telegram, label: pd.has_telegram ? t.stTgOk : t.stTgNo },
-    { key: "oferta", done: ofertaDue !== true, label: ofertaDue === true ? t.stDocNo : t.stDocOk },
-  ];
-
   const fold = (k) => ({
     open: openKey === k,
     onToggle: () => setOpenKey(openKey === k ? "" : k),
@@ -387,9 +341,10 @@ export default function Profile({ lang = "uz", onLogout }) {
       {/* Identity spans the full width above; from here the page is two
           columns. The contract is several times taller than any other section,
           so it owns the right column instead of pushing the short rows down. */}
+      {/* One grid, not two stacks. Two columns of accordions left one side
+          ending far short of the other, and the expanded panel was trapped in
+          a half-width column. Tiles flow; an open panel spans the whole row. */}
       <div className="prof__grid">
-        <div className="prof__col">
-          <p className="prof__sect">{t.grpAccount}</p>
 
       <Fold {...fold("web")} title={t.webTitle} icon={<Mail size={16} />} iconKind="acct" sub={t.sWeb} note={p.email || ""}>
         {p.has_email_login ? (
@@ -528,47 +483,6 @@ export default function Profile({ lang = "uz", onLogout }) {
           result was nothing on screen at all -- no card, no error, no clue. The
           Oferta component reports its own state (loading, loaded, failed), so
           there is always something visible to act on or to diagnose. */}
-        </div>
-
-        <div className="prof__col">
-          {/* Built only from data the page already has: has_email_login,
-              has_telegram and ofertaDue. Five collapsed rows told the reader
-              nothing until they clicked something; this says what is missing
-              and takes them straight to it. */}
-          <p className="prof__sect">{t.setupTitle}</p>
-          <section className="prof__setup">
-            <div className="prof__setuphead">
-              <div className="prof__setupbar">
-                <i style={{ width: `${(steps.filter((x) => x.done).length / steps.length) * 100}%` }} />
-              </div>
-              <span className="prof__setupcount">
-                {steps.every((x) => x.done)
-                  ? t.setupAllDone
-                  : `${steps.filter((x) => !x.done).length} ${t.setupLeft}`}
-              </span>
-            </div>
-            <ul className="prof__steps">
-              {steps.map((x) => (
-                <li key={x.key} className={"prof__step" + (x.done ? " is-done" : "")}>
-                  <span className="prof__stepdot">
-                    {x.done ? <Check size={13} /> : null}
-                  </span>
-                  <span className="prof__steptext">{x.label}</span>
-                  {!x.done && (
-                    <button
-                      className="prof__steplink"
-                      type="button"
-                      onClick={() => setOpenKey(x.key)}
-                    >
-                      {t.actOpen}
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <p className="prof__sect">{t.grpLegal}</p>
 
       <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} icon={<FileText size={16} />} iconKind="doc" sub={t.sDoc}
         pill={ofertaDue === false ? "Tasdiqlangan" : (ofertaDue === true ? "Tasdiqlanmagan" : null)}
@@ -602,7 +516,6 @@ export default function Profile({ lang = "uz", onLogout }) {
           <LogOut size={15} /> {t.secBtn}
         </button>
       </Fold>
-        </div>
       </div>
 
       {ok && (
