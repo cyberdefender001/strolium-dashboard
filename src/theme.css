@@ -37,6 +37,8 @@
   --danger-bg: #FCEBEB;
   --warn: #8A5A00;
   --warn-bg: #FAEEDA;
+  --info: #1F5FA8;           /* Telegram only -- it is blue everywhere else */
+  --info-bg: #E9F1FB;
   --good: #0F7A5A;
   --good-bg: #E1F5EE;
 
@@ -2161,6 +2163,18 @@ a { color: inherit; }
   color: var(--brand);
 }
 .prof__fold.is-open .prof__foldicon {
+  background: var(--navy); border-color: var(--navy); color: #fff;
+}
+
+/* Tinted per section. The tiles were all the same grey, so the page read as one
+   undifferentiated stack. Each tint is an existing token; --info is the one
+   addition, for Telegram, which is blue everywhere else it appears. */
+.prof__foldicon--acct { background: var(--warn-bg); border-color: rgba(240,165,0,.34); color: var(--warn); }
+.prof__foldicon--tg   { background: var(--info-bg); border-color: rgba(31,95,168,.24); color: var(--info); }
+.prof__foldicon--doc  { background: var(--good-bg); border-color: rgba(15,122,90,.26); color: var(--good); }
+.prof__foldicon--sec  { background: var(--danger-bg); border-color: rgba(192,57,43,.24); color: var(--danger); }
+/* Open state still wins: an expanded section is navy regardless of its tint. */
+.prof__fold.is-open .prof__foldicon[class*="prof__foldicon--"] {
   background: var(--navy); border-color: var(--navy); color: #fff;
 }
 

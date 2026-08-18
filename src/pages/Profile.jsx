@@ -25,6 +25,8 @@ import Oferta from "./Oferta";
 
 const T = {
   uz: {
+    grpAccount: "Hisob",
+    grpLegal: "Huquqiy",
     title: "Profil",
     you: "Siz",
     name: "Ism familiya",
@@ -59,6 +61,8 @@ const T = {
     done: "Bajarildi",
   },
   ru: {
+    grpAccount: "Аккаунт",
+    grpLegal: "Правовое",
     title: "Профиль",
     you: "Вы",
     name: "Имя и фамилия",
@@ -93,6 +97,8 @@ const T = {
     done: "Готово",
   },
   en: {
+    grpAccount: "Account",
+    grpLegal: "Legal",
     title: "Profile",
     you: "You",
     name: "Full name",
@@ -134,11 +140,15 @@ const T = {
 //
 // `note` is the point of the collapsed state: the row has to say what is inside
 // without being opened, or collapsing just hides information.
-function Fold({ title, note, pill, pillKind, icon, open, onToggle, children }) {
+function Fold({ title, note, pill, pillKind, icon, iconKind, open, onToggle, children }) {
   return (
     <section className={"prof__fold" + (open ? " is-open" : "")}>
       <button className="prof__foldhead" onClick={onToggle} type="button">
-        {icon ? <span className="prof__foldicon">{icon}</span> : null}
+        {icon ? (
+          <span className={"prof__foldicon" + (iconKind ? " prof__foldicon--" + iconKind : "")}>
+            {icon}
+          </span>
+        ) : null}
         <span className="prof__foldtitle">{title}</span>
         {/* A state gets a pill; an identifier stays plain text. "Tasdiqlangan" is
             a state and should read at a glance; an email address is not. */}
@@ -300,7 +310,14 @@ export default function Profile({ lang = "uz", onLogout }) {
         </div>
       </section>
 
-      <Fold {...fold("web")} title={t.webTitle} icon={<Mail size={16} />} note={p.email || ""}>
+      {/* Identity spans the full width above; from here the page is two
+          columns. The contract is several times taller than any other section,
+          so it owns the right column instead of pushing the short rows down. */}
+      <div className="prof__grid">
+        <div className="prof__col">
+          <p className="prof__sect">{t.grpAccount}</p>
+
+      <Fold {...fold("web")} title={t.webTitle} icon={<Mail size={16} />} iconKind="acct" note={p.email || ""}>
         {p.has_email_login ? (
           <p className="prof__good">
             <Check size={15} /> {t.webHave}
@@ -375,7 +392,7 @@ export default function Profile({ lang = "uz", onLogout }) {
       </Fold>
 
       {p.has_email_login && (
-        <Fold {...fold("pw")} title={t.pwTitle} icon={<KeyRound size={16} />}>
+        <Fold {...fold("pw")} title={t.pwTitle} icon={<KeyRound size={16} />} iconKind="acct">
           <label className="eauth__label">{t.oldPw}</label>
           <input
             className="eauth__input"
@@ -409,7 +426,7 @@ export default function Profile({ lang = "uz", onLogout }) {
         </Fold>
       )}
 
-      <Fold {...fold("tg")} title={t.tgTitle} icon={<Send size={16} />}
+      <Fold {...fold("tg")} title={t.tgTitle} icon={<Send size={16} />} iconKind="tg"
         pill={p.has_telegram ? "Ulangan" : "Ulanmagan"}
         pillKind={p.has_telegram ? "ok" : "warn"}>
         <p className={p.has_telegram ? "prof__good" : "prof__sub"}>
@@ -437,7 +454,12 @@ export default function Profile({ lang = "uz", onLogout }) {
           result was nothing on screen at all -- no card, no error, no clue. The
           Oferta component reports its own state (loading, loaded, failed), so
           there is always something visible to act on or to diagnose. */}
-      <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} icon={<FileText size={16} />}
+        </div>
+
+        <div className="prof__col">
+          <p className="prof__sect">{t.grpLegal}</p>
+
+      <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} icon={<FileText size={16} />} iconKind="doc"
         pill={ofertaDue === false ? "Tasdiqlangan" : (ofertaDue === true ? "Tasdiqlanmagan" : null)}
         pillKind={ofertaDue === false ? "ok" : "warn"}>
         <Oferta
@@ -451,7 +473,10 @@ export default function Profile({ lang = "uz", onLogout }) {
           except disabling the member, which also removes their access to the
           company -- so a lost phone meant choosing between a live session and
           locking someone out of their job. */}
-      <Fold {...fold("sec")} title={t.secTitle} icon={<ShieldCheck size={16} />}>
+        </div>
+      </div>
+
+      <Fold {...fold("sec")} title={t.secTitle} icon={<ShieldCheck size={16} />} iconKind="sec">
         <p className="prof__sub">{t.secBody}</p>
         <button
           className="prof__btn"

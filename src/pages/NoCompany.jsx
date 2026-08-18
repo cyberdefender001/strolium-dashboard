@@ -346,17 +346,22 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
       </div>
 
       <div className="nocomp__col">
-        <p className="nocomp__eyebrow">
-          {t.hi}
-          {name ? `, ${name}` : ""}
-        </p>
-        <h1 className="nocomp__lead">{t.title2}</h1>
-        <p className="nocomp__sub">{t.sub2}</p>
-        <div>
+        <div className="nocomp__head">
+          <div className="nocomp__headtext">
+            <p className="nocomp__eyebrow">
+              {t.hi}
+              {name ? `, ${name}` : ""}
+            </p>
+            <h1 className="nocomp__lead">{t.title2}</h1>
+            <p className="nocomp__sub">{t.sub2}</p>
+          </div>
           <span className="nocomp__badge"><i />{t.trial}</span>
         </div>
 
-        {/* The request comes first: it is what most people landing here need. */}
+        <div className="nocomp__cols">
+
+          {/* The request comes first: it is what most people landing here need. */}
+          <div>
         <div className="nocomp__card">
           {reqSent ? (
             <>
@@ -443,8 +448,29 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
           )}
         </div>
         {!reqSent && <p className="nocomp__fine">{t.privacy}</p>}
+          </div>
+
+          {/* Moved up beside the form. At the foot of a 456px column nobody
+              reached it; here it fills the space the form does not need. */}
+          <div className="nocomp__what">
+            <h2 className="nocomp__whattitle">{t.what}</h2>
+            {features.map((f) => (
+              <div className="nocomp__feat" key={f.title}>
+                <div className="nocomp__featicon">
+                  <f.icon size={16} />
+                </div>
+                <div>
+                  <div className="nocomp__feattitle">{f.title}</div>
+                  <p className="nocomp__featbody">{f.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="nocomp__sep">{t.reqOr}</div>
+
+        <div className="nocomp__opts">
 
         {/* Exception 1: they were given a code. */}
         <button
@@ -536,21 +562,8 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
           </span>
           <Bot size={16} className="nocomp__rowar" />
         </a>
-
-        <div className="nocomp__what">
-          <h2 className="nocomp__whattitle">{t.what}</h2>
-          {features.map((f) => (
-            <div className="nocomp__feat" key={f.title}>
-              <div className="nocomp__featicon">
-                <f.icon size={16} />
-              </div>
-              <div>
-                <div className="nocomp__feattitle">{f.title}</div>
-                <p className="nocomp__featbody">{f.body}</p>
-              </div>
-            </div>
-          ))}
         </div>
+
       </div>
     </div>
   );
