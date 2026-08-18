@@ -25,6 +25,18 @@ import Oferta from "./Oferta";
 
 const T = {
   uz: {
+    edit: "Tahrirlash",
+    setupTitle: "Hisob holati",
+    setupAllDone: "Hammasi tayyor",
+    setupLeft: "ta qadam qoldi",
+    stEmailOk: "Email ulangan",
+    stEmailNo: "Email ulanmagan",
+    stTgOk: "Telegram ulangan",
+    stTgNo: "Telegram ulanmagan",
+    stDocOk: "Shartnoma tasdiqlangan",
+    stDocNo: "Shartnoma tasdiqlanmagan",
+    actOpen: "Ochish",
+    footHelp: "Savol bo'lsa, Yordam bo'limiga yozing.",
     sWeb: "Elektron pochta orqali kirish",
     sPw: "Parolni yangilash",
     sTg: "Bot xabar yuborishi uchun ulang",
@@ -66,6 +78,18 @@ const T = {
     done: "Bajarildi",
   },
   ru: {
+    edit: "Изменить",
+    setupTitle: "Состояние аккаунта",
+    setupAllDone: "Всё готово",
+    setupLeft: "шага осталось",
+    stEmailOk: "Email подключён",
+    stEmailNo: "Email не подключён",
+    stTgOk: "Telegram подключён",
+    stTgNo: "Telegram не подключён",
+    stDocOk: "Договор подтверждён",
+    stDocNo: "Договор не подтверждён",
+    actOpen: "Открыть",
+    footHelp: "Есть вопрос — напишите в Помощь.",
     sWeb: "Вход по электронной почте",
     sPw: "Обновить пароль",
     sTg: "Подключите, чтобы бот писал",
@@ -107,6 +131,18 @@ const T = {
     done: "Готово",
   },
   en: {
+    edit: "Edit",
+    setupTitle: "Account status",
+    setupAllDone: "All set",
+    setupLeft: "steps left",
+    stEmailOk: "Email connected",
+    stEmailNo: "Email not connected",
+    stTgOk: "Telegram connected",
+    stTgNo: "Telegram not connected",
+    stDocOk: "Contract accepted",
+    stDocNo: "Contract not accepted",
+    actOpen: "Open",
+    footHelp: "Any questions, write to Support.",
     sWeb: "Sign in with email",
     sPw: "Update your password",
     sTg: "Connect so the bot can message you",
@@ -209,7 +245,19 @@ export default function Profile({ lang = "uz", onLogout }) {
   }, []);
   // Cancel a pending clear if the component unmounts first.
   useEffect(() => () => clearTimeout(okTimer.current), []);
-  const [openKey, setOpenKey] = useState("oferta");
+  // Nothing is expanded on arrival. The contract used to open itself, which
+  // made the page land on a wall of legal text before the reader had chosen
+  // anything.
+  const [openKey, setOpenKey] = useState("");
+  // Derived, not stored: three facts the page already loads, expressed as the
+  // things still to do. ofertaDue is null while it loads, and an unknown state
+  // must not be reported as incomplete, so it counts as done until it answers.
+  const steps = [
+    { key: "web", done: !!p.has_email_login, label: p.has_email_login ? t.stEmailOk : t.stEmailNo },
+    { key: "tg", done: !!p.has_telegram, label: p.has_telegram ? t.stTgOk : t.stTgNo },
+    { key: "oferta", done: ofertaDue !== true, label: ofertaDue === true ? t.stDocNo : t.stDocOk },
+  ];
+
   const fold = (k) => ({
     open: openKey === k,
     onToggle: () => setOpenKey(openKey === k ? "" : k),
@@ -326,7 +374,7 @@ export default function Profile({ lang = "uz", onLogout }) {
               onClick={() => { setName(p.name || ""); setEditName(true); }}
               type="button"
             >
-              <Pencil size={14} /> {t.name}
+              <Pencil size={14} /> {t.edit}
             </button>
           )}
         </div>
@@ -479,6 +527,43 @@ export default function Profile({ lang = "uz", onLogout }) {
         </div>
 
         <div className="prof__col">
+          {/* Built only from data the page already has: has_email_login,
+              has_telegram and ofertaDue. Five collapsed rows told the reader
+              nothing until they clicked something; this says what is missing
+              and takes them straight to it. */}
+          <p className="prof__sect">{t.setupTitle}</p>
+          <section className="prof__setup">
+            <div className="prof__setuphead">
+              <div className="prof__setupbar">
+                <i style={{ width: `${(steps.filter((x) => x.done).length / steps.length) * 100}%` }} />
+              </div>
+              <span className="prof__setupcount">
+                {steps.every((x) => x.done)
+                  ? t.setupAllDone
+                  : `${steps.filter((x) => !x.done).length} ${t.setupLeft}`}
+              </span>
+            </div>
+            <ul className="prof__steps">
+              {steps.map((x) => (
+                <li key={x.key} className={"prof__step" + (x.done ? " is-done" : "")}>
+                  <span className="prof__stepdot">
+                    {x.done ? <Check size={13} /> : null}
+                  </span>
+                  <span className="prof__steptext">{x.label}</span>
+                  {!x.done && (
+                    <button
+                      className="prof__steplink"
+                      type="button"
+                      onClick={() => setOpenKey(x.key)}
+                    >
+                      {t.actOpen}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+
           <p className="prof__sect">{t.grpLegal}</p>
 
       <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} icon={<FileText size={16} />} iconKind="doc" sub={t.sDoc}
@@ -522,6 +607,10 @@ export default function Profile({ lang = "uz", onLogout }) {
         </div>
       )}
       {err && <p className="login__err">{err}</p>}
+
+      {/* The content simply stopped before, leaving a third of the window grey
+          with no indication the page had ended. */}
+      <p className="prof__foot">{t.footHelp}</p>
     </div>
   );
 }

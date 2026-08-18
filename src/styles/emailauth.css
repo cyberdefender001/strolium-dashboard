@@ -465,8 +465,86 @@
   gap: 18px;
   align-items: start;
 }
+/* Setup status. The page is five collapsed rows; without this it says nothing
+   until something is clicked, and the right column is one card tall. */
+.prof__setup {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 16px 18px 8px;
+  margin-bottom: 22px;
+}
+.prof__setuphead { display: flex; align-items: center; gap: 14px; }
+.prof__setupbar {
+  flex: 1 1 auto;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--panel-3);
+  overflow: hidden;
+}
+.prof__setupbar i { display: block; height: 5px; background: var(--good); transition: width .3s ease; }
+.prof__setupcount {
+  flex: 0 0 auto;
+  font: 600 12px var(--font-body);
+  color: var(--dim);
+  white-space: nowrap;
+}
+.prof__steps { list-style: none; margin: 12px 0 0; padding: 0; }
+.prof__step {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.prof__step:first-child { border-top: 0; }
+.prof__stepdot {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--panel);
+  color: #fff;
+}
+.prof__step.is-done .prof__stepdot { background: var(--good); border-color: var(--good); }
+.prof__steptext {
+  flex: 1 1 auto;
+  min-width: 0;
+  font: 500 13.5px var(--font-body);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prof__step.is-done .prof__steptext { color: var(--dim); }
+.prof__steplink {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 6px 12px;
+  font: 600 12.5px var(--font-body);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .14s ease;
+}
+.prof__steplink:hover { border-color: var(--brand-dim); }
+
+/* Marks the end of the page. Without it the content stopped mid-window with no
+   sign there was nothing further down. */
+.prof__foot {
+  margin: 34px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font: 400 12.5px var(--font-body);
+  color: var(--faint);
+}
+
 .prof__sect {
-  margin: 0 0 10px 2px;
+  margin: 0 0 9px 2px;
   font: 600 11px var(--font-body);
   letter-spacing: .09em;
   text-transform: uppercase;
