@@ -252,9 +252,13 @@ export default function Profile({ lang = "uz", onLogout }) {
   // Derived, not stored: three facts the page already loads, expressed as the
   // things still to do. ofertaDue is null while it loads, and an unknown state
   // must not be reported as incomplete, so it counts as done until it answers.
+  // p is null until the profile request answers, and this runs on the very
+  // first render -- long before the `if (!p) return` guard further down. Reading
+  // p.has_email_login there threw on every load and the page rendered nothing.
+  const pd = p || {};
   const steps = [
-    { key: "web", done: !!p.has_email_login, label: p.has_email_login ? t.stEmailOk : t.stEmailNo },
-    { key: "tg", done: !!p.has_telegram, label: p.has_telegram ? t.stTgOk : t.stTgNo },
+    { key: "web", done: !!pd.has_email_login, label: pd.has_email_login ? t.stEmailOk : t.stEmailNo },
+    { key: "tg", done: !!pd.has_telegram, label: pd.has_telegram ? t.stTgOk : t.stTgNo },
     { key: "oferta", done: ofertaDue !== true, label: ofertaDue === true ? t.stDocNo : t.stDocOk },
   ];
 
