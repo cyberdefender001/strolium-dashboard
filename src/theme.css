@@ -2190,10 +2190,20 @@ a { color: inherit; }
 .prof__pill--warn { background: var(--warn-bg); border-color: rgba(138,90,0,.34); color: var(--warn); }
 /* The title takes the free space, so everything after it -- pill or note, then
    chevron -- is pushed to the right-hand end of the bar, in that order. */
+/* Title and its subtitle share the flexible slot, so the pill and chevron are
+   still pushed to the right-hand end exactly as before. */
+.prof__foldtt { flex: 1 1 auto; min-width: 0; }
 .prof__foldtitle {
-  flex: 1 1 auto; min-width: 0;
+  display: block; min-width: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font: 600 14.5px var(--font-display); color: var(--text);
+}
+/* A line of context under each title. The rows carried only a name, which told
+   someone who already knew what the section did and nobody else. */
+.prof__foldsub {
+  display: block; margin-top: 2px; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 400 12.5px var(--font-body); color: var(--dim);
 }
 /* margin-left:auto pushes the note AND the chevron to the right-hand end, so the
    chevron sits at the edge of the bar rather than hugging the title. */

@@ -25,6 +25,11 @@ import Oferta from "./Oferta";
 
 const T = {
   uz: {
+    sWeb: "Elektron pochta orqali kirish",
+    sPw: "Parolni yangilash",
+    sTg: "Bot xabar yuborishi uchun ulang",
+    sDoc: "Ommaviy oferta · v1.2",
+    sSec: "Barcha qurilmalardan chiqish",
     grpAccount: "Hisob",
     grpLegal: "Huquqiy",
     title: "Profil",
@@ -61,6 +66,11 @@ const T = {
     done: "Bajarildi",
   },
   ru: {
+    sWeb: "Вход по электронной почте",
+    sPw: "Обновить пароль",
+    sTg: "Подключите, чтобы бот писал",
+    sDoc: "Публичная оферта · v1.2",
+    sSec: "Выйти на всех устройствах",
     grpAccount: "Аккаунт",
     grpLegal: "Правовое",
     title: "Профиль",
@@ -97,6 +107,11 @@ const T = {
     done: "Готово",
   },
   en: {
+    sWeb: "Sign in with email",
+    sPw: "Update your password",
+    sTg: "Connect so the bot can message you",
+    sDoc: "Public offer · v1.2",
+    sSec: "Sign out on every device",
     grpAccount: "Account",
     grpLegal: "Legal",
     title: "Profile",
@@ -140,7 +155,7 @@ const T = {
 //
 // `note` is the point of the collapsed state: the row has to say what is inside
 // without being opened, or collapsing just hides information.
-function Fold({ title, note, pill, pillKind, icon, iconKind, open, onToggle, children }) {
+function Fold({ title, sub, note, pill, pillKind, icon, iconKind, open, onToggle, children }) {
   return (
     <section className={"prof__fold" + (open ? " is-open" : "")}>
       <button className="prof__foldhead" onClick={onToggle} type="button">
@@ -149,7 +164,10 @@ function Fold({ title, note, pill, pillKind, icon, iconKind, open, onToggle, chi
             {icon}
           </span>
         ) : null}
-        <span className="prof__foldtitle">{title}</span>
+        <span className="prof__foldtt">
+          <span className="prof__foldtitle">{title}</span>
+          {sub ? <span className="prof__foldsub">{sub}</span> : null}
+        </span>
         {/* A state gets a pill; an identifier stays plain text. "Tasdiqlangan" is
             a state and should read at a glance; an email address is not. */}
         {pill ? (
@@ -291,15 +309,6 @@ export default function Profile({ lang = "uz", onLogout }) {
             ) : (
               <div className="prof__namerow">
                 <div className="prof__name">{p.name || t.you}</div>
-                <button
-                  className="prof__edit"
-                  onClick={() => { setName(p.name || ""); setEditName(true); }}
-                  type="button"
-                  aria-label={t.name}
-                  title={t.name}
-                >
-                  <Pencil size={14} />
-                </button>
               </div>
             )}
             <div className="prof__meta">
@@ -307,6 +316,19 @@ export default function Profile({ lang = "uz", onLogout }) {
               {p.company ? ` · ${p.company}` : ` · ${t.noCompany}`}
             </div>
           </div>
+
+          {/* At the right-hand end rather than tucked against the name: the card
+              spans the page now, and an icon floating mid-row left the whole
+              right half empty. */}
+          {!editName && (
+            <button
+              className="prof__editbtn"
+              onClick={() => { setName(p.name || ""); setEditName(true); }}
+              type="button"
+            >
+              <Pencil size={14} /> {t.name}
+            </button>
+          )}
         </div>
       </section>
 
@@ -317,7 +339,7 @@ export default function Profile({ lang = "uz", onLogout }) {
         <div className="prof__col">
           <p className="prof__sect">{t.grpAccount}</p>
 
-      <Fold {...fold("web")} title={t.webTitle} icon={<Mail size={16} />} iconKind="acct" note={p.email || ""}>
+      <Fold {...fold("web")} title={t.webTitle} icon={<Mail size={16} />} iconKind="acct" sub={t.sWeb} note={p.email || ""}>
         {p.has_email_login ? (
           <p className="prof__good">
             <Check size={15} /> {t.webHave}
@@ -392,7 +414,7 @@ export default function Profile({ lang = "uz", onLogout }) {
       </Fold>
 
       {p.has_email_login && (
-        <Fold {...fold("pw")} title={t.pwTitle} icon={<KeyRound size={16} />} iconKind="acct">
+        <Fold {...fold("pw")} title={t.pwTitle} icon={<KeyRound size={16} />} iconKind="acct" sub={t.sPw}>
           <label className="eauth__label">{t.oldPw}</label>
           <input
             className="eauth__input"
@@ -426,7 +448,7 @@ export default function Profile({ lang = "uz", onLogout }) {
         </Fold>
       )}
 
-      <Fold {...fold("tg")} title={t.tgTitle} icon={<Send size={16} />} iconKind="tg"
+      <Fold {...fold("tg")} title={t.tgTitle} icon={<Send size={16} />} iconKind="tg" sub={t.sTg}
         pill={p.has_telegram ? "Ulangan" : "Ulanmagan"}
         pillKind={p.has_telegram ? "ok" : "warn"}>
         <p className={p.has_telegram ? "prof__good" : "prof__sub"}>
@@ -459,7 +481,7 @@ export default function Profile({ lang = "uz", onLogout }) {
         <div className="prof__col">
           <p className="prof__sect">{t.grpLegal}</p>
 
-      <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} icon={<FileText size={16} />} iconKind="doc"
+      <Fold {...fold("oferta")} title={"Foydalanish shartnomasi"} icon={<FileText size={16} />} iconKind="doc" sub={t.sDoc}
         pill={ofertaDue === false ? "Tasdiqlangan" : (ofertaDue === true ? "Tasdiqlanmagan" : null)}
         pillKind={ofertaDue === false ? "ok" : "warn"}>
         <Oferta
@@ -473,10 +495,7 @@ export default function Profile({ lang = "uz", onLogout }) {
           except disabling the member, which also removes their access to the
           company -- so a lost phone meant choosing between a live session and
           locking someone out of their job. */}
-        </div>
-      </div>
-
-      <Fold {...fold("sec")} title={t.secTitle} icon={<ShieldCheck size={16} />} iconKind="sec">
+      <Fold {...fold("sec")} title={t.secTitle} icon={<ShieldCheck size={16} />} iconKind="sec" sub={t.sSec}>
         <p className="prof__sub">{t.secBody}</p>
         <button
           className="prof__btn"
@@ -494,6 +513,8 @@ export default function Profile({ lang = "uz", onLogout }) {
           <LogOut size={15} /> {t.secBtn}
         </button>
       </Fold>
+        </div>
+      </div>
 
       {ok && (
         <div className="prof__toast" role="status">

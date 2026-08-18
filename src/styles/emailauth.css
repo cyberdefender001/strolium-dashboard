@@ -519,7 +519,30 @@
   display: flex;
   align-items: center;
   gap: 13px;
-  margin-bottom: 18px;
+  margin-bottom: 0;
+}
+/* The identity card spans the page now, so the name block takes the free space
+   and the edit action sits at the far end. A bare pencil beside the name left
+   the whole right half of the card empty. */
+.prof__who { flex: 1 1 auto; min-width: 0; }
+.prof__editbtn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font: 600 13px var(--font-body);
+  cursor: pointer;
+  transition: border-color .14s ease;
+}
+.prof__editbtn:hover { border-color: var(--brand-dim); }
+@media (max-width: 560px) {
+  .prof__head { flex-wrap: wrap; }
+  .prof__editbtn { margin-left: 53px; }
 }
 
 .prof__avatar {
