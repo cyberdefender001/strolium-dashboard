@@ -30,7 +30,9 @@ function InviteModal({ roles, onClose }) {
   };
 
   const copy = () => {
-    navigator.clipboard.writeText(result.link).then(() => {
+    // Must match what the box displays, or the button copies something the
+    // inviter never saw.
+    navigator.clipboard.writeText(result.join_url || result.link).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     });
@@ -75,15 +77,29 @@ function InviteModal({ roles, onClose }) {
 
           {result && (
             <>
+              {/* The browser link is what gets copied now. The old button copied
+                  the t.me URL, which does nothing for anyone who is not already
+                  a user of the bot -- and that was the only thing an inviter
+                  could realistically send. */}
               <div className="fld"><span>Taklif havolasi — {result.role}</span></div>
               <div className="tm-link">
-                <input readOnly value={result.link} onFocus={(e) => e.target.select()} />
+                <input
+                  readOnly
+                  value={result.join_url || result.link}
+                  onFocus={(e) => e.target.select()}
+                />
                 <button className="btn-primary" onClick={copy}>
                   {copied ? <Check size={14} /> : <Copy size={14} />}
                   {copied ? "Nusxalandi" : "Nusxalash"}
                 </button>
               </div>
               <div className="tm-code">Kod: <b>{result.code}</b></div>
+              {result.join_url && result.link && (
+                <div className="tm-alt">
+                  Telegram orqali:{" "}
+                  <a href={result.link} target="_blank" rel="noreferrer">{result.link}</a>
+                </div>
+              )}
             </>
           )}
 

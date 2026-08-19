@@ -184,7 +184,19 @@ const T = {
 
 export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogout }) {
   const t = T[lang] || T.uz;
-  const [code, setCode] = useState("");
+  // A join link looks like  <site>/#/join?code=XXXXXXXX  -- the invite the boss
+  // sends. Without this the recipient lands on a page with an empty box and has
+  // to work out that the code in the URL belongs in it.
+  const codeFromUrl = (() => {
+    try {
+      const m = (window.location.hash || "").match(/[?&]code=([A-Za-z0-9]+)/);
+      return m ? m[1].toUpperCase() : "";
+    } catch {
+      return "";
+    }
+  })();
+
+  const [code, setCode] = useState(codeFromUrl);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -328,7 +340,7 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
 
   // Which exception panel is open, if any. Only one at a time: two open forms
   // under a third was the old layout's problem.
-  const [open, setOpen] = useState(null);
+  const [open, setOpen] = useState(codeFromUrl ? "code" : null);
   const toggle = (k) => () => setOpen((v) => (v === k ? null : k));
 
   return (
