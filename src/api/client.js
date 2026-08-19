@@ -32,8 +32,31 @@ async function call(path, opts = {}) {
   }
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
-    const err = new Error(e.detail || `Xatolik (${r.status})`);
+
+    // detail used to be a plain string. The trial lock now sends
+    // { code, message } so the UI can act on it instead of printing a sentence,
+    // and String(object) would have rendered "[object Object]" to the user.
+    const d = e.detail;
+    const msg =
+      typeof d === "string" ? d : (d && d.message) || `Xatolik (${r.status})`;
+
+    // 402 = trial over. Announced globally rather than thrown at whichever
+    // button happened to be clicked: every write in the app hits this, and the
+    // old behaviour was an error toast reading "contact us" with nothing to
+    // click. One listener shows one dialog with a To'lash button.
+    if (r.status === 402 && d && d.code === "trial_expired") {
+      try {
+        window.dispatchEvent(
+          new CustomEvent("strolium:trial-expired", { detail: { message: msg } })
+        );
+      } catch {
+        /* dispatch is best-effort; the throw below still surfaces it */
+      }
+    }
+
+    const err = new Error(msg);
     err.status = r.status;
+    err.code = d && d.code;
     throw err;
   }
   return r.json();

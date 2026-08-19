@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Work from "./pages/Work.jsx";
 import NoCompany from "./pages/NoCompany.jsx";
 import { TG_BOT } from "./config";
+import TrialExpiredDialog from "./components/TrialExpiredDialog.jsx";
 
 export default function App() {
   const [user, setUser] = useState(currentUser());
@@ -67,8 +68,16 @@ export default function App() {
   // field. A worker sees ONLY their own tasks -- and even if this routing were
   // bypassed, the backend answers a field session with 403 on every /api/web/*
   // financial endpoint, so the split is enforced, not decorative.
-  if (user.accessLevel === "field")
-    return <Work user={user} onLogout={signOut} />;
-
-  return <Dashboard user={user} onLogout={signOut} />;
+  // Mounted alongside whichever screen is showing, not inside one of them: the
+  // 402 can come from any write on any page, including the worker view.
+  return (
+    <>
+      {user.accessLevel === "field" ? (
+        <Work user={user} onLogout={signOut} />
+      ) : (
+        <Dashboard user={user} onLogout={signOut} />
+      )}
+      <TrialExpiredDialog />
+    </>
+  );
 }

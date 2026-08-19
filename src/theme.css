@@ -2429,3 +2429,41 @@ a { color: inherit; }
 /* The pay button carried the provider name and the verb; the note underneath
    already says the payment happens on Payme. */
 .bill__pay { letter-spacing: .01em; }
+
+/* Trial-expired dialog. Fired from api/client.js on any 402, so one definition
+   covers every write in the app. */
+.trialx {
+  position: fixed; inset: 0; z-index: 200;
+  display: grid; place-items: center;
+  padding: 20px;
+  background: rgba(6, 16, 35, .46);
+}
+.trialx__box {
+  width: 100%; max-width: 400px;
+  padding: 26px 24px 22px;
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: 0 18px 48px rgba(6, 16, 35, .26);
+  text-align: center;
+}
+.trialx__icon {
+  display: grid; place-items: center;
+  width: 46px; height: 46px; margin: 0 auto 14px;
+  border-radius: 13px;
+  background: var(--warn-bg); color: var(--warn);
+}
+.trialx__title { margin: 0 0 8px; font: 700 19px var(--font-body); color: var(--text); }
+.trialx__body  { margin: 0 0 20px; font: 400 14px/1.6 var(--font-body); color: var(--dim); }
+.trialx__pay {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
+  border: 0; border-radius: 11px;
+  background: var(--st-accent); color: var(--st-on-accent);
+  font: 700 15px var(--font-body); cursor: pointer;
+}
+.trialx__later {
+  width: 100%; margin-top: 8px; padding: 11px;
+  border: 0; background: none; color: var(--dim);
+  font: 500 13.5px var(--font-body); cursor: pointer;
+}
+.trialx__later:hover { color: var(--text); }
