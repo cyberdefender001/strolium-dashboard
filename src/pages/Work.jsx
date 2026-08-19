@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   LogOut, ListChecks, Wallet, Calendar, Clock, X,
   ImagePlus, Paperclip, Send, FileText, MessageSquare, Plus, Check,
-  User as UserIcon,
+  User as UserIcon, Pencil,
 } from "lucide-react";
 import { StroliumMark } from "../components/StroliumMark";
 import {
@@ -93,6 +93,7 @@ function WorkerTaskDetail({ taskId, onClose, onChanged }) {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [noteOpen, setNoteOpen] = useState(false);
   const [uploading, setUploading] = useState(0);
   const [confirming, setConfirming] = useState(false);
   const [lightbox, setLightbox] = useState(null);
@@ -338,28 +339,50 @@ function WorkerTaskDetail({ taskId, onClose, onChanged }) {
             {t.editable && (
               <div className="tdet__sec">
                 <h4>Dalil qo'shish</h4>
+                {/* Three equal tiles, matching the Mini App's Rasm / Hujjat /
+                    Izoh row. Previously two small ghost buttons sat above a
+                    textarea with a full-width primary button beside it, so the
+                    same screen looked different on each surface and the row
+                    never balanced. */}
                 <div className="wkadders">
-                  <label className="btn-ghost" htmlFor="wkphotos">
-                    <ImagePlus size={14} /> Rasm
+                  <label className="wktile" htmlFor="wkphotos">
+                    <ImagePlus size={18} />
+                    <span>Rasm</span>
                   </label>
                   <input id="wkphotos" type="file" accept="image/*" multiple hidden onChange={onPhotos} />
-                  <label className="btn-ghost" htmlFor="wkdoc">
-                    <Paperclip size={14} /> Fayl
+                  <label className="wktile" htmlFor="wkdoc">
+                    <Paperclip size={18} />
+                    <span>Hujjat</span>
                   </label>
                   <input id="wkdoc" type="file" hidden onChange={onDoc} />
-                  {uploading > 0 && <span className="hint">Yuklanmoqda… {uploading}</span>}
-                </div>
-                <div className="wknote">
-                  <textarea
-                    rows={2}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="Izoh yozing…"
-                  />
-                  <button className="btn-primary" disabled={busy || !note.trim()} onClick={addNote}>
-                    Saqlash
+                  <button
+                    type="button"
+                    className={"wktile" + (noteOpen ? " is-on" : "")}
+                    onClick={() => setNoteOpen((v) => !v)}
+                  >
+                    <Pencil size={18} />
+                    <span>Izoh</span>
                   </button>
                 </div>
+                {uploading > 0 && <div className="hint" style={{ marginTop: 8 }}>Yuklanmoqda… {uploading}</div>}
+
+                {/* The composer only appears once Izoh is chosen, so the default
+                    state is three equal tiles and nothing else. */}
+                {noteOpen && (
+                  <div className="wknote">
+                    <textarea
+                      rows={3}
+                      autoFocus
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Izoh yozing…"
+                    />
+                    <button className="btn-primary wknote__save"
+                            disabled={busy || !note.trim()} onClick={addNote}>
+                      Saqlash
+                    </button>
+                  </div>
+                )}
 
                 {err && <div className="modal__err" style={{ marginTop: 10 }}>{err}</div>}
 
