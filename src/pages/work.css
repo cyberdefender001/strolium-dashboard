@@ -21,11 +21,22 @@
 /* note composer */
 .wknote { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
 .wknote textarea {
-  flex: 1; resize: vertical; min-height: 42px;
+  /* min-width:0 is required: a textarea has an intrinsic width from its cols
+     attribute, and flex refuses to shrink an item below that unless told to.
+     Without it the button below wins the row and the textarea collapses to a
+     vertical sliver of letters. */
+  flex: 1 1 auto; min-width: 0;
+  resize: vertical; min-height: 42px;
   padding: 9px 11px; border-radius: 9px;
   border: 1px solid var(--line); background: transparent;
   color: var(--text); font: 500 13px var(--font-body, inherit);
 }
+/* .btn-primary is width:100% globally, which inside a flex row means it takes
+   everything and starves its sibling. Both action rows here are flex rows. */
+.wknote .btn-primary { width: auto; flex: 0 0 auto; margin-top: 0; padding: 0 18px; }
+.wkadders .btn-ghost { width: auto; flex: 0 0 auto; }
+.wkconfirm .btn-primary,
+.wkconfirm .btn-ghost { width: auto; flex: 0 0 auto; margin-top: 0; padding: 0 16px; }
 
 /* full-width submit + inline confirm */
 .wksubmit { width: 100%; justify-content: center; padding: 11px; margin-top: 14px; }
