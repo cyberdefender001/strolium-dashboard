@@ -1767,6 +1767,9 @@ a { color: inherit; }
   border-color: rgba(138,90,0,.32); background: var(--warn-bg);
   margin-bottom: 14px; padding: 16px 18px 18px;
 }
+/* Same card, quieter: needs_boss means the company is stuck, this one is only
+   a suggestion and should not compete with it. */
+.tm-alone { border-color: var(--line); background: var(--panel); }
 .tm-boss__t { font-weight: 700; font-size: 14.5px; color: var(--warn); }
 .tm-boss__s { font-size: 12.5px; color: var(--dim); margin: 6px 0 14px; line-height: 1.55; max-width: 46em; }
 .tm-boss__code {

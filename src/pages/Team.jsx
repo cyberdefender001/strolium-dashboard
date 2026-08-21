@@ -186,6 +186,32 @@ export default function Team({ tick, onChange }) {
       {/* A controller-first company has no boss yet, and a manager cannot mint an
           executive invite -- so without this the company is stuck: the only person
           who could add the boss is the boss. The code was reserved at approval. */}
+      {/* A company of one. The creator is often a nazoratchi setting things up
+          for his boss -- and the oferta is signed by the rahbar, so a company
+          whose boss never joins cannot be signed and cannot pay.
+
+          Phrased as a question, not an instruction: the creator is just as
+          often the boss himself, and telling him to invite himself would be
+          nonsense. Not a gate -- a company can run with one person. */}
+      {data.alone && !data.needs_boss && (
+        <div className="card tm-boss tm-alone">
+          <div className="tm-boss__t">Rahbar tizimda bormi?</div>
+          <div className="tm-boss__s">
+            Shartnomani faqat rahbar imzolay oladi. Agar kompaniyani rahbar
+            nomidan siz ochgan bo'lsangiz, uni rahbar sifatida taklif qiling.
+          </div>
+          <div className="tm-boss__acts">
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setInviting(true)}
+            >
+              Rahbarni taklif qilish
+            </button>
+          </div>
+        </div>
+      )}
+
       {data.needs_boss && data.boss_code && (
         <div className="card tm-boss">
           <div className="tm-boss__t">Rahbar hali qo'shilmagan</div>
