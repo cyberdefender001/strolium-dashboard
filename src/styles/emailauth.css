@@ -31,6 +31,26 @@
 /* This control was invisible: the track was rgba(255,255,255,.04) and the active
    pill rgba(255,255,255,.1), i.e. white on a white panel. The two tabs read as
    loose floating words with no indication either was selected. */
+/* Company block on the signup screen. A rule above it, so it reads as a second
+   section rather than three more fields appended to the same list. */
+.eauth__cohead {
+  margin: 22px 0 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font: 700 13px var(--font-body);
+  color: var(--text);
+}
+.eauth__cotabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+.eauth__cotabs button {
+  padding: 10px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--panel); color: var(--dim);
+  font: 500 13px var(--font-body); cursor: pointer;
+}
+.eauth__cotabs button.on {
+  background: var(--st-accent); border-color: var(--st-accent);
+  color: var(--st-on-accent); font-weight: 600;
+}
+
 .eauth__tabs {
   display: flex;
   gap: 4px;

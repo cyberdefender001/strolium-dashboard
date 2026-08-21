@@ -7,6 +7,8 @@ import {
   emailLogin,
   emailResetPassword,
   saveEmailSession,
+  createCompany,
+  joinCompany,
 } from "../api/emailauth";
 
 // Email account login/signup.
@@ -43,6 +45,14 @@ const T = {
     resend: "Kodni qayta yuborish",
     login: "Kirish",
     signup: "Hisob yaratish",
+    coHead: "Kompaniya",
+    coNew: "Yangi kompaniya",
+    coJoin: "Taklif kodi bilan",
+    coName: "Kompaniya nomi",
+    coCode: "Taklif kodi",
+    coNeedName: "Kompaniya nomini kiriting",
+    coNeedCode: "Taklif kodini kiriting",
+    coDone: "Boshlash",
     forgot: "Parolni unutdingizmi?",
     reset: "Parolni tiklash",
     newPassword: "Yangi parol",
@@ -74,6 +84,14 @@ const T = {
     resend: "Отправить код ещё раз",
     login: "Войти",
     signup: "Создать аккаунт",
+    coHead: "Компания",
+    coNew: "Новая компания",
+    coJoin: "По коду приглашения",
+    coName: "Название компании",
+    coCode: "Код приглашения",
+    coNeedName: "Введите название компании",
+    coNeedCode: "Введите код приглашения",
+    coDone: "Начать",
     forgot: "Забыли пароль?",
     reset: "Восстановить пароль",
     newPassword: "Новый пароль",
@@ -105,6 +123,14 @@ const T = {
     resend: "Send the code again",
     login: "Sign in",
     signup: "Create account",
+    coHead: "Company",
+    coNew: "New company",
+    coJoin: "With an invite code",
+    coName: "Company name",
+    coCode: "Invite code",
+    coNeedName: "Enter a company name",
+    coNeedCode: "Enter the invite code",
+    coDone: "Start",
     forgot: "Forgot your password?",
     reset: "Reset password",
     newPassword: "New password",
@@ -147,6 +173,12 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
   // fill blind before you had even opened your inbox.
   //   1 = email   2 = code   3 = name + password
   const [step, setStep] = useState(1);
+  // Company is asked for on the SAME screen as the password. It used to be a
+  // fourth page after signup that looked like another authentication step --
+  // the reader thinks they are finished, and then are not.
+  const [coMode, setCoMode] = useState("new");   // "new" | "join"
+  const [coName, setCoName] = useState("");
+  const [coCode, setCoCode] = useState("");
   const [left, setLeft] = useState(0);          // seconds the code is still valid
 
   // One ticker for the code's remaining life. It is display-only -- the server is
@@ -235,6 +267,9 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
   const doSignup = () =>
     run(async () => {
       if (password !== password2) throw new Error(t.mismatch);
+      if (coMode === "new" && !coName.trim()) throw new Error(t.coNeedName);
+      if (coMode === "join" && !coCode.trim()) throw new Error(t.coNeedCode);
+
       const session = await emailSignup({
         identifier: email.trim(),
         code: code.trim(),
@@ -242,7 +277,19 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
         password,
         lang,
       });
-      onLogin(saveEmailSession(session));
+      // Save the session BEFORE the company call: it carries the token that
+      // call authenticates with. Without this the request goes out anonymous.
+      const saved = saveEmailSession(session);
+
+      // If the company step fails the account still exists and is signed in --
+      // they land on the NoCompany page, which is exactly the old behaviour, so
+      // the worst case here is no worse than before.
+      if (coMode === "new") {
+        await createCompany({ name: coName.trim() });
+      } else {
+        await joinCompany(coCode.trim().toUpperCase());
+      }
+      onLogin(saved);
     });
 
   const doReset = () =>
@@ -430,13 +477,59 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 onChange={(e) => setPassword2(e.target.value)}
               />
 
+              {/* Company, on the same screen. Splitting it off meant the reader
+                  finished signing up, thought they were done, and met what
+                  looked like a second authentication step. */}
+              <div className="eauth__cohead">{t.coHead}</div>
+              <div className="eauth__cotabs">
+                <button
+                  type="button"
+                  className={coMode === "new" ? "on" : ""}
+                  onClick={() => setCoMode("new")}
+                >
+                  {t.coNew}
+                </button>
+                <button
+                  type="button"
+                  className={coMode === "join" ? "on" : ""}
+                  onClick={() => setCoMode("join")}
+                >
+                  {t.coJoin}
+                </button>
+              </div>
+
+              {coMode === "new" ? (
+                <>
+                  <label className="eauth__label">{t.coName}</label>
+                  <input
+                    className="eauth__input"
+                    value={coName}
+                    onChange={(e) => setCoName(e.target.value)}
+                    placeholder="MChJ ..."
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="eauth__label">{t.coCode}</label>
+                  <input
+                    className="eauth__input eauth__input--code"
+                    value={coCode}
+                    onChange={(e) => setCoCode(e.target.value.toUpperCase())}
+                    placeholder="XXXXXXXX"
+                  />
+                </>
+              )}
+
               <button
                 className="eauth__primary"
                 onClick={doSignup}
-                disabled={busy || !name.trim() || !password || !password2}
+                disabled={
+                  busy || !name.trim() || !password || !password2 ||
+                  (coMode === "new" ? !coName.trim() : !coCode.trim())
+                }
                 type="button"
               >
-                {busy ? t.checking : t.signup}
+                {busy ? t.checking : t.coDone}
               </button>
             </>
           )}
