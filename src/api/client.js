@@ -191,9 +191,16 @@ export async function getSpend() {
   return call("/api/spend");
 }
 
-export async function listProjects() {
-  const d = await call("/api/projects");
+export async function listProjects(includeArchived = false) {
+  // The default stays active-only: expense pickers and budget screens all call
+  // this and mean "projects you can file against". Archived is opt-in.
+  const d = await call("/api/projects" + (includeArchived ? "?include=archived" : ""));
   return (d && d.projects) || [];
+}
+
+// Seats and projects used against the plan, plus the next tier up.
+export async function planUsage() {
+  return call("/api/plan/usage");
 }
 
 export async function addExpense(body) {

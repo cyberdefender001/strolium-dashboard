@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Plus, MapPin, Pencil, Archive, RotateCcw, Trash2 } from "lucide-react";
 import {
-  getSpend, createProject, setProjectBudget, getMe,
+  getSpend, createProject, setProjectBudget, getMe, listProjects, planUsage,
   archiveProject, activateProject, projectDeleteInfo, deleteProject,
 } from "../api/client";
 import { fmtSom } from "../lib/format";
@@ -145,6 +145,11 @@ export default function Projects({ tick, onChange }) {
   // Hard delete is the boss's alone: it destroys a site's whole expense history.
   // Same source Team.jsx uses for the role.
   const [isBoss, setIsBoss] = useState(false);
+  // Archived rows come from a different endpoint: /api/spend groups SPENDING,
+  // and a finished site with no active status has no row there at all.
+  const [showArchive, setShowArchive] = useState(false);
+  const [archived, setArchived] = useState(null);
+  const [usage, setUsage] = useState(null);
 
   const load = useCallback(() => {
     setErr("");
@@ -187,6 +192,30 @@ export default function Projects({ tick, onChange }) {
 
   useEffect(() => { load(); }, [load, tick]);
 
+  // Drives the "2 / 2 loyiha" line, so the boss sees the limit before he hits it.
+  const loadUsage = useCallback(() => {
+    planUsage().then(setUsage).catch(() => setUsage(null));
+  }, []);
+  useEffect(() => { loadUsage(); }, [loadUsage, tick]);
+
+  // Fetched only when the archive is opened: most visits never need it.
+  const loadArchived = useCallback(() => {
+    listProjects(true)
+      .then((rows) => setArchived((rows || []).filter((r) => r.status === "archived")))
+      .catch((e) => setErr(e.message || "Arxivni yuklab bo'lmadi."));
+  }, []);
+  useEffect(() => { if (showArchive) loadArchived(); }, [showArchive, loadArchived]);
+
+  // Reactivating counts against the same cap, so this can legitimately fail with
+  // an upgrade message -- which is why the error is surfaced rather than ignored.
+  const doActivate = useCallback((pid) => {
+    setBusy(true);
+    activateProject(pid)
+      .then(() => { loadArchived(); load(); loadUsage(); onChange && onChange(); })
+      .catch((e) => setErr(e.message || "Qaytarib bo'lmadi."))
+      .finally(() => setBusy(false));
+  }, [loadArchived, load, loadUsage, onChange]);
+
   const groups = useMemo(() => (data && data.projects) || [], [data]);
 
   if (err)
@@ -202,12 +231,56 @@ export default function Projects({ tick, onChange }) {
       <div className="xhead">
         <div>
           <h2 className="xhead__title">Loyihalar</h2>
-          <div className="xhead__sub">{groups.length} ta loyiha</div>
+          {/* The cap, shown before it bites. Until now the first a boss heard of
+              a limit was the request that failed. */}
+          <div className="xhead__sub">
+            {usage && usage.projects && usage.projects.cap != null
+              ? `${usage.projects.used} / ${usage.projects.cap} loyiha`
+              : `${groups.length} ta loyiha`}
+            {usage && usage.projects && usage.projects.cap != null
+              && usage.projects.used >= usage.projects.cap && usage.next_tier && (
+              <span className="pj-full">
+                {" "}· To'ldi — {usage.next_tier.name} tarifida{" "}
+                {usage.next_tier.max_projects || "cheklanmagan"} loyiha
+              </span>
+            )}
+          </div>
         </div>
-        <button className="btn-primary" onClick={() => setCreating(true)}>
-          <Plus size={15} /> Yangi loyiha
-        </button>
+        <div className="pj-headacts">
+          <button className="btn-ghost" onClick={() => setShowArchive((v) => !v)}>
+            <Archive size={14} /> {showArchive ? "Faol loyihalar" : "Arxiv"}
+          </button>
+          <button className="btn-primary" onClick={() => setCreating(true)}>
+            <Plus size={15} /> Yangi loyiha
+          </button>
+        </div>
       </div>
+
+      {showArchive && (
+        <div className="pj-arch">
+          {archived === null ? (
+            <div className="section-empty">Yuklanmoqda…</div>
+          ) : archived.length === 0 ? (
+            <div className="section-empty">
+              Arxivda loyiha yo'q. Tugagan loyihani arxivlasangiz, ma'lumotlari
+              saqlanadi va tarifdagi joy bo'shaydi.
+            </div>
+          ) : (
+            archived.map((a) => (
+              <div className="pj-arch__row" key={a.id}>
+                <div className="pj-arch__name">
+                  {a.name}
+                  {a.address && <span className="pj-arch__addr"> · {a.address}</span>}
+                </div>
+                <button className="btn-ghost" disabled={busy}
+                        onClick={() => doActivate(a.id)}>
+                  <RotateCcw size={13} /> Qaytarish
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       <div className="pj-grid">
         {groups.map((g) => {

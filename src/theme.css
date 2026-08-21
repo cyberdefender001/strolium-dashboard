@@ -1011,6 +1011,39 @@ a { color: inherit; }
 /* Archive / delete sit beside the pencil. Danger is colour only -- an icon that
    destroys data should not also be the biggest thing in the row. */
 .pj__acts { display: flex; gap: 6px; flex: 0 0 auto; }
+
+/* Archive view and the plan-usage line. */
+.pj-headacts { display: flex; gap: 8px; align-items: center; }
+.pj-full { color: var(--warn); font-weight: 600; }
+.pj-arch { margin-bottom: 16px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--panel); overflow: hidden; }
+.pj-arch__row { display: flex; align-items: center; gap: 12px; padding: 13px 16px;
+  border-bottom: 1px solid var(--line-soft); }
+.pj-arch__row:last-child { border-bottom: 0; }
+.pj-arch__name { flex: 1 1 auto; min-width: 0; font: 600 14px var(--font-body);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pj-arch__addr { font-weight: 400; color: var(--dim); }
+.pj-arch .btn-ghost { width: auto; flex: 0 0 auto; }
+
+/* Faol / Arxiv. Archived projects had no way to be seen or brought back:
+   /api/spend only groups active ones, so a finished site simply vanished. */
+.pj-tabs { display: flex; gap: 6px; margin: 0 0 14px; }
+.pj-tabs button {
+  padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel); color: var(--dim);
+  font: 600 13px var(--font-body); cursor: pointer;
+}
+.pj-tabs button:hover { border-color: var(--brand-dim); color: var(--text); }
+.pj-tabs button.is-on {
+  background: var(--brand); border-color: var(--brand); color: #fff;
+}
+.pj--arch { opacity: .82; }
+.pj__badge {
+  flex: 0 0 auto; padding: 4px 9px; border-radius: 999px;
+  background: var(--panel-3); color: var(--dim);
+  font: 600 11px var(--font-body);
+}
+.pj__back { width: 100%; margin-top: 12px; justify-content: center; }
 .pj__edit--danger { color: var(--danger); }
 .pj__edit--danger:hover { border-color: var(--danger); }
 
