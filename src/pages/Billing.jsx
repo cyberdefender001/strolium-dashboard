@@ -161,10 +161,24 @@ export default function Billing({ user }) {
                 <span className="bill__tseats">
                   {t.max ? `${t.max} kishigacha` : "Cheklanmagan"}
                 </span>
-                <span className="bill__tprice">{p ? fmt(p) : "—"}</span>
-                <span className="bill__tcur">
-                  {info.currency} / {months} oy
+                {/* The plans differ by project count as much as by headcount;
+                    without this line the price gap has no visible reason. */}
+                <span className="bill__tproj">
+                  {t.max_projects ? `${t.max_projects} ta loyiha` : "Cheklanmagan loyiha"}
                 </span>
+                {t.is_free ? (
+                  <>
+                    <span className="bill__tprice bill__tprice--free">Bepul</span>
+                    <span className="bill__tcur">doimiy</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="bill__tprice">{p ? fmt(p) : "—"}</span>
+                    <span className="bill__tcur">
+                      {info.currency} / {months} oy
+                    </span>
+                  </>
+                )}
               </button>
             );
           })}
@@ -225,6 +239,13 @@ export default function Billing({ user }) {
             )}
             {!info.is_executive ? (
               <p className="hint">To'lovni faqat rahbar amalga oshira oladi.</p>
+            ) : sel && sel.is_free ? (
+              /* The pay button was already disabled for a priceless tier, but
+                 silently -- a dead button with no explanation. Say why. */
+              <p className="hint">
+                Bepul tarif — to'lov talab qilinmaydi. Ko'proq foydalanuvchi yoki
+                loyiha kerak bo'lsa, yuqoridagi tariflardan birini tanlang.
+              </p>
             ) : (
               <button
                 className="bill__pay"
