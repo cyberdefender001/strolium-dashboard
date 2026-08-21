@@ -9,6 +9,8 @@ import {
   saveEmailSession,
   createCompany,
   joinCompany,
+  accountStatus,
+  applyStatus,
 } from "../api/emailauth";
 
 // Email account login/signup.
@@ -289,7 +291,24 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
       } else {
         await joinCompany(coCode.trim().toUpperCase());
       }
-      onLogin(saved);
+
+      // Re-read the account AFTER the company exists.
+      //
+      // `saved` was built from the signup response, which was issued before
+      // the company did -- so it carries orgId: null and accessLevel:
+      // undefined. Handing that to onLogin routes straight to the NoCompany
+      // page even though the company was created a moment earlier, which is
+      // exactly what it looked like: the Telegram notification arrived and the
+      // user was still asked to create a company.
+      let fresh = saved;
+      try {
+        fresh = applyStatus(await accountStatus()) || saved;
+      } catch {
+        /* The company exists either way. Falling back to `saved` lands on the
+           NoCompany page, which is wrong but recoverable with a reload -- and
+           better than throwing away a successful signup. */
+      }
+      onLogin(fresh);
     });
 
   const doReset = () =>
