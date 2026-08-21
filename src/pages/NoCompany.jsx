@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Eye, Wallet, ClipboardCheck, Bot } from "lucide-react";
 import { StroliumMark } from "../components/StroliumMark";
-import { accountStatus, applyStatus, joinCompany, requestAccess, saveEmailSession, startTelegramLink } from "../api/emailauth";
+import { accountStatus, applyStatus, joinCompany, createCompany, saveEmailSession, startTelegramLink } from "../api/emailauth";
 
 // Shown to someone who has an account but belongs to no company yet.
 //
@@ -203,7 +203,8 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
   // Access-request form. Kept separate from the invite-code state above so an
   // error in one never clears the other -- a boss who mistypes his phone should
   // not lose the code he already pasted.
-  const [req, setReq] = useState({ company: "", phone: "", controllers: "", workers: "", message: "" });
+  // controllers/workers are gone: they only ever fed the approval decision.
+  const [req, setReq] = useState({ company: "", phone: "", message: "" });
   // The Mini App asks this too ("Kim: Rahbar / Nazoratchi") and the backend
   // already takes requester_role -- the web form was hardcoding "boss".
   const [role, setRole] = useState("boss");
@@ -296,21 +297,24 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
     setReqErr("");
     const company = req.company.trim();
     if (!company) { setReqErr(t.reqNeedCompany); return; }
-    const controllers = parseInt(req.controllers, 10) || 0;
-    const workers = parseInt(req.workers, 10) || 0;
-    // The backend refuses seats < 1, so catch it here rather than showing the
-    // user a server error for something the form can see.
-    if (controllers + workers < 1) { setReqErr(t.reqNeedSeats); return; }
     setReqBusy(true);
     try {
-      await requestAccess({
-        company,
-        phone: req.phone.trim(),
-        controllers,
-        workers,
-        message: req.message.trim(),
-        requester_role: role,
-      });
+      // Creates the company outright on the free plan -- no approval, no wait.
+      // The headcount fields are gone from the form: they existed so a human
+      // could pick a tier before approving, and there is no approval now.
+      const r = await createCompany({ name: company, phone: req.phone.trim() });
+      if (r && r.ok) {
+        // applyStatus flips the app into the company: same call the invite-code
+        // path uses, so the two routes converge instead of one reloading.
+        try {
+          const st = await accountStatus();
+          applyStatus(st);
+        } catch {
+          /* the company exists; a stale status only costs a reload */
+        }
+        window.location.reload();
+        return;
+      }
       setReqSent(true);
     } catch (e) {
       setReqErr(e.message || "Xatolik");
@@ -414,30 +418,6 @@ export default function NoCompany({ name, lang = "uz", botName, onJoined, onLogo
                 placeholder="+998"
               />
 
-              <div className="nocomp__pair">
-                <div>
-                  <label className="eauth__label" htmlFor="nc-c">{t.reqCtrl}</label>
-                  <input
-                    id="nc-c"
-                    className="eauth__input"
-                    value={req.controllers}
-                    onChange={setField("controllers")}
-                    inputMode="numeric"
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label className="eauth__label" htmlFor="nc-w">{t.reqWork}</label>
-                  <input
-                    id="nc-w"
-                    className="eauth__input"
-                    value={req.workers}
-                    onChange={setField("workers")}
-                    inputMode="numeric"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
 
               <label className="eauth__label" htmlFor="nc-m">{t.reqMsg}</label>
               <input

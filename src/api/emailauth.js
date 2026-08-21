@@ -96,6 +96,36 @@ function authHeader() {
 // no separate web endpoint exists or is needed. Until this existed, a boss who
 // signed up on the website was sent to the Telegram bot to ask, which is the one
 // thing the website is meant to avoid.
+// Create the company outright. No approval, no waiting.
+//
+// requestAccess below is kept: the owner console still reads that queue and
+// anything already in it must not be stranded. New signups no longer use it --
+// 700 cold calls produced 7 registrations and 0 payments, and every one of those
+// 7 had to ask a human for permission before seeing anything.
+export async function createCompany({ name, phone }) {
+  const r = await fetch(`${API_BASE}/api/company/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ name, phone }),
+  });
+  const text = await r.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    /* non-JSON error page */
+  }
+  if (!r.ok) {
+    const d = data.detail;
+    const err = new Error(
+      (typeof d === "string" ? d : (d && d.message)) || `Xatolik (${r.status})`
+    );
+    err.status = r.status;
+    throw err;
+  }
+  return data;
+}
+
 export async function requestAccess({ company, phone, controllers, workers, message, requester_role = "boss" }) {
   const r = await fetch(`${API_BASE}/api/request-access`, {
     method: "POST",
