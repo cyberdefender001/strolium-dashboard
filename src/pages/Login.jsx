@@ -200,8 +200,8 @@ export default function Login({ onLogin }) {
           <div className="login__cta">
             <div className="login__cta-title">Strolium'ni sinab ko'rmoqchimisiz?</div>
             <div className="login__cta-sub">
-              So'rov qoldiring — <b>14 kun bepul</b>, karta kerak emas,
-              bugun ishga tushadi.
+              <b>Bepul boshlang</b> — 4 foydalanuvchi va 2 loyiha, muddatsiz.
+              Karta kerak emas, hozir ishga tushadi.
             </div>
             <a
               className="login__cta-btn"
