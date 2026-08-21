@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Plus, MapPin, Pencil } from "lucide-react";
-import { getSpend, createProject, setProjectBudget } from "../api/client";
+import { Plus, MapPin, Pencil, Archive, RotateCcw, Trash2 } from "lucide-react";
+import {
+  getSpend, createProject, setProjectBudget, getMe,
+  archiveProject, activateProject, projectDeleteInfo, deleteProject,
+} from "../api/client";
 import { fmtSom } from "../lib/format";
 import BrickLoader from "../components/BrickLoader.jsx";
 
@@ -136,11 +139,51 @@ export default function Projects({ tick, onChange }) {
   const [err, setErr] = useState("");
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [archiving, setArchiving] = useState(null);
+  const [deleting, setDeleting] = useState(null);   // {project, expenses, tasks}
+  const [busy, setBusy] = useState(false);
+  // Hard delete is the boss's alone: it destroys a site's whole expense history.
+  // Same source Team.jsx uses for the role.
+  const [isBoss, setIsBoss] = useState(false);
 
   const load = useCallback(() => {
     setErr("");
     getSpend().then(setData).catch((e) => setErr(e.message || "Yuklab bo'lmadi."));
   }, []);
+
+  useEffect(() => {
+    getMe()
+      .then((m) => setIsBoss((m && (m.access_level || m.role)) === "executive"))
+      .catch(() => setIsBoss(false));   // no delete button if the role is unknown
+  }, []);
+
+  // Read the counts BEFORE the dialog opens, so the confirmation can say what
+  // is about to be lost instead of asking blind.
+  const askDelete = useCallback((g) => {
+    setBusy(true);
+    projectDeleteInfo(g.project_id)
+      .then((d) => setDeleting({ g, expenses: d.expenses || 0, tasks: d.tasks || 0 }))
+      .catch((e) => setErr(e.message || "Ma'lumot olinmadi."))
+      .finally(() => setBusy(false));
+  }, []);
+
+  const doArchive = useCallback(() => {
+    if (!archiving) return;
+    setBusy(true);
+    archiveProject(archiving.project_id)
+      .then(() => { setArchiving(null); load(); onChange && onChange(); })
+      .catch((e) => setErr(e.message || "Arxivlab bo'lmadi."))
+      .finally(() => setBusy(false));
+  }, [archiving, load, onChange]);
+
+  const doDelete = useCallback(() => {
+    if (!deleting) return;
+    setBusy(true);
+    deleteProject(deleting.g.project_id)
+      .then(() => { setDeleting(null); load(); onChange && onChange(); })
+      .catch((e) => setErr(e.message || "O'chirib bo'lmadi."))
+      .finally(() => setBusy(false));
+  }, [deleting, load, onChange]);
 
   useEffect(() => { load(); }, [load, tick]);
 
@@ -182,10 +225,25 @@ export default function Projects({ tick, onChange }) {
                   )}
                 </div>
                 {g.project_id && (
-                  <button className="pj__edit" title="Byudjetni tahrirlash"
-                    onClick={() => setEditing(g)}>
-                    <Pencil size={14} />
-                  </button>
+                  <div className="pj__acts">
+                    <button className="pj__edit" title="Byudjetni tahrirlash"
+                      onClick={() => setEditing(g)}>
+                      <Pencil size={14} />
+                    </button>
+                    {/* Archive is the normal end of a project: the data stays and
+                        the plan slot is freed. Delete is the correction for one
+                        created by mistake, and it is not reversible. */}
+                    <button className="pj__edit" title="Arxivlash"
+                      onClick={() => setArchiving(g)}>
+                      <Archive size={14} />
+                    </button>
+                    {isBoss && (
+                      <button className="pj__edit pj__edit--danger" title="O'chirish"
+                        onClick={() => askDelete(g)}>
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -226,6 +284,48 @@ export default function Projects({ tick, onChange }) {
       {editing && (
         <ProjectForm initial={editing} onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); load(); if (onChange) onChange(); }} />
+      )}
+
+      {/* Archive: reversible, keeps everything, frees a plan slot. Said plainly,
+          because "arxivlash" on its own reads like deleting to most people. */}
+      {archiving && (
+        <div className="pjc" role="dialog" aria-modal="true">
+          <div className="pjc__box">
+            <div className="pjc__icon"><Archive size={19} /></div>
+            <h3 className="pjc__t">{archiving.project} arxivlansinmi?</h3>
+            <p className="pjc__b">
+              Xarajatlar va hisobotlar saqlanadi. Loyiha ro'yxatdan yashiriladi va
+              tarifdagi joy bo'shaydi — keyin uni qaytarish mumkin.
+            </p>
+            <button className="btn-primary" disabled={busy} onClick={doArchive}>
+              {busy ? "…" : "Arxivlash"}
+            </button>
+            <button className="pjc__x" onClick={() => setArchiving(null)}>Bekor qilish</button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete: the counts come from the server before this opens, so the boss
+          sees what he is destroying rather than confirming blind. */}
+      {deleting && (
+        <div className="pjc" role="dialog" aria-modal="true">
+          <div className="pjc__box">
+            <div className="pjc__icon pjc__icon--danger"><Trash2 size={19} /></div>
+            <h3 className="pjc__t">{deleting.g.project} butunlay o'chirilsinmi?</h3>
+            <p className="pjc__b">
+              Bu amalni ortga qaytarib bo'lmaydi. Loyiha bilan birga{" "}
+              <b>{deleting.expenses} ta xarajat</b> va <b>{deleting.tasks} ta vazifa</b>{" "}
+              o'chadi.
+            </p>
+            <p className="pjc__b pjc__b--hint">
+              Ma'lumotni saqlab qolmoqchi bo'lsangiz, o'chirish o'rniga arxivlang.
+            </p>
+            <button className="btn-primary pjc__danger" disabled={busy} onClick={doDelete}>
+              {busy ? "…" : "Butunlay o'chirish"}
+            </button>
+            <button className="pjc__x" onClick={() => setDeleting(null)}>Bekor qilish</button>
+          </div>
+        </div>
       )}
     </>
   );

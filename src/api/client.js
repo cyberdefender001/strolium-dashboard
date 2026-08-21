@@ -291,6 +291,30 @@ export async function setProjectBudget(pid, { budget, start_date, end_date }) {
   });
 }
 
+// Archive frees a plan slot without losing anything: the row stays, the totals
+// stay, and an expense naming the finished site still links to it. That is what
+// makes "2 projects" mean two at a time rather than two ever.
+export async function archiveProject(pid) {
+  return call(`/api/projects/${pid}/archive`, { method: "POST" });
+}
+
+// Subject to the same cap as creating one, so a company at its limit is told to
+// upgrade rather than being able to cycle archived projects back in.
+export async function activateProject(pid) {
+  return call(`/api/projects/${pid}/activate`, { method: "POST" });
+}
+
+// What a hard delete would destroy. Read BEFORE showing the confirmation: a boss
+// deleting a project with 40 expenses should be told first, not after.
+export async function projectDeleteInfo(pid) {
+  return call(`/api/projects/${pid}/delete-info`);
+}
+
+// Permanent, executive only, takes the expenses and tasks with it.
+export async function deleteProject(pid) {
+  return call(`/api/projects/${pid}`, { method: "DELETE" });
+}
+
 // ---- Jamoa (team) ---------------------------------------------------------
 // Same endpoints and permission model as the Mini App: rename via manager,
 // remove via owner-only, invites are role + optional uses cap -> link + code.

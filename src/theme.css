@@ -1008,6 +1008,30 @@ a { color: inherit; }
   margin-top:3px; }
 .pj__edit { background:none; border:1px solid var(--line-soft); border-radius:7px; padding:6px 8px;
   color:var(--dim); cursor:pointer; }
+/* Archive / delete sit beside the pencil. Danger is colour only -- an icon that
+   destroys data should not also be the biggest thing in the row. */
+.pj__acts { display: flex; gap: 6px; flex: 0 0 auto; }
+.pj__edit--danger { color: var(--danger); }
+.pj__edit--danger:hover { border-color: var(--danger); }
+
+/* Confirmations. Archive and delete share the shell; only the icon tint and the
+   primary button differ, because they are the same gesture with very different
+   consequences and the difference must be visible. */
+.pjc { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center;
+  padding: 20px; background: rgba(6,16,35,.46); }
+.pjc__box { width: 100%; max-width: 400px; padding: 24px; border-radius: 16px;
+  background: var(--panel); box-shadow: 0 18px 48px rgba(6,16,35,.26); text-align: center; }
+.pjc__icon { display: grid; place-items: center; width: 46px; height: 46px;
+  margin: 0 auto 14px; border-radius: 13px; background: var(--panel-3); color: var(--dim); }
+.pjc__icon--danger { background: var(--danger-bg); color: var(--danger); }
+.pjc__t { margin: 0 0 8px; font: 700 18px var(--font-body); }
+.pjc__b { margin: 0 0 14px; font: 400 14px/1.6 var(--font-body); color: var(--dim); }
+.pjc__b b { color: var(--text); }
+.pjc__b--hint { font-size: 13px; }
+.pjc__danger { background: var(--danger); }
+.pjc__x { width: 100%; margin-top: 8px; padding: 11px; border: 0; background: none;
+  color: var(--dim); font: 500 13.5px var(--font-body); cursor: pointer; }
+.pjc__x:hover { color: var(--text); }
 .pj__edit:hover { border-color:var(--brand-dim); color:var(--brand); }
 .pj__spent { font-family:var(--font-display); font-size:22px; font-weight:700; margin:12px 0 10px;
   font-variant-numeric:tabular-nums; }
