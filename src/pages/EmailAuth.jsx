@@ -61,6 +61,9 @@ const T = {
     back: "Orqaga",
     codeSent: "Kod yuborildi. Pochtangizni tekshiring.",
     mismatch: "Parollar mos kelmadi",
+    pwShort: "Parol kamida 8 ta belgidan iborat bo'lishi kerak",
+    pwLong: "Parol juda uzun",
+    pwDigits: "Parol faqat raqamlardan iborat bo'lmasin",
     needInvite: "Taklif kodi rahbaringizdan olinadi",
     checking: "Tekshirilmoqda…",
     sending: "Yuborilmoqda…",
@@ -100,6 +103,9 @@ const T = {
     back: "Назад",
     codeSent: "Код отправлен. Проверьте почту.",
     mismatch: "Пароли не совпадают",
+    pwShort: "Пароль должен быть не короче 8 символов",
+    pwLong: "Пароль слишком длинный",
+    pwDigits: "Пароль не должен состоять только из цифр",
     needInvite: "Код приглашения даёт ваш руководитель",
     checking: "Проверка…",
     sending: "Отправка…",
@@ -139,6 +145,9 @@ const T = {
     back: "Back",
     codeSent: "Code sent. Check your email.",
     mismatch: "Passwords do not match",
+    pwShort: "Password must be at least 8 characters",
+    pwLong: "Password is too long",
+    pwDigits: "Password cannot be only digits",
     needInvite: "Your manager gives you the invite code",
     checking: "Checking…",
     sending: "Sending…",
@@ -178,6 +187,18 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
   // Company is asked for on the SAME screen as the password. It used to be a
   // fourth page after signup that looked like another authentication step --
   // the reader thinks they are finished, and then are not.
+  // Mirrors app/security/webauth.py:password_problem. Checked as they type so
+  // the rule appears under the field being filled -- it used to arrive from the
+  // server after the whole form was submitted, which pointed at the password
+  // while the reader was looking at the company name.
+  const pwProblem = (pw) => {
+    if (!pw) return "";
+    if (pw.length < 8) return t.pwShort;
+    if (pw.length > 200) return t.pwLong;
+    if (/^\d+$/.test(pw)) return t.pwDigits;
+    return "";
+  };
+
   const [coMode, setCoMode] = useState("new");   // "new" | "join"
   const [coName, setCoName] = useState("");
   const [coCode, setCoCode] = useState("");
@@ -486,6 +507,10 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              {/* Under the field it refers to, while it is being filled. */}
+              {pwProblem(password) && (
+                <p className="eauth__fielderr">{pwProblem(password)}</p>
+              )}
 
               <label className="eauth__label">{t.passwordAgain}</label>
               <input
@@ -495,6 +520,11 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 value={password2}
                 onChange={(e) => setPassword2(e.target.value)}
               />
+              {/* Only once they have typed enough to have meant it, so it does
+                  not shout "do not match" at the first character. */}
+              {password2 && password2.length >= 3 && password2 !== password && (
+                <p className="eauth__fielderr">{t.mismatch}</p>
+              )}
 
               {/* Company, on the same screen. Splitting it off meant the reader
                   finished signing up, thought they were done, and met what
@@ -544,6 +574,7 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                 onClick={doSignup}
                 disabled={
                   busy || !name.trim() || !password || !password2 ||
+                  !!pwProblem(password) || password !== password2 ||
                   (coMode === "new" ? !coName.trim() : !coCode.trim())
                 }
                 type="button"

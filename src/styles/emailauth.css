@@ -33,6 +33,12 @@
    loose floating words with no indication either was selected. */
 /* Company block on the signup screen. A rule above it, so it reads as a second
    section rather than three more fields appended to the same list. */
+.eauth__fielderr {
+  margin: 6px 0 0;
+  font: 500 12.5px var(--font-body);
+  color: var(--danger);
+}
+
 .eauth__cohead {
   margin: 22px 0 10px;
   padding-top: 18px;
