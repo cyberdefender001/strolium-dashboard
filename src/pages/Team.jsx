@@ -14,7 +14,8 @@ function InviteModal({ roles, onClose }) {
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [copied, setCopied] = useState(false);
+  // Which block was copied, not whether one was: "" | "web" | "tg" | "code".
+  const [copied, setCopied] = useState("");
 
   const make = async (uses) => {
     setBusy(true);
@@ -29,12 +30,12 @@ function InviteModal({ roles, onClose }) {
     }
   };
 
-  const copy = () => {
-    // Must match what the box displays, or the button copies something the
-    // inviter never saw.
-    navigator.clipboard.writeText(result.join_url || result.link).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
+  // Keyed by block, so the tick appears on the button that was pressed rather
+  // than on all three at once.
+  const copy = (key, text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(key);
+      setTimeout(() => setCopied(""), 1600);
     });
   };
 
@@ -77,29 +78,53 @@ function InviteModal({ roles, onClose }) {
 
           {result && (
             <>
-              {/* The browser link is what gets copied now. The old button copied
-                  the t.me URL, which does nothing for anyone who is not already
-                  a user of the bot -- and that was the only thing an inviter
-                  could realistically send. */}
-              <div className="fld"><span>Taklif havolasi — {result.role}</span></div>
-              <div className="tm-link">
-                <input
-                  readOnly
-                  value={result.join_url || result.link}
-                  onFocus={(e) => e.target.select()}
-                />
-                <button className="btn-primary" onClick={copy}>
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied ? "Nusxalandi" : "Nusxalash"}
+              {/* Three blocks, matching the Mini App: label, what it does, the
+                  value, and its own copy button. This modal used to show the
+                  browser link with a button, the code as loose text, and the
+                  Telegram link as a bare anchor -- three things doing the same
+                  job, presented three different ways. */}
+              <div className="fld"><span>Taklif — {result.role}</span></div>
+
+              <div className="tmblk">
+                <div className="tmblk__lbl">Sayt uchun havola</div>
+                <div className="tmblk__sub">Istalgan brauzerda ochiladi</div>
+                <div className="tmblk__val">{result.join_url || result.link}</div>
+                <button
+                  className="btn-primary tmblk__b"
+                  onClick={() => copy("web", result.join_url || result.link)}
+                >
+                  {copied === "web" ? <Check size={14} /> : <Copy size={14} />}
+                  {copied === "web" ? "Nusxalandi" : "Nusxalash"}
                 </button>
               </div>
-              <div className="tm-code">Kod: <b>{result.code}</b></div>
-              {result.join_url && result.link && (
-                <div className="tm-alt">
-                  Telegram orqali:{" "}
-                  <a href={result.link} target="_blank" rel="noreferrer">{result.link}</a>
+
+              {result.link && (
+                <div className="tmblk">
+                  <div className="tmblk__lbl">Telegram uchun havola</div>
+                  <div className="tmblk__sub">Botni ochadi</div>
+                  <div className="tmblk__val">{result.link}</div>
+                  <button
+                    className="btn-primary tmblk__b"
+                    onClick={() => copy("tg", result.link)}
+                  >
+                    {copied === "tg" ? <Check size={14} /> : <Copy size={14} />}
+                    {copied === "tg" ? "Nusxalandi" : "Nusxalash"}
+                  </button>
                 </div>
               )}
+
+              <div className="tmblk">
+                <div className="tmblk__lbl">Kod</div>
+                <div className="tmblk__sub">Saytga qo'lda kiritish uchun</div>
+                <div className="tmblk__val tmblk__val--code">{result.code}</div>
+                <button
+                  className="btn-primary tmblk__b"
+                  onClick={() => copy("code", result.code)}
+                >
+                  {copied === "code" ? <Check size={14} /> : <Copy size={14} />}
+                  {copied === "code" ? "Nusxalandi" : "Nusxalash"}
+                </button>
+              </div>
             </>
           )}
 
