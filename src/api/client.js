@@ -326,6 +326,12 @@ export async function deleteProject(pid) {
 // Same endpoints and permission model as the Mini App: rename via manager,
 // remove via owner-only, invites are role + optional uses cap -> link + code.
 
+// "The rahbar is me." Recorded on the company, not the person, so a second
+// manager joining later is not asked the same question again.
+export async function bossAck() {
+  return call("/api/team/boss-ack", { method: "POST" });
+}
+
 export async function getTeam() {
   return call("/api/manager/team");
 }

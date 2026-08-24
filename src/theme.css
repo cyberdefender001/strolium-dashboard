@@ -1787,6 +1787,20 @@ a { color: inherit; }
 /* Same card, quieter: needs_boss means the company is stuck, this one is only
    a suggestion and should not compete with it. */
 .tm-alone { border-color: var(--line); background: var(--panel); }
+/* Two answers, equally weighted -- the creator is as likely to be the rahbar as
+   not, so neither choice is styled as the expected one. */
+.tm-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+@media (max-width: 640px) { .tm-pick { grid-template-columns: 1fr; } }
+.tm-pick button {
+  text-align: left; padding: 14px 15px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--panel); cursor: pointer; font: inherit;
+  transition: border-color .15s ease;
+}
+.tm-pick button:hover:not(:disabled) { border-color: var(--brand); }
+.tm-pick button:disabled { opacity: .6; cursor: default; }
+.tm-pick b { display: block; font: 700 14px var(--font-body); margin-bottom: 3px; }
+.tm-pick span { display: block; font: 400 12.5px/1.5 var(--font-body); color: var(--dim); }
 .tm-boss__t { font-weight: 700; font-size: 14.5px; color: var(--warn); }
 .tm-boss__s { font-size: 12.5px; color: var(--dim); margin: 6px 0 14px; line-height: 1.55; max-width: 46em; }
 .tm-boss__code {

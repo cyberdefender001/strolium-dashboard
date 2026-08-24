@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Copy, Check } from "lucide-react";
-import { getTeam, createInvite, renameMember, deleteMember, getMe } from "../api/client";
+import { getTeam, createInvite, renameMember, deleteMember, getMe, bossAck } from "../api/client";
 import { initials } from "../lib/format";
 import BrickLoader from "../components/BrickLoader.jsx";
 
@@ -142,6 +142,7 @@ export default function Team({ tick, onChange }) {
   // Belongs to Team, NOT to InviteModal -- InviteModal has its own `copied`
   // for the invite link, and this one is for the reserved boss code below.
   const [bossCopied, setBossCopied] = useState(false);
+  const [ackBusy, setAckBusy] = useState(false);
   const [data, setData] = useState(null);
   const [me, setMe] = useState(null);
   const [err, setErr] = useState("");
@@ -156,6 +157,16 @@ export default function Team({ tick, onChange }) {
       .then(([t, m]) => { setData(t); setMe(m); })
       .catch((e) => setErr(e.message || "Yuklab bo'lmadi."));
   }, []);
+
+  // Below load() on purpose: it calls it, and a const is not hoisted -- declared
+  // above, this threw "Cannot access 'load' before initialization" on click.
+  const ackBoss = () => {
+    setAckBusy(true);
+    bossAck()
+      .then(() => load())
+      .catch((e) => setErr(e.message || "Saqlanmadi."))
+      .finally(() => setAckBusy(false));
+  };
 
   useEffect(() => { load(); }, [load, tick]);
 
@@ -221,17 +232,17 @@ export default function Team({ tick, onChange }) {
       {data.alone && !data.needs_boss && (
         <div className="card tm-boss tm-alone">
           <div className="tm-boss__t">Rahbar tizimda bormi?</div>
-          <div className="tm-boss__s">
-            Shartnomani faqat rahbar imzolay oladi. Agar kompaniyani rahbar
-            nomidan siz ochgan bo'lsangiz, uni rahbar sifatida taklif qiling.
-          </div>
-          <div className="tm-boss__acts">
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => setInviting(true)}
-            >
-              Rahbarni taklif qilish
+          <div className="tm-boss__s">Shartnomani faqat rahbar imzolay oladi.</div>
+          {/* Two real answers. With only "invite", someone who IS the rahbar had
+              no way to say so and the card never went away. */}
+          <div className="tm-pick">
+            <button type="button" onClick={() => setInviting(true)}>
+              <b>Yo'q, taklif qilaman</b>
+              <span>Rahbarga havola yuboriladi</span>
+            </button>
+            <button type="button" disabled={ackBusy} onClick={ackBoss}>
+              <b>Ha, rahbar — bu men</b>
+              <span>{ackBusy ? "…" : "Bu savol boshqa chiqmaydi"}</span>
             </button>
           </div>
         </div>
