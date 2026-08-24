@@ -61,7 +61,25 @@ export default function App() {
 
   if (handoff && !user) return null; // brief: redeeming
 
-  if (!user) return <Login onLogin={setUser} />;
+  // Any successful sign-in or join lands here.
+  //
+  // The invite code has to be cleared at the same moment. It lives in App state
+  // AND in the URL hash, and the notice below renders whenever a user with a
+  // company still has one -- so joining through an invite link showed the
+  // "this link is not for you" screen immediately after it had worked.
+  const acceptUser = (u) => {
+    setJoinCode("");
+    try {
+      if ((window.location.hash || "").includes("code=")) {
+        window.location.hash = "/home";
+      }
+    } catch {
+      /* the state above is what gates the notice; the hash is cosmetic */
+    }
+    setUser(u);
+  };
+
+  if (!user) return <Login onLogin={acceptUser} />;
 
   // Signed up but in no company yet. Open signup makes this state normal, not an
   // error: the account exists, it just holds no membership. Nothing needs
@@ -75,7 +93,7 @@ export default function App() {
       <NoCompany
         name={user.name}
         botName={TG_BOT}
-        onJoined={setUser}
+        onJoined={acceptUser}
         onLogout={signOut}
       />
     );
