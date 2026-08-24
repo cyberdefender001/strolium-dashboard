@@ -7,6 +7,7 @@ import Work from "./pages/Work.jsx";
 import NoCompany from "./pages/NoCompany.jsx";
 import { TG_BOT } from "./config";
 import TrialExpiredDialog from "./components/TrialExpiredDialog.jsx";
+import JoinLinkNotice from "./components/JoinLinkNotice.jsx";
 
 export default function App() {
   const [user, setUser] = useState(currentUser());
@@ -14,6 +15,21 @@ export default function App() {
   const [handoff, setHandoff] = useState(
     () => new URLSearchParams(window.location.search).get("h") || null
   );
+
+  // An invite code in the hash: <site>/#/join?code=XXXXXXXX
+  //
+  // Read here rather than in NoCompany alone, because the interesting case is
+  // the one NoCompany never sees -- a user who ALREADY has a company opening the
+  // link. Declared before any conditional return, since hooks cannot run after
+  // one.
+  const [joinCode, setJoinCode] = useState(() => {
+    try {
+      const m = (window.location.hash || "").match(/[?&]code=([A-Za-z0-9]+)/);
+      return m ? m[1].toUpperCase() : "";
+    } catch {
+      return "";
+    }
+  });
 
   // One-tap arrival from the Mini App. The URL carries a single-use, 60-second
   // code -- never a session token, which would otherwise sit in browser history
@@ -61,6 +77,30 @@ export default function App() {
         botName={TG_BOT}
         onJoined={setUser}
         onLogout={signOut}
+      />
+    );
+
+  // An invite link opened by someone who is already in a company.
+  //
+  // Only NoCompany reads ?code=, and it only renders when !user.orgId -- so this
+  // user went straight to their dashboard and the code vanished with no message.
+  // The inviter testing his own link concluded it was broken; an invitee who
+  // already has an account would report the same.
+  if (joinCode)
+    return (
+      <JoinLinkNotice
+        code={joinCode}
+        companyName={user.company}
+        onLogout={signOut}
+        onDismiss={() => {
+          // Strip the code so a refresh does not show this again.
+          try {
+            window.location.hash = "/home";
+          } catch {
+            /* hash is cosmetic here; clearing state is what matters */
+          }
+          setJoinCode("");
+        }}
       />
     );
 
