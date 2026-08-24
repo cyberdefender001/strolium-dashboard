@@ -55,6 +55,7 @@ const T = {
     coNeedName: "Kompaniya nomini kiriting",
     coNeedCode: "Taklif kodini kiriting",
     coDone: "Boshlash",
+    coInvited: "Siz taklif havolasi orqali qo'shilyapsiz",
     forgot: "Parolni unutdingizmi?",
     reset: "Parolni tiklash",
     newPassword: "Yangi parol",
@@ -97,6 +98,7 @@ const T = {
     coNeedName: "Введите название компании",
     coNeedCode: "Введите код приглашения",
     coDone: "Начать",
+    coInvited: "Вы присоединяетесь по ссылке-приглашению",
     forgot: "Забыли пароль?",
     reset: "Восстановить пароль",
     newPassword: "Новый пароль",
@@ -139,6 +141,7 @@ const T = {
     coNeedName: "Enter a company name",
     coNeedCode: "Enter the invite code",
     coDone: "Start",
+    coInvited: "You are joining via an invite link",
     forgot: "Forgot your password?",
     reset: "Reset password",
     newPassword: "New password",
@@ -199,9 +202,25 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
     return "";
   };
 
-  const [coMode, setCoMode] = useState("new");   // "new" | "join"
+  // Arrived from an invite link: <site>/#/join?code=XXXXXXXX
+  //
+  // When there is a code in the URL the choice is already made. Showing the
+  // "Yangi kompaniya / Taklif kodi bilan" tabs here offered a decision the
+  // person had made by clicking the link, and picking the wrong one silently
+  // discarded the invite -- they would land in a brand new empty company
+  // instead of the one they were invited to.
+  const inviteFromUrl = (() => {
+    try {
+      const m = (window.location.hash || "").match(/[?&]code=([A-Za-z0-9]+)/);
+      return m ? m[1].toUpperCase() : "";
+    } catch {
+      return "";
+    }
+  })();
+
+  const [coMode, setCoMode] = useState(inviteFromUrl ? "join" : "new");
   const [coName, setCoName] = useState("");
-  const [coCode, setCoCode] = useState("");
+  const [coCode, setCoCode] = useState(inviteFromUrl);
   const [left, setLeft] = useState(0);          // seconds the code is still valid
 
   // One ticker for the code's remaining life. It is display-only -- the server is
@@ -530,24 +549,33 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
                   finished signing up, thought they were done, and met what
                   looked like a second authentication step. */}
               <div className="eauth__cohead">{t.coHead}</div>
-              <div className="eauth__cotabs">
-                <button
-                  type="button"
-                  className={coMode === "new" ? "on" : ""}
-                  onClick={() => setCoMode("new")}
-                >
-                  {t.coNew}
-                </button>
-                <button
-                  type="button"
-                  className={coMode === "join" ? "on" : ""}
-                  onClick={() => setCoMode("join")}
-                >
-                  {t.coJoin}
-                </button>
-              </div>
 
-              {coMode === "new" ? (
+              {/* No tabs when the code came from the link: the choice is made. */}
+              {inviteFromUrl ? (
+                <div className="eauth__invited">
+                  <div className="eauth__invited-t">{t.coInvited}</div>
+                  <div className="eauth__invited-c">{inviteFromUrl}</div>
+                </div>
+              ) : (
+                <div className="eauth__cotabs">
+                  <button
+                    type="button"
+                    className={coMode === "new" ? "on" : ""}
+                    onClick={() => setCoMode("new")}
+                  >
+                    {t.coNew}
+                  </button>
+                  <button
+                    type="button"
+                    className={coMode === "join" ? "on" : ""}
+                    onClick={() => setCoMode("join")}
+                  >
+                    {t.coJoin}
+                  </button>
+                </div>
+              )}
+
+              {inviteFromUrl ? null : coMode === "new" ? (
                 <>
                   <label className="eauth__label">{t.coName}</label>
                   <input

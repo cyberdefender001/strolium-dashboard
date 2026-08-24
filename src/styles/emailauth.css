@@ -46,6 +46,16 @@
   font: 700 13px var(--font-body);
   color: var(--text);
 }
+.eauth__invited {
+  padding: 13px 15px; border: 1px solid var(--line); border-radius: 11px;
+  background: var(--panel-3); text-align: center;
+}
+.eauth__invited-t { font: 500 12.5px var(--font-body); color: var(--dim); }
+.eauth__invited-c {
+  margin-top: 5px; font: 700 18px var(--font-mono);
+  letter-spacing: .14em; color: var(--text);
+}
+
 .eauth__cotabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
 .eauth__cotabs button {
   padding: 10px; border: 1px solid var(--line); border-radius: 10px;
