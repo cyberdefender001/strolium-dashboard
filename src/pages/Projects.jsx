@@ -140,6 +140,9 @@ export default function Projects({ tick, onChange }) {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(null);
   const [archiving, setArchiving] = useState(null);
+  // Reactivating asks first too: it can fail on the plan limit, and it changes
+  // what the company is charged for -- the same weight as archiving.
+  const [activating, setActivating] = useState(null);
   const [deleting, setDeleting] = useState(null);   // {project, expenses, tasks}
   const [busy, setBusy] = useState(false);
   // Hard delete is the boss's alone: it destroys a site's whole expense history.
@@ -164,6 +167,22 @@ export default function Projects({ tick, onChange }) {
 
   // Read the counts BEFORE the dialog opens, so the confirmation can say what
   // is about to be lost instead of asking blind.
+  // Drives the "2 / 2 loyiha" line, so the boss sees the limit before he hits it.
+  const loadUsage = useCallback(() => {
+    planUsage().then(setUsage).catch(() => setUsage(null));
+  }, []);
+  useEffect(() => { loadUsage(); }, [loadUsage, tick]);
+
+  // Fetched only when the archive is opened: most visits never need it.
+  const loadArchived = useCallback(() => {
+    listProjects(true)
+      .then((rows) => setArchived((rows || []).filter((r) => r.status === "archived")))
+      .catch((e) => setErr(e.message || "Arxivni yuklab bo'lmadi."));
+  }, []);
+  useEffect(() => { if (showArchive) loadArchived(); }, [showArchive, loadArchived]);
+
+  // Reactivating counts against the same cap, so this can legitimately fail with
+  // an upgrade message -- which is why the error is surfaced rather than ignored.
   const askDelete = useCallback((g) => {
     setBusy(true);
     projectDeleteInfo(g.project_id)
@@ -182,11 +201,16 @@ export default function Projects({ tick, onChange }) {
       // action -- the heaviest request on the page, for nothing.
       .then(() => {
         setArchiving(null);
+        // The archive panel does not refetch on its own -- it loads when opened.
+        // Archiving with it already open left the newly archived project
+        // missing from a list that was visibly on screen.
+        if (showArchive) loadArchived();
+        loadUsage();
         if (onChange) onChange(); else load();
       })
       .catch((e) => setErr(e.message || "Arxivlab bo'lmadi."))
       .finally(() => setBusy(false));
-  }, [archiving, load, onChange]);
+  }, [archiving, load, onChange, showArchive, loadArchived, loadUsage]);
 
   const doDelete = useCallback(() => {
     if (!deleting) return;
@@ -194,42 +218,34 @@ export default function Projects({ tick, onChange }) {
     deleteProject(deleting.g.project_id)
       .then(() => {
         setDeleting(null);
+        loadUsage();
         if (onChange) onChange(); else load();
       })
       .catch((e) => setErr(e.message || "O'chirib bo'lmadi."))
       .finally(() => setBusy(false));
-  }, [deleting, load, onChange]);
+  }, [deleting, load, onChange, loadUsage]);
 
   useEffect(() => { load(); }, [load, tick]);
 
-  // Drives the "2 / 2 loyiha" line, so the boss sees the limit before he hits it.
-  const loadUsage = useCallback(() => {
-    planUsage().then(setUsage).catch(() => setUsage(null));
-  }, []);
-  useEffect(() => { loadUsage(); }, [loadUsage, tick]);
-
-  // Fetched only when the archive is opened: most visits never need it.
-  const loadArchived = useCallback(() => {
-    listProjects(true)
-      .then((rows) => setArchived((rows || []).filter((r) => r.status === "archived")))
-      .catch((e) => setErr(e.message || "Arxivni yuklab bo'lmadi."));
-  }, []);
-  useEffect(() => { if (showArchive) loadArchived(); }, [showArchive, loadArchived]);
-
-  // Reactivating counts against the same cap, so this can legitimately fail with
-  // an upgrade message -- which is why the error is surfaced rather than ignored.
-  const doActivate = useCallback((pid) => {
+  const doActivate = useCallback(() => {
+    if (!activating) return;
     setBusy(true);
     setErr("");
-    activateProject(pid)
+    activateProject(activating.id)
       .then(() => {
+        setActivating(null);
         loadArchived();
         loadUsage();
         if (onChange) onChange(); else load();
       })
-      .catch((e) => setErr(e.message || "Qaytarib bo'lmadi."))
+      .catch((e) => {
+        // Closed on failure too: the reason appears in the banner above the
+        // list, and leaving the dialog open would hide it.
+        setActivating(null);
+        setErr(e.message || "Qaytarib bo'lmadi.");
+      })
       .finally(() => setBusy(false));
-  }, [loadArchived, load, loadUsage, onChange]);
+  }, [activating, loadArchived, load, loadUsage, onChange]);
 
   // Active only. /api/spend now returns archived projects too -- it has to, so
   // the Mini App can show their status -- but this grid is the ACTIVE list and
@@ -313,7 +329,7 @@ export default function Projects({ tick, onChange }) {
                   {a.address && <span className="pj-arch__addr"> · {a.address}</span>}
                 </div>
                 <button className="btn-ghost" disabled={busy}
-                        onClick={() => doActivate(a.id)}>
+                        onClick={() => setActivating(a)}>
                   <RotateCcw size={13} /> Qaytarish
                 </button>
               </div>
@@ -414,6 +430,25 @@ export default function Projects({ tick, onChange }) {
               {busy ? "…" : "Arxivlash"}
             </button>
             <button className="pjc__x" onClick={() => setArchiving(null)}>Bekor qilish</button>
+          </div>
+        </div>
+      )}
+
+      {/* Reactivate. Asks like archiving does -- it can be refused on the plan
+          limit, and it changes what the company pays for. */}
+      {activating && (
+        <div className="pjc" role="dialog" aria-modal="true">
+          <div className="pjc__box">
+            <div className="pjc__icon"><RotateCcw size={19} /></div>
+            <h3 className="pjc__t">{activating.name} qaytarilsinmi?</h3>
+            <p className="pjc__b">
+              Loyiha yana faol bo'ladi — unga xarajat va vazifa qo'shish mumkin.
+              U tarifdagi bitta joyni egallaydi.
+            </p>
+            <button className="btn-primary" disabled={busy} onClick={doActivate}>
+              {busy ? "…" : "Qaytarish"}
+            </button>
+            <button className="pjc__x" onClick={() => setActivating(null)}>Bekor qilish</button>
           </div>
         </div>
       )}
