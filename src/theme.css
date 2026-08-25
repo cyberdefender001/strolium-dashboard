@@ -1014,6 +1014,15 @@ a { color: inherit; }
 
 /* Archive view and the plan-usage line. */
 .pj-headacts { display: flex; gap: 8px; align-items: center; }
+/* Action errors: a plan limit is information, not a failure of the page. */
+.pj-err { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;
+  padding: 13px 15px; border: 1px solid var(--warn-line, var(--line));
+  border-radius: 11px; background: var(--warn-bg, var(--panel-3));
+  color: var(--warn, var(--text)); font: 500 13.5px/1.55 var(--font-body); }
+.pj-err span { flex: 1 1 auto; min-width: 0; }
+.pj-err button { flex: 0 0 auto; border: 0; background: none; cursor: pointer;
+  color: inherit; font-size: 19px; line-height: 1; padding: 0 2px; opacity: .7; }
+.pj-err button:hover { opacity: 1; }
 .pj-full { color: var(--warn); font-weight: 600; }
 .pj-arch { margin-bottom: 16px; border: 1px solid var(--line); border-radius: 12px;
   background: var(--panel); overflow: hidden; }

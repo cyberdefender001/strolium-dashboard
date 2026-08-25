@@ -175,8 +175,15 @@ export default function Projects({ tick, onChange }) {
   const doArchive = useCallback(() => {
     if (!archiving) return;
     setBusy(true);
+    setErr("");
     archiveProject(archiving.project_id)
-      .then(() => { setArchiving(null); load(); onChange && onChange(); })
+      // No explicit load(): onChange bumps the parent tick, and the effect on
+      // [load, tick] re-runs it. Calling both fetched /api/spend twice per
+      // action -- the heaviest request on the page, for nothing.
+      .then(() => {
+        setArchiving(null);
+        if (onChange) onChange(); else load();
+      })
       .catch((e) => setErr(e.message || "Arxivlab bo'lmadi."))
       .finally(() => setBusy(false));
   }, [archiving, load, onChange]);
@@ -185,7 +192,10 @@ export default function Projects({ tick, onChange }) {
     if (!deleting) return;
     setBusy(true);
     deleteProject(deleting.g.project_id)
-      .then(() => { setDeleting(null); load(); onChange && onChange(); })
+      .then(() => {
+        setDeleting(null);
+        if (onChange) onChange(); else load();
+      })
       .catch((e) => setErr(e.message || "O'chirib bo'lmadi."))
       .finally(() => setBusy(false));
   }, [deleting, load, onChange]);
@@ -210,15 +220,31 @@ export default function Projects({ tick, onChange }) {
   // an upgrade message -- which is why the error is surfaced rather than ignored.
   const doActivate = useCallback((pid) => {
     setBusy(true);
+    setErr("");
     activateProject(pid)
-      .then(() => { loadArchived(); load(); loadUsage(); onChange && onChange(); })
+      .then(() => {
+        loadArchived();
+        loadUsage();
+        if (onChange) onChange(); else load();
+      })
       .catch((e) => setErr(e.message || "Qaytarib bo'lmadi."))
       .finally(() => setBusy(false));
   }, [loadArchived, load, loadUsage, onChange]);
 
-  const groups = useMemo(() => (data && data.projects) || [], [data]);
+  // Active only. /api/spend now returns archived projects too -- it has to, so
+  // the Mini App can show their status -- but this grid is the ACTIVE list and
+  // an archived project appearing in it was the bug: the same site showed in
+  // both the archive panel and the live grid at once.
+  const groups = useMemo(
+    () => ((data && data.projects) || []).filter((g) => g.status !== "archived"),
+    [data]
+  );
 
-  if (err)
+  // Only a LOAD failure is fatal. An action error -- a refused unarchive, a
+  // failed archive -- used to hit this same branch and replace the entire page
+  // with an empty state, so being told "you are at your limit" looked like the
+  // screen had broken.
+  if (err && !data)
     return (
       <div className="section-empty">
         {err} <button className="btn-ghost" onClick={load}>Qayta urinish</button>
@@ -228,6 +254,15 @@ export default function Projects({ tick, onChange }) {
 
   return (
     <>
+      {/* Action errors land here -- a refused unarchive is information, not a
+          broken page. Dismissible, and cleared by the next successful action. */}
+      {err && data && (
+        <div className="pj-err">
+          <span>{err}</span>
+          <button type="button" onClick={() => setErr("")} aria-label="Yopish">×</button>
+        </div>
+      )}
+
       <div className="xhead">
         <div>
           <h2 className="xhead__title">Loyihalar</h2>
@@ -240,8 +275,13 @@ export default function Projects({ tick, onChange }) {
             {usage && usage.projects && usage.projects.cap != null
               && usage.projects.used >= usage.projects.cap && usage.next_tier && (
               <span className="pj-full">
-                {" "}· To'ldi — {usage.next_tier.name} tarifida{" "}
-                {usage.next_tier.max_projects || "cheklanmagan"} loyiha
+                {" "}· To'ldi
+                {/* Only claim a number when there IS one. A missing
+                    max_projects used to render as "cheklanmagan", promising
+                    unlimited projects on a tier that allows five. */}
+                {usage.next_tier.max_projects
+                  ? ` — ${usage.next_tier.name} tarifida ${usage.next_tier.max_projects} loyiha`
+                  : ` — ${usage.next_tier.name} tarifiga o'ting`}
               </span>
             )}
           </div>
