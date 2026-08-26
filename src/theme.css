@@ -249,6 +249,18 @@ a { color: inherit; }
 }
 .side__org-label { font-size: 11px; color: var(--amber-on); opacity: .75; letter-spacing: .05em; text-transform: uppercase; }
 .side__org-name { font-weight: 600; font-size: 14px; margin-top: 1px; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Plan badge under the company name. A button, not a label: seeing you are on
+   the free plan and wanting to change it are the same moment. */
+.side__plan { display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+  width:100%; margin-top:9px; padding:0; border:0; background:none;
+  cursor:pointer; text-align:left; }
+.side__plan-tag { padding:3px 8px; border-radius:999px;
+  background:rgba(255,255,255,.18); color:#fff;
+  font:700 10.5px var(--font-body); letter-spacing:.04em; text-transform:uppercase; }
+.side__plan-tag.is-free { background:rgba(255,255,255,.26); }
+.side__plan-use { font:500 11.5px var(--font-body); color:rgba(255,255,255,.72); }
+.side__plan:hover .side__plan-use { color:#fff; }
+.side.is-mini .side__plan { display:none; }
 
 .side__nav { display: flex; flex-direction: column; }
 .navitem {

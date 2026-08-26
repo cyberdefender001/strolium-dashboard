@@ -32,7 +32,7 @@ const NAV = [
 // company, it is running the PRODUCT. The check here is convenience -- every
 // /api/owner/* endpoint enforces _require_owner server-side, so hiding the item
 // is not what keeps a manager out.
-export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout, open, onClose, mini, onToggleMini, onSupport }) {
+export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLogout, open, onClose, mini, onToggleMini, onSupport, plan }) {
   // On phones .side is a slide-out drawer (it used to be display:none, which
   // left the whole app with no navigation at all below 920px). The scrim sits
   // behind it and closes on tap.
@@ -55,6 +55,22 @@ export default function Sidebar({ active, onNav, user, openFlags, isOwner, onLog
       <div className="side__org">
         <div className="side__org-label">Kompaniya</div>
         <div className="side__org-name">{user.company}</div>
+        {/* Which plan, and how much of it is used. Nothing in the product said
+            either: a free company found out it had four seats and two projects
+            by being refused a fifth. Clicking opens To'lov. */}
+        {plan && (
+          <button type="button" className="side__plan" onClick={() => pick("billing")}>
+            <span className={"side__plan-tag" + (plan.free ? " is-free" : "")}>
+              {plan.name}
+            </span>
+            {plan.seatCap != null && (
+              <span className="side__plan-use">
+                {plan.seatsUsed}/{plan.seatCap} a'zo
+                {plan.projCap != null && ` · ${plan.projUsed}/${plan.projCap} loyiha`}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       <nav className="side__nav">

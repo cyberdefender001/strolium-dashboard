@@ -5,7 +5,7 @@ import Support from "../components/Support";
 import Billing from "./Billing";
 import Oferta from "./Oferta";
 import { Scale, FileText, Calculator, FolderKanban, Users, Menu, CircleHelp } from "lucide-react";
-import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired } from "../api/client";
+import { getDashboard, listDocs, listEstimates, getPulse, getMe, AuthExpired, planUsage } from "../api/client";
 import { fmtSom } from "../lib/format";
 import Sidebar from "../components/Sidebar.jsx";
 import { KpiStrip } from "../components/KpiStrip.jsx";
@@ -133,9 +133,34 @@ export default function Dashboard({ user, onLogout }) {
   // staleness actually bites: you look away, come back, and the numbers are old.
   // If a form is open we do NOT reload underneath the user; we show a pill and let
   // them choose. Destroying half-entered work is worse than showing it a bit late.
+  // Plan and usage for the sidebar badge. Nothing in the product told a company
+  // which plan it was on: a free company discovered it had four seats and two
+  // projects by being refused a fifth member.
+  const [plan, setPlan] = useState(null);
   const [stale, setStale] = useState(false);
   const [tick, setTick] = useState(0);          // bumped whenever the org changes
   const refresh = useCallback(() => { load(); setTick((n) => n + 1); }, [load]);
+
+  // Reloaded on tick, so archiving a project or adding a member updates the
+  // badge without a page refresh. Failure leaves it hidden rather than wrong.
+  useEffect(() => {
+    let alive = true;
+    planUsage()
+      .then((u) => {
+        if (!alive || !u) return;
+        setPlan({
+          name: u.plan_status === "free" ? "Bepul"
+               : u.plan_status === "active" ? "Faol tarif" : "Sinov",
+          free: u.plan_status === "free",
+          seatsUsed: u.seats && u.seats.used,
+          seatCap: u.seats && u.seats.cap,
+          projUsed: u.projects && u.projects.used,
+          projCap: u.projects && u.projects.cap,
+        });
+      })
+      .catch(() => setPlan(null));
+    return () => { alive = false; };
+  }, [tick]);
   const pulseRef = useRef(null);
   const busyRef = useRef(false);
   const navRef = useRef(nav);
@@ -256,6 +281,7 @@ export default function Dashboard({ user, onLogout }) {
         openFlags={data.audit.flags.length}
         isOwner={isOwner}
         onLogout={onLogout}
+        plan={plan}
       />
 
       <main className="main">

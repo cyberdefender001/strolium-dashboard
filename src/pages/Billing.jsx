@@ -186,7 +186,14 @@ export default function Billing({ user }) {
 
         <div className="bill__card">
           <div className="bill__status">
-            {info.plan_status === "active" ? (
+            {/* Three states, not two. This was `active ? Faol : Sinov`, so a
+                free company -- plan_status "free" -- fell through to the trial
+                badge and was told it was on a trial that does not exist. */}
+            {info.plan_status === "free" ? (
+              <span className="bill__chip bill__chip--ok">
+                <Check size={13} /> Bepul tarif
+              </span>
+            ) : info.plan_status === "active" ? (
               <span className="bill__chip bill__chip--ok"><Check size={13} /> Faol</span>
             ) : (
               <span className="bill__chip bill__chip--warn">
@@ -211,8 +218,14 @@ export default function Billing({ user }) {
                 <ArrowUp size={12} className="bill__chiparr" />
               </button>
             )}
+            {/* Against the company's OWN cap. It used to read the selected
+                tier's, so clicking a plan changed what looked like current
+                usage. */}
             <span className="bill__used">
-              {info.seats_used} / {sel && sel.max ? sel.max : "\u221e"} a'zo band
+              {info.seats_used} / {info.max_seats ?? "\u221e"} a'zo band
+              {info.projects_used != null && (
+                <> · {info.projects_used} / {info.projects_cap ?? "\u221e"} loyiha</>
+              )}
             </span>
           </div>
 
@@ -221,10 +234,14 @@ export default function Billing({ user }) {
               <span>Tanlangan</span>
               <span>{sel ? sel.name : "—"} · {months} oy</span>
             </div>
-            <div className="bill__line">
-              <span>Yangi muddat</span>
-              <span>{nextEnd} gacha</span>
-            </div>
+            {/* A free plan does not renew, so a date here is a promise of an
+                expiry that never comes. */}
+            {sel && !sel.is_free && (
+              <div className="bill__line">
+                <span>Yangi muddat</span>
+                <span>{nextEnd} gacha</span>
+              </div>
+            )}
             <div className="bill__line bill__line--total">
               <span>Jami</span>
               <span>{price ? `${fmt(price)} ${info.currency}` : "—"}</span>
