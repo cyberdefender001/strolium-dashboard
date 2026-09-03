@@ -539,3 +539,33 @@ export async function setMemberStatus(member_id, status) {
     body: JSON.stringify({ member_id, status }),
   });
 }
+
+// ---------------------------------------------------------------- smeta
+// Smeta nazorati: ABC4 Excel smeta vs actual purchases. Paid plans only --
+// the backend answers 403 with an upgrade message on free.
+
+export async function listSmetas() {
+  return call("/api/web/smeta");
+}
+
+export async function uploadSmeta({ project_id, file_name, file_b64 }) {
+  return call("/api/web/smeta", {
+    method: "POST",
+    body: JSON.stringify({ project_id, file_name, file_b64 }),
+  });
+}
+
+export async function deleteSmeta(id) {
+  return call(`/api/web/smeta/${id}`, { method: "DELETE" });
+}
+
+export async function checkSmeta(id) {
+  return call(`/api/web/smeta/${id}/check`);
+}
+
+export async function setSmetaProgress(project_id, progress) {
+  return call("/api/web/smeta/progress", {
+    method: "POST",
+    body: JSON.stringify({ project_id, progress }),
+  });
+}

@@ -12,7 +12,8 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  CreditCard,} from "lucide-react";
+  CreditCard,
+  FileSpreadsheet,} from "lucide-react";
 import { StroliumMark } from "./StroliumMark";
 import { initials } from "../lib/format";
 
@@ -20,6 +21,7 @@ const NAV = [
   { key: "home", label: "Bosh sahifa", icon: House },
   { key: "alerts", label: "Belgilar", icon: Flag, badgeKey: "openFlags" },
   { key: "money", label: "Pul nazorati", icon: Wallet },
+  { key: "smeta", label: "Smeta nazorati", icon: FileSpreadsheet },
   { key: "tasks", label: "Vazifalar", icon: ListChecks, badgeKey: "review" },
   { key: "expenses", label: "Xarajatlar", icon: Receipt },
   { key: "projects", label: "Loyihalar", icon: FolderKanban },

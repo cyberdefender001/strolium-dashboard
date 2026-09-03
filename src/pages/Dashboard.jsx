@@ -20,6 +20,7 @@ import ProjectsPage from "./Projects.jsx";
 import Team from "./Team.jsx";
 import Admin from "./Admin.jsx";
 import Profile from "./Profile.jsx";
+import SmetaControl from "../components/SmetaControl.jsx";
 
 // Four of these were missing, so the topbar heading was blank on Vazifalar,
 // Xarajatlar, Loyihalar and Jamoa.
@@ -27,6 +28,7 @@ const TITLES = {
   home: "Bosh sahifa",
   alerts: "Belgilar",
   money: "Pul nazorati",
+  smeta: "Smeta nazorati",
   tasks: "Vazifalar",
   expenses: "Xarajatlar",
   projects: "Loyihalar",
@@ -184,6 +186,7 @@ export default function Dashboard({ user, onLogout }) {
     const VIEW_PARTS = {
       alerts: null,                              // Belgilar: shows everything
       money: ["expenses", "projects", "docs", "estimates"],
+      smeta: [],
       tasks: ["tasks"],
       expenses: ["expenses", "projects"],
       projects: ["expenses", "projects"],
@@ -338,6 +341,7 @@ export default function Dashboard({ user, onLogout }) {
           )}
 
           {nav === "money" && <MoneyControl data={data} onChange={load} />}
+          {nav === "smeta" && <SmetaControl />}
           {nav === "tasks" && <Tasks tick={tick} onChange={refresh} />}
           {nav === "projects" && <ProjectsPage tick={tick} onChange={refresh} />}
           {nav === "team" && <Team tick={tick} onChange={refresh} />}
