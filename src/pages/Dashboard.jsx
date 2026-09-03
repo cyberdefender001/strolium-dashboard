@@ -341,7 +341,7 @@ export default function Dashboard({ user, onLogout }) {
           )}
 
           {nav === "money" && <MoneyControl data={data} onChange={load} />}
-          {nav === "smeta" && <SmetaControl />}
+          {nav === "smeta" && <SmetaControl onNav={setNav} />}
           {nav === "tasks" && <Tasks tick={tick} onChange={refresh} />}
           {nav === "projects" && <ProjectsPage tick={tick} onChange={refresh} />}
           {nav === "team" && <Team tick={tick} onChange={refresh} />}

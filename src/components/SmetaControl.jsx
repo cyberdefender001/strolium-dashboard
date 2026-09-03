@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileSpreadsheet, Upload, Trash2, Play, AlertTriangle } from "lucide-react";
+import { FileSpreadsheet, Upload, Trash2, Play, AlertTriangle, Lock } from "lucide-react";
 import {
   listSmetas, uploadSmeta, deleteSmeta, checkSmeta, setSmetaProgress,
   listProjects,
@@ -40,10 +40,11 @@ function readAsB64(file) {
   });
 }
 
-export default function SmetaControl() {
+export default function SmetaControl({ onNav }) {
   const [smetas, setSmetas] = useState(null);
   const [projects, setProjects] = useState([]);
   const [err, setErr] = useState("");
+  const [locked, setLocked] = useState(false);
 
   // upload form
   const [projId, setProjId] = useState("");
@@ -65,6 +66,7 @@ export default function SmetaControl() {
       setProjects(p || []);
       if (!projId && p && p.length) setProjId(p[0].id);
     } catch (e) {
+      if (e.status === 403) { setLocked(true); setSmetas([]); return; }
       setErr(e.message || "Xatolik");
       setSmetas([]);
     }
@@ -90,6 +92,7 @@ export default function SmetaControl() {
       setFile(null);
       await load();
     } catch (e) {
+      if (e.status === 403) { setLocked(true); return; }
       setErr(e.message || "Yuklashda xatolik");
     } finally {
       setBusy(false);
@@ -137,6 +140,25 @@ export default function SmetaControl() {
 
   if (smetas === null) return <BrickLoader />;
 
+  if (locked) {
+    return (
+      <div className="card" style={{ padding: "48px 24px", textAlign: "center", maxWidth: 560, margin: "40px auto" }}>
+        <Lock size={28} style={{ opacity: 0.6 }} />
+        <h3 style={{ margin: "14px 0 8px" }}>Smeta nazorati — pullik tariflarda</h3>
+        <div className="faint" style={{ fontSize: 14, lineHeight: 1.5, marginBottom: 18 }}>
+          Davlat ekspertizasidan o'tgan smeta bilan haqiqiy xaridlar avtomatik
+          solishtiriladi: qaysi material me'yordan ortiq olinganini raqam bilan
+          ko'rasiz. Tarifni yangilab, darhol ishlating.
+        </div>
+        {onNav && (
+          <button className="btn-ghost" onClick={() => onNav("billing")}>
+            Tarifni yangilash
+          </button>
+        )}
+      </div>
+    );
+  }
+
   const flags = report ? report.rows.filter((r) => r.level === "flag") : [];
   const watch = report ? report.rows.filter((r) => r.level === "watch") : [];
   const rest = report ? report.rows.filter((r) => r.level !== "flag" && r.level !== "watch") : [];
@@ -153,12 +175,7 @@ export default function SmetaControl() {
         </div>
       </div>
 
-      {err && (
-        <div className="section-empty" style={{ borderColor: "var(--bad, #c0392b)", marginBottom: 12 }}>
-          <AlertTriangle size={16} style={{ verticalAlign: "-3px", marginRight: 6 }} />
-          {err}
-        </div>
-      )}
+      {err && <Alert onClose={() => setErr("")}>{err}</Alert>}
 
       {/* upload */}
       <div className="card" style={{ padding: 16, marginBottom: 16 }}>
@@ -225,7 +242,7 @@ export default function SmetaControl() {
       {checking && (
         <div className="card" style={{ padding: 16 }}>
           {checkErr && (
-            <div className="section-empty" style={{ marginBottom: 12 }}>
+            <Alert tone="warn">
               {checkErr}
               {/(foiz|jarayon)/i.test(checkErr) && report === null && (
                 <ProgressEditor
@@ -234,7 +251,7 @@ export default function SmetaControl() {
                   onSave={onSaveProgress}
                 />
               )}
-            </div>
+            </Alert>
           )}
 
           {report && (
@@ -360,6 +377,29 @@ function ProgressEditor({ smetas, checking, progDraft, setProgDraft, onSave }) {
              inputMode="numeric" placeholder="0–100" style={{ width: 70, padding: "6px 8px" }} />
       <span className="faint">%</span>
       <button className="btn-ghost" onClick={() => onSave(s.project_id)}>Saqlash va tekshirish</button>
+    </div>
+  );
+}
+
+
+function Alert({ children, tone = "bad", onClose }) {
+  const c = tone === "bad"
+    ? { bg: "rgba(192,57,43,.08)", bd: "rgba(192,57,43,.45)", fg: "#7c2418" }
+    : { bg: "rgba(180,120,0,.08)", bd: "rgba(180,120,0,.45)", fg: "#6b4b00" };
+  return (
+    <div style={{ display: "flex", gap: 10, alignItems: "flex-start",
+                  padding: "12px 14px", marginBottom: 12, borderRadius: 10,
+                  background: c.bg, border: `1px solid ${c.bd}`, color: c.fg,
+                  fontSize: 14, lineHeight: 1.45 }}>
+      <AlertTriangle size={17} style={{ flex: "0 0 auto", marginTop: 2 }} />
+      <div style={{ flex: 1 }}>{children}</div>
+      {onClose && (
+        <button onClick={onClose} aria-label="Yopish"
+                style={{ background: "none", border: "none", color: "inherit",
+                         cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 2 }}>
+          ×
+        </button>
+      )}
     </div>
   );
 }
