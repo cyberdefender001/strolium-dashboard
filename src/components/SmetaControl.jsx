@@ -54,6 +54,7 @@ export default function SmetaControl({ onNav }) {
 
   // check
   const [checking, setChecking] = useState("");
+  const [running, setRunning] = useState(false);
   const [report, setReport] = useState(null);
   const [checkErr, setCheckErr] = useState("");
   const [progDraft, setProgDraft] = useState("");
@@ -108,14 +109,19 @@ export default function SmetaControl({ onNav }) {
   }
 
   async function onCheck(s) {
-    setChecking(s.id); setReport(null); setCheckErr("");
+    setChecking(s.id); setReport(null); setCheckErr(""); setRunning(true);
     setProgDraft(s.build_progress != null ? String(s.build_progress) : "");
     try {
       const r = await checkSmeta(s.id);
       setReport(r);
       setProgDraft(String(r.project.progress));
+      // the check is persisted server-side; refresh so the row's
+      // "tekshiruv dd.mm" line reflects it immediately
+      await load();
     } catch (e) {
       setCheckErr(e.message || "Tekshirishda xatolik");
+    } finally {
+      setRunning(false);
     }
   }
 
@@ -238,9 +244,10 @@ export default function SmetaControl({ onNav }) {
                     : <> · hali tekshirilmagan</>}
                 </div>
               </div>
-              <button className="btn-ghost" onClick={() => onCheck(s)}>
+              <button className="btn-ghost" disabled={running}
+                      onClick={() => onCheck(s)}>
                 <Play size={13} style={{ verticalAlign: "-2px", marginRight: 4 }} />
-                Tekshirish
+                {running && checking === s.id ? "Tekshirilmoqda\u2026" : "Tekshirish"}
               </button>
               <button className="btn-ghost" onClick={() => onDelete(s)} title="O'chirish">
                 <Trash2 size={13} />
@@ -253,6 +260,14 @@ export default function SmetaControl({ onNav }) {
       {/* check result */}
       {checking && (
         <div className="card" style={{ padding: 16 }}>
+          {running && !report && !checkErr && (
+            <div style={{ textAlign: "center", padding: "24px 0" }}>
+              <BrickLoader />
+              <div className="faint" style={{ fontSize: 13, marginTop: 8 }}>
+                1611 ta ish va barcha xarajatlar solishtirilmoqda\u2026
+              </div>
+            </div>
+          )}
           {checkErr && (
             <Alert tone="warn">
               {checkErr}
