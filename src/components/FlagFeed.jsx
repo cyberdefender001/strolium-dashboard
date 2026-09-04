@@ -1,4 +1,4 @@
-import { Truck, UserX, Stamp, ReceiptText, Copy, ChevronRight, Flag } from "lucide-react";
+import { Truck, UserX, Stamp, ReceiptText, Copy, ChevronRight, Flag, FileSpreadsheet } from "lucide-react";
 import { fmtSigned } from "../lib/format";
 
 const ICONS = {
@@ -7,6 +7,7 @@ const ICONS = {
   stamp: Stamp,
   receipt: ReceiptText,
   copy: Copy,
+  smeta: FileSpreadsheet,
 };
 
 const SEV_LABEL = { high: "Yuqori", med: "O'rta", low: "Past" };

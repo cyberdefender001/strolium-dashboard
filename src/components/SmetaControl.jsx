@@ -84,6 +84,14 @@ export default function SmetaControl({ onNav }) {
       setErr("Bu eski format (.xls). Excel'da oching va \u00abSave As \u2192 Excel Workbook (.xlsx)\u00bb qilib qayta saqlang. Fayl nomini o'zgartirish yordam bermaydi.");
       return;
     }
+    const existing = (smetas || []).filter((x) => x.project_id === projId);
+    if (existing.length) {
+      const ok = window.confirm(
+        "Bu loyihada smeta allaqachon bor. Yangi fayl ESKISINING O'RNINI OLADI " +
+        "(tekshiruv tarixi bilan birga). Davom etilsinmi?"
+      );
+      if (!ok) return;
+    }
     setBusy(true); setErr(""); setReceipt(null);
     try {
       const b64 = await readAsB64(file);
@@ -203,6 +211,7 @@ export default function SmetaControl({ onNav }) {
             {receipt.resources.toLocaleString("ru-RU")} ta resurs,{" "}
             {receipt.skipped_rows} ta o'qilmagan qator,{" "}
             {Object.keys(receipt.materials || {}).length} xil material.
+            {receipt.replaced > 0 && <> Eski smeta almashtirildi.</>}
           </div>
         )}
       </div>
@@ -224,6 +233,9 @@ export default function SmetaControl({ onNav }) {
                 <div className="faint" style={{ fontSize: 12 }}>
                   {s.project_name || "Loyihasiz"} · {s.works_count} ish · {s.resources_count} resurs
                   {s.build_progress != null && <> · qurilish {num(s.build_progress)}%</>}
+                  {s.last_check_at
+                    ? <> · tekshiruv {s.last_check_at.slice(8, 10)}.{s.last_check_at.slice(5, 7)}</>
+                    : <> · hali tekshirilmagan</>}
                 </div>
               </div>
               <button className="btn-ghost" onClick={() => onCheck(s)}>
