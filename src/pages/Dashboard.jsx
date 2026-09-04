@@ -418,7 +418,7 @@ function SectionIntro({ title, desc }) {
 function MoneyControl({ data, onChange }) {
   return (
     <>
-      <SectionIntro title="Reja — smeta" desc="Loyiha qancha turishi kerak. AI chizma/spetsifikatsiyadan smeta tuzadi va haqiqiy xarajat bilan solishtiradi." />
+      <SectionIntro title="Reja — AI byudjet" desc="Loyiha qancha turishi kerak — AI chizma/spetsifikatsiyadan taxminiy byudjet tuzadi va haqiqiy xarajat bilan solishtiradi. Rasmiy hujjat bilan solishtirish — Smeta nazorati bo'limida." />
       <Estimates projects={data.projects} budget={data.audit.budget} live={data.live} onChange={onChange} />
 
       <SectionIntro title="Yetkazib berish" desc="Qaysi material keldi. Yetkazib berish varaqasini yuklang — AI o'qiydi va saqlaydi." />
@@ -464,7 +464,7 @@ function Estimates({ projects, budget, live, onChange }) {
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card__head">
           <div className="card__title">
-            <Scale size={16} /> Smeta vs haqiqiy xarajat
+            <Scale size={16} /> AI byudjet vs haqiqiy xarajat
           </div>
         </div>
         {(!budget || budget.length === 0) ? (
@@ -503,7 +503,7 @@ function Estimates({ projects, budget, live, onChange }) {
       <div className="card">
         <div className="card__head">
           <div className="card__title">
-            <Calculator size={16} /> Saqlangan smetalar
+            <Calculator size={16} /> Saqlangan AI byudjetlar
             {estimates && <span className="count">{estimates.length} ta</span>}
           </div>
         </div>

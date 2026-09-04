@@ -87,7 +87,7 @@ export default function EstimateUpload({ projects, onSaved }) {
     <div className="card" style={{ marginBottom: 16 }}>
       <div className="card__head">
         <div className="card__title">
-          <Calculator size={16} /> AI smeta — chizma yoki spetsifikatsiya yuklang
+          <Calculator size={16} /> AI byudjet — chizma yoki spetsifikatsiya yuklang
         </div>
       </div>
 
@@ -99,14 +99,14 @@ export default function EstimateUpload({ projects, onSaved }) {
               <input type="file" accept="image/*" onChange={onFile} style={{ display: "none" }} />
               <Upload size={22} />
               <span>Chizma / spetsifikatsiya rasmini tanlang</span>
-              <small>AI taxminiy material va xarajat smetasini tuzadi</small>
+              <small>AI taxminiy material va xarajat byudjetini tuzadi</small>
             </label>
             {err && <p className="upload-err">{err}</p>}
           </>
         )}
 
         {stage === "reading" && (
-          <div className="upload-busy"><Loader2 size={20} className="spin" /> AI smeta tuzmoqda…</div>
+          <div className="upload-busy"><Loader2 size={20} className="spin" /> AI byudjet tuzmoqda…</div>
         )}
 
         {(stage === "review" || stage === "saving") && est && (
@@ -146,7 +146,7 @@ export default function EstimateUpload({ projects, onSaved }) {
                   </tr>
                 ))}
                 {est.items.length === 0 && (
-                  <tr><td colSpan={5} style={{ color: "var(--faint)" }}>AI smeta tuza olmadi. Qo'lda kiriting yoki boshqa rasm yuklang.</td></tr>
+                  <tr><td colSpan={5} style={{ color: "var(--faint)" }}>AI byudjet tuza olmadi. Qo'lda kiriting yoki boshqa rasm yuklang.</td></tr>
                 )}
               </tbody>
             </table>
