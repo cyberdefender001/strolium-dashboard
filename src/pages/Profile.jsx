@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import PwInput from "../components/PwInput.jsx";
 import {
   User, Mail, KeyRound, Send, Check, LogOut, ChevronDown, Pencil,
   FileText, ShieldCheck,
@@ -391,9 +392,8 @@ export default function Profile({ lang = "uz", onLogout }) {
                   placeholder="••••••"
                 />
                 <label className="eauth__label">{t.password}</label>
-                <input
+                <PwInput
                   className="eauth__input"
-                  type="password"
                   autoComplete="new-password"
                   value={newPw}
                   onChange={(e) => setNewPw(e.target.value)}
@@ -423,17 +423,15 @@ export default function Profile({ lang = "uz", onLogout }) {
       {p.has_email_login && (
         <Fold {...fold("pw")} title={t.pwTitle} icon={<KeyRound size={16} />} iconKind="acct" sub={t.sPw}>
           <label className="eauth__label">{t.oldPw}</label>
-          <input
+          <PwInput
             className="eauth__input"
-            type="password"
             autoComplete="current-password"
             value={oldPw}
             onChange={(e) => setOldPw(e.target.value)}
           />
           <label className="eauth__label">{t.newPw}</label>
-          <input
+          <PwInput
             className="eauth__input"
-            type="password"
             autoComplete="new-password"
             value={chgPw}
             onChange={(e) => setChgPw(e.target.value)}

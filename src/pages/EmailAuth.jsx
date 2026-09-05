@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PwInput from "../components/PwInput.jsx";
 import { Mail, ArrowLeft } from "lucide-react";
 import {
   requestEmailCode,
@@ -412,9 +413,8 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
       {mode === "login" && (
         <>
           <label className="eauth__label">{t.password}</label>
-          <input
+          <PwInput
             className="eauth__input"
-            type="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -519,9 +519,8 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
               />
 
               <label className="eauth__label">{t.password}</label>
-              <input
+              <PwInput
                 className="eauth__input"
-                type="password"
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -532,9 +531,8 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
               )}
 
               <label className="eauth__label">{t.passwordAgain}</label>
-              <input
+              <PwInput
                 className="eauth__input"
-                type="password"
                 autoComplete="new-password"
                 value={password2}
                 onChange={(e) => setPassword2(e.target.value)}
@@ -687,18 +685,16 @@ export default function EmailAuth({ onLogin, lang = "uz" }) {
           {step === 3 && (
             <>
               <label className="eauth__label">{t.newPassword}</label>
-              <input
+              <PwInput
                 className="eauth__input"
-                type="password"
                 autoComplete="new-password"
                 value={password}
                 autoFocus
                 onChange={(e) => setPassword(e.target.value)}
               />
               <label className="eauth__label">{t.passwordAgain}</label>
-              <input
+              <PwInput
                 className="eauth__input"
-                type="password"
                 autoComplete="new-password"
                 value={password2}
                 onChange={(e) => setPassword2(e.target.value)}
